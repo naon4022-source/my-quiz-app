@@ -4,76 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>📚 AI問題メーカー</title>
-    <!-- グラフ表示用のライブラリ -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* ====== [source: 2] ベースのお気に入りデザイン ====== */
+        /* ====== ベースデザイン ====== */
         :root { --bg-color: #f5f7fa; --text-color: #333; --box-bg: white; --box-shadow: rgba(0,0,0,0.05); --head-color: #2c3e50; --border-color: #bdc3c7; }
         body.dark-mode { --bg-color: #121212; --text-color: #e0e0e0; --box-bg: #1e1e1e; --box-shadow: rgba(255,255,255,0.05); --head-color: #f39c12; --border-color: #444; }
         body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 20px; background-color: var(--bg-color); color: var(--text-color); transition: all 0.3s ease; margin: 0; }
-        h1 { color: var(--head-color); text-align: center; margin-bottom: 20px; margin-top: 10px; }
         
-        /* コンテナとセクション */
-        .container { max-width: 900px; margin: 0 auto; padding-top: 60px; }
+        .container { max-width: 900px; margin: 0 auto; padding-top: 70px; }
         .section { margin-bottom: 20px; background: var(--box-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px var(--box-shadow); }
         h3 { margin-top: 0; border-left: 4px solid #3498db; padding-left: 10px; }
         
-        /* 各種ボタン（ベースコードの配色を完全再現） */
         .btn { padding: 10px 18px; margin: 5px; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.2s; }
-        .mode-btn { background-color: #ecf0f1; border: 2px solid #bdc3c7; color: #333; }
-        .mode-btn.active { background-color: #e74c3c; color: white; border-color: #e74c3c; transform: scale(1.05); }
+        .btn:disabled { opacity: 0.3; cursor: not-allowed; background-color: #bdc3c7; }
+        
         .grade-btn { background-color: #95a5a6; color: white; }
         .grade-btn.active { background-color: #34495e; transform: scale(1.05); }
         .subj-btn { background-color: var(--box-bg); border: 2px solid var(--border-color); color: var(--text-color); }
         .subj-btn.active { background-color: #2ecc71; color: white; border-color: #2ecc71; }
         .unit-btn { background-color: var(--box-bg); border: 1px solid var(--border-color); color: var(--text-color); }
         .unit-btn.active { background-color: #9b59b6; color: white; border-color: #9b59b6; }
+        .count-btn { background-color: var(--box-bg); border: 1px solid var(--border-color); color: var(--text-color); }
+        .count-btn.active { background-color: #e74c3c; color: white; border-color: #e74c3c; transform: scale(1.05); }
         
-        #generate-btn { background-color: #e67e22; color: white; font-size: 20px; padding: 12px 40px; display: block; margin: 25px auto; border-radius: 30px; }
-        
-        /* 問題カード（ベースコードのデザイン） */
-        .work-card { background: var(--box-bg); border: 2px solid #3498db; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 8px var(--box-shadow); }
-        .work-q { font-size: 18px; font-weight: bold; margin-bottom: 15px; line-height: 1.4; }
-        .feedback-area { margin-top: 15px; padding: 15px; border-radius: 8px; display: none; font-size: 16px; font-weight: bold; }
-        .feedback-area.correct { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; display: block; }
-        .feedback-area.incorrect { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; display: block; }
-        .exp-text { margin-top: 10px; font-weight: normal; color: #333; font-size: 15px; border-top: 1px dashed #ccc; padding-top: 10px; }
-        body.dark-mode .exp-text { color: #222; }
-
-        /* ====== 追加機能のUI（ベースに馴染むように） ====== */
-        /* ヘッダーとハンバーガーメニュー */
-        header { position: fixed; top: 0; left: 0; width: 100%; background: var(--box-bg); box-shadow: 0 2px 5px var(--box-shadow); display: flex; align-items: center; padding: 10px 20px; z-index: 100; box-sizing: border-box; }
+        header { position: fixed; top: 0; left: 0; width: 100%; background: var(--box-bg); box-shadow: 0 2px 5px var(--box-shadow); display: flex; align-items: center; padding: 15px 20px; z-index: 100; box-sizing: border-box; }
         .menu-btn { font-size: 28px; background: none; border: none; cursor: pointer; color: var(--text-color); margin-right: 15px; }
-        .header-title { color: var(--head-color); font-size: 20px; font-weight: bold; flex-grow: 1; }
-        
         #sidebar { position: fixed; top: 0; left: -250px; width: 250px; height: 100%; background-color: var(--box-bg); box-shadow: 2px 0 5px var(--box-shadow); transition: left 0.3s ease; z-index: 1000; padding-top: 60px; }
         #sidebar.open { left: 0; }
-        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: var(--text-color); }
-        .nav-item { padding: 15px 25px; font-size: 18px; cursor: pointer; border-bottom: 1px solid var(--border-color); font-weight: bold; color: var(--text-color); }
-        .nav-item:hover { background-color: rgba(0,0,0,0.05); }
-
+        .nav-item { padding: 15px 25px; cursor: pointer; border-bottom: 1px solid var(--border-color); font-weight: bold; }
+        
         .view { display: none; }
         .view.active { display: block; }
 
-        /* 百ます計算 */
-        table.hyakumasu { width: 100%; border-collapse: collapse; margin-top: 20px; text-align: center; font-size: 20px; font-weight: bold; }
-        table.hyakumasu th, table.hyakumasu td { border: 2px solid var(--border-color); padding: 10px; width: 9%; }
-        table.hyakumasu th { background-color: #3498db; color: white; }
+        /* ====== 問題リスト・印刷用のデザイン ====== */
+        .q-row { font-size: 20px; font-weight: bold; margin-bottom: 10px; }
+        .workspace { height: 4.5em; /* 約3行分の空きスペース */ }
+        .ans-inline { display: none; color: #e74c3c; margin-left: 20px; font-size: 20px; font-weight: bold; }
+        body.dark-mode .ans-inline { color: #ff6b6b; }
+        
+        #generate-btn { background-color: #e67e22; color: white; font-size: 20px; padding: 15px 40px; display: block; margin: 25px auto; border-radius: 30px; width: 100%; max-width: 400px; }
 
-        /* グラフ */
-        .chart-container { position: relative; height: 300px; width: 100%; margin-bottom: 30px; }
-
-        /* 印刷用 */
         @media print {
-            body { background: white; color: black; }
+            body { background: white; color: black; font-size: 14px; }
             .no-print { display: none !important; }
             .print-only { display: block !important; }
-            .page-break { page-break-before: always; }
-            .print-q-box { margin-bottom: 30px; font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
-            .print-header { text-align: right; margin-bottom: 20px; font-size: 18px; }
-            .print-name { border-bottom: 1px solid black; width: 200px; display: inline-block; }
+            .q-row { font-size: 16px; margin-bottom: 5px; }
+            .workspace { height: 4em; } /* 印刷時もスペースを確保 */
             h1, h2, h3 { color: black !important; }
             * { box-shadow: none !important; }
+            /* 答えを印刷時に出したくない場合は表示制御 */
+            .ans-inline { color: black; } 
         }
         .print-only { display: none; }
     </style>
@@ -81,101 +61,83 @@
 <body>
 
 <div class="no-print">
-    <!-- ヘッダー -->
     <header>
         <button class="menu-btn" onclick="toggleMenu()">≡</button>
-        <div class="header-title">📚 AI問題メーカー</div>
-        <button class="btn" style="background:#34495e; color:white; padding: 5px 10px;" onclick="toggleDarkMode()">🌙 色変更</button>
+        <div style="font-weight:bold; font-size:18px;">📚 AI問題メーカー</div>
+        <button class="btn" style="margin-left:auto; background:#34495e; color:white;" onclick="toggleDarkMode()">🌙 色変更</button>
     </header>
 
-    <!-- サイドバー -->
     <div id="sidebar">
-        <div class="close-btn" onclick="toggleMenu()">✕</div>
-        <div class="nav-item" onclick="switchView('main')">📖 勉強・テスト</div>
+        <div onclick="toggleMenu()" style="text-align:right; padding:10px; cursor:pointer;">✕</div>
+        <div class="nav-item" onclick="switchView('main')">📖 勉強・テスト作成</div>
         <div class="nav-item" onclick="switchView('hyakumasu')">🧮 百ます計算</div>
         <div class="nav-item" onclick="switchView('stats')">📊 成績・グラフ</div>
     </div>
 
     <div class="container">
-        <!-- ================= 1. メイン画面（勉強・テスト） ================= -->
+        <!-- ================= 設定画面 ================= -->
         <div id="view-main" class="view active">
+            <div class="section">
+                <h3>🎒 学年・検定を選ぶ</h3>
+                <button class="btn grade-btn active" onclick="selectGrade('中一', this)">中一</button>
+                <button class="btn grade-btn" disabled>中二</button>
+                <button class="btn grade-btn" disabled>中三</button>
+                <button class="btn grade-btn" onclick="selectGrade('検定', this)">検定</button>
+            </div>
             
-            <!-- テストの直しアラート -->
-            <div id="correction-area" class="section" style="display:none; border: 3px solid #e74c3c; background-color: #fdf0ed;">
-                <h3 style="border-left-color: #c0392b; color: #c0392b;">⚠️ テストの直し</h3>
-                <p style="color: #333; font-weight: bold;">前回のテストで間違えた問題があります。やり直して弱点を克服しよう！</p>
-                <button class="btn" style="background-color: #e74c3c; color: white; width: 100%;" onclick="startMistakes()">間違えた問題をやり直す</button>
+            <div class="section">
+                <h3>📚 教科を選ぶ</h3>
+                <div id="subj-container"></div>
+            </div>
+            
+            <div class="section">
+                <h3>🎯 単元を選ぶ (無限生成対応✨)</h3>
+                <div id="unit-container"></div>
             </div>
 
-            <!-- モード選択 -->
-            <div class="section" style="background-color: #fff3e0;">
-                <h3 style="border-left-color: #e67e22;">🔄 モードを選ぶ</h3>
-                <button class="btn mode-btn active" onclick="selectMode('study', this)">📖 勉強モード</button>
-                <button class="btn mode-btn" onclick="selectMode('test', this)">📝 テストモード（採点あり）</button>
-            </div>
-
-            <div id="settings-area">
-                <div class="section">
-                    <h3>🎒 学年・検定を選ぶ</h3>
-                    <div id="grade-container"></div>
-                </div>
-
-                <div class="section">
-                    <h3>📚 教科を選ぶ</h3>
-                    <div id="subj-container"></div>
-                </div>
-
-                <div class="section" id="unit-section">
-                    <h3>🎯 単元を選ぶ (複数選択OK / 無限生成対応✨)</h3>
-                    <div id="unit-container"></div>
+            <div class="section" id="count-section">
+                <h3>🔢 問題数を選ぶ</h3>
+                <div id="count-container">
+                    <button class="btn count-btn active" onclick="selectCount(15, this)">15問</button>
+                    <button class="btn count-btn" onclick="selectCount(30, this)">30問</button>
+                    <button class="btn count-btn" onclick="selectCount(45, this)">45問</button>
+                    <button class="btn count-btn" onclick="selectCount(60, this)">60問</button>
+                    <button class="btn count-btn" onclick="selectCount(75, this)">75問</button>
+                    <button class="btn count-btn" onclick="selectCount(90, this)">90問</button>
+                    <button class="btn count-btn" onclick="selectCount(105, this)">105問</button>
+                    <button class="btn count-btn" onclick="selectCount(120, this)">120問</button>
+                    <button class="btn count-btn" onclick="selectCount(135, this)">135問</button>
+                    <button class="btn count-btn" onclick="selectCount(150, this)">150問</button>
                 </div>
             </div>
 
-            <button id="generate-btn" onclick="generateQuiz()">問題を作成する！</button>
+            <button id="generate-btn" onclick="generateProblemList()">一気に問題を作成する！</button>
         </div>
 
-        <!-- ================= クイズ実行画面 ================= -->
+        <!-- ================= 問題リスト画面 ================= -->
         <div id="view-quiz" class="view">
-            <h1 id="quiz-header">問題</h1>
+            <h2 id="quiz-title" style="border-left: 5px solid #3498db; padding-left: 10px;"></h2>
+            <div class="section" id="problem-list" style="background: var(--box-bg);"></div>
             
-            <div id="quiz-container"></div>
-
-            <div class="section" style="text-align: center; margin-top: 30px;">
-                <button class="btn" style="background:#95a5a6; color:white; width:80%; font-size:18px;" onclick="printMode()">🖨️ テスト用紙風に印刷する</button>
-                <button class="btn" style="background:#34495e; color:white; width:80%; margin-top:10px;" onclick="switchView('main')">終了して戻る</button>
+            <!-- 下部の固定ボタン -->
+            <div class="section" style="text-align: center; position: sticky; bottom: 20px; box-shadow: 0 -4px 10px rgba(0,0,0,0.1);">
+                <button class="btn" style="background:#e74c3c; color:white; font-size:18px; padding:15px; width:45%;" onclick="toggleAnswers()">👀 答えを見る</button>
+                <button class="btn" style="background:#95a5a6; color:white; font-size:18px; padding:15px; width:45%;" onclick="window.print()">🖨️ 印刷する</button>
+                <button class="btn" style="background:#34495e; color:white; width:92%; margin-top:10px;" onclick="switchView('main')">終了して戻る</button>
             </div>
         </div>
 
-        <!-- ================= 2. 百ます計算 ================= -->
+        <!-- ================= 百ます計算・成績グラフ ================= -->
         <div id="view-hyakumasu" class="view">
             <h1>🧮 百ます掛け算</h1>
-            <div class="section">
-                <h3>【やり方】</h3>
-                <p>自分でタイマーをセットして、一番上の数字と左の数字を掛け合わせた答えをマスに書いていこう！印刷して使うのがおすすめです。</p>
-                <button class="btn" style="background-color:#2ecc71; color:white;" onclick="generateHyakumasu()">🔄 数字をバラバラにする</button>
-                <button class="btn" style="background-color:#95a5a6; color:white;" onclick="window.print()">🖨️ 印刷する</button>
-                <div id="hyakumasu-container" style="overflow-x: auto;"></div>
-            </div>
+            <p>※準備中（前の機能をそのまま移植して使えます！）</p>
         </div>
-
-        <!-- ================= 3. 成績・グラフ ================= -->
         <div id="view-stats" class="view">
-            <h1>📊 あなたの成績・頑張り</h1>
-            <div class="section">
-                <h3>📅 今日と今週の勉強数</h3>
-                <div class="chart-container"><canvas id="barChart"></canvas></div>
-            </div>
-            <div class="section">
-                <h3>🌟 全体のステータス</h3>
-                <div class="chart-container" style="height: 400px;"><canvas id="radarChart"></canvas></div>
-            </div>
+            <h1>📊 成績グラフ</h1>
+            <p>※準備中</p>
         </div>
-
     </div>
 </div>
-
-<!-- ================= 印刷用エリア ================= -->
-<div id="print-area" class="print-only"></div>
 
 <script>
     // ===== 全シラバスデータ =====
@@ -184,88 +146,73 @@
             "英語": ["文法とやり方", "be動詞", "一般動詞"],
             "数学": ["正負の数", "文字式", "方程式", "変化と対応", "平面図形", "空中図形", "データの活用"],
             "国語": ["中1で習う漢字", "中1で習う文法（解説のみ）", "文法の使い方"],
-            "理科": ["花の作り", "子葉葉根", "種子を作らない植物", "植物の分類", "動物の体の作りと生活", "骨格のある動物", "骨格のない動物", "動物の分類", "身近な大地の変動", "地域の大地の観察", "地震の発生と揺れ", "揺れの大きさ", "日本列島の地震", "火山の噴火", "マグマの性質と火山", "マグマからできた岩石", "地層のでき方", "地層の岩石", "大地の歴史と化石", "大地の恵みと災害", "物質の区別", "気体の区別", "物質の溶け方", "濃さの表し方", "小数の計算", "百分率（％）", "溶質の取り出し方", "溶解度", "物質の姿の変化", "状態変化と温度", "混合物の分け方", "光の進み方", "光が通り抜ける様子", "レンズの働き", "音の伝わり方", "音の大小と高低", "力の働き", "力の測り方", "力の表し方", "学年のまとめ"]
+            "理科": ["花の作り", "子葉葉根", "動物の体の作りと生活", "身近な大地の変動", "物質の区別", "気体の区別", "小数の計算", "百分率（％）", "光の進み方", "学年のまとめ"]
         },
-        "漢検4級": {"国語": ["漢検4級の漢字"]},
-        "数検5級": {"数学": ["数検5級の計算"]},
-        "英検4級": {"英語": ["英検4級", "英検5級"]},
-        "理検5級": {"理科": ["理検5級"]},
-        "社検5級": {"社会": ["社検5級"]}
+        "検定": {
+            "国語": ["漢検4級の漢字"],
+            "数学": ["数検5級の計算"],
+            "英語": ["英検4級", "英検5級"],
+            "理科": ["理検5級"],
+            "社会": ["社検5級"]
+        }
     };
 
-    let currentMode = 'study';
     let currentGrade = "中一";
     let currentSubj = "数学";
-    let selectedUnits = [];
-    
-    let quizList = [];
-    let mistakes = JSON.parse(localStorage.getItem('mistakes')) || [];
-    let userStats = JSON.parse(localStorage.getItem('stats')) || { math: 0, eng: 0, jpn: 0, sci: 0, soc: 0, today: 0, week: 0 };
+    let currentUnit = "正負の数";
+    let selectedCount = 15;
+    let answersVisible = false;
 
     window.onload = () => {
         if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
         renderMenus();
-        checkMistakes();
-        generateHyakumasu();
     };
 
-    // ===== UI操作 =====
     function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
     function toggleDarkMode() {
         document.body.classList.toggle('dark-mode');
         localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
     }
-
-    function switchView(viewId) {
+    
+    function switchView(id) {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById(`view-${viewId}`).classList.add('active');
+        document.getElementById(`view-${id}`).classList.add('active');
         toggleMenu();
-        if(viewId === 'main') checkMistakes();
-        if(viewId === 'stats') drawCharts();
     }
 
-    function selectMode(mode, btn) {
-        currentMode = mode;
-        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    function selectGrade(g, btn) {
+        currentGrade = g;
+        currentSubj = Object.keys(syllabus[g])[0];
+        currentUnit = syllabus[currentGrade][currentSubj][0];
+        document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderMenus();
+    }
+
+    function selectCount(num, btn) {
+        selectedCount = num;
+        document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
     }
 
-    // ===== メニュー描画（ベースデザイン適用） =====
     function renderMenus() {
-        // 学年
-        const gDiv = document.getElementById('grade-container');
-        gDiv.innerHTML = '';
-        Object.keys(syllabus).forEach(g => {
-            const btn = document.createElement('button');
-            btn.className = `btn grade-btn ${g === currentGrade ? 'active' : ''}`;
-            btn.innerText = g;
-            btn.onclick = () => { currentGrade = g; currentSubj = Object.keys(syllabus[g])[0]; selectedUnits = []; renderMenus(); };
-            gDiv.appendChild(btn);
-        });
-
-        // 教科
         const sDiv = document.getElementById('subj-container');
         sDiv.innerHTML = '';
         Object.keys(syllabus[currentGrade]).forEach(s => {
             const btn = document.createElement('button');
             btn.className = `btn subj-btn ${s === currentSubj ? 'active' : ''}`;
             btn.innerText = s;
-            btn.onclick = () => { currentSubj = s; selectedUnits = []; renderMenus(); };
+            btn.onclick = () => { currentSubj = s; currentUnit = syllabus[currentGrade][s][0]; renderMenus(); };
             sDiv.appendChild(btn);
         });
 
-        // 単元
         const uDiv = document.getElementById('unit-container');
         uDiv.innerHTML = '';
-        let units = syllabus[currentGrade][currentSubj] || [];
-        units.forEach(u => {
+        syllabus[currentGrade][currentSubj].forEach(u => {
             const btn = document.createElement('button');
-            btn.className = `btn unit-btn ${selectedUnits.includes(u) ? 'active' : ''}`;
+            btn.className = `btn unit-btn ${u === currentUnit ? 'active' : ''}`;
             btn.innerText = u;
-            btn.onclick = function() {
-                if(selectedUnits.includes(u)) { selectedUnits = selectedUnits.filter(item => item !== u); this.classList.remove('active'); } 
-                else { selectedUnits.push(u); this.classList.add('active'); }
-            };
+            btn.onclick = () => { currentUnit = u; renderMenus(); };
             uDiv.appendChild(btn);
         });
     }
@@ -274,196 +221,67 @@
     function createQuestion(subj, unit) {
         if(subj === '数学') {
             if(unit === '正負の数') {
-                let a = Math.floor(Math.random()*20)-10; let b = Math.floor(Math.random()*20)-10;
+                let a = Math.floor(Math.random()*20)-10; 
+                let b = Math.floor(Math.random()*20)-10;
                 let op = Math.random() > 0.5 ? '+' : '-';
-                return { q: `${a} ${op} (${b}) を計算しなさい。`, a: String(op === '+' ? a + b : a - b), exp: "符号に注意してカッコを外します。" };
+                
+                // 見た目を綺麗にフォーマット (例: +3 - 8, -5 + -2 など)
+                let strA = a > 0 ? `+${a}` : `${a}`;
+                let strB = b < 0 ? `(${b})` : `${b}`;
+                let ans = op === '+' ? a + b : a - b;
+                
+                return { q: `${strA} ${op} ${strB}`, a: `${ans}` };
             }
             if(unit === '文字式') {
                 let a = Math.floor(Math.random()*9)+2; let b = Math.floor(Math.random()*9)+2;
-                return { q: `${a}x + ${b}x を計算しなさい。`, a: `${a+b}x`, exp: "文字が同じ項の係数を足し合わせます。" };
+                return { q: `${a}x + ${b}x`, a: `${a+b}x` };
             }
             if(unit === '方程式') {
                 let x = Math.floor(Math.random()*10)+1; let a = Math.floor(Math.random()*5)+2; let b = Math.floor(Math.random()*20);
-                return { q: `次の方程式を解きなさい。<br>${a}x + ${b} = ${(a * x) + b}`, a: `x = ${x}`, exp: `左辺の ${b} を右辺に移項して計算します。` };
+                return { q: `${a}x + ${b} = ${(a * x) + b}`, a: `x = ${x}` };
             }
         }
-        if(subj === '理科') {
-            if(unit === '小数の計算') {
-                let isText = Math.random() > 0.5;
-                let a = (Math.random()*10).toFixed(1); let b = (Math.random()*10).toFixed(1);
-                let ans = (parseFloat(a)+parseFloat(b)).toFixed(1);
-                if(isText) return { q: `ビーカーに物質Aを ${a}g、物質Bを ${b}g 入れて混ぜ合わせた。全体の質量は何gか。`, a: `${ans}g`, exp: "質量保存の法則により、質量の和になります。" };
-                return { q: `${a} + ${b} を計算しなさい。`, a: ans, exp: "小数点の位置を揃えて足し算をします。" };
-            }
-            if(unit === '百分率（％）') {
-                let water = Math.floor(Math.random()*150)+50; let salt = Math.floor(Math.random()*40)+10;
-                let pct = Math.round((salt / (water + salt)) * 100);
-                return { q: `水 ${water}g に食塩 ${salt}g を溶かして食塩水を作った。この食塩水の質量パーセント濃度は何％か。（小数第1位を四捨五入）`, a: `${pct}％`, exp: `(溶質 ${salt}g ÷ 溶液 ${water+salt}g) × 100` };
-            }
+        if(subj === '理科' && unit === '小数の計算') {
+            let a = (Math.random()*10).toFixed(1); let b = (Math.random()*10).toFixed(1);
+            return { q: `${a} + ${b}`, a: `${(parseFloat(a)+parseFloat(b)).toFixed(1)}` };
         }
-        return { q: `【${unit}】の重要語句や意味を答えなさい。`, a: "（ノートやワークで確認）", exp: "ここは知識・暗記単元です。教科書を見直そう。" };
+        
+        // それ以外はテキスト問題
+        return { q: `【${unit}】の重要語句を答えなさい。`, a: "（ノートで確認）" };
     }
 
-    // ===== クイズ実行 =====
-    function generateQuiz() {
-        if (selectedUnits.length === 0) { alert("⚠️ 先に「単元」を選んでね！"); return; }
-        
-        quizList = [];
-        let count = currentMode === 'test' ? 10 : 5;
-        
-        for(let i=0; i<count; i++) {
-            let unit = selectedUnits[Math.floor(Math.random() * selectedUnits.length)];
-            let q = createQuestion(currentSubj, unit);
-            q.subj = currentSubj;
-            quizList.push(q);
-        }
-        
-        document.getElementById('quiz-header').innerText = currentMode === 'test' ? "📝 テストモード（自己採点）" : "📖 勉強モード";
-        renderQuizCards();
-        
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById('view-quiz').classList.add('active');
-        window.scrollTo(0,0);
-    }
+    // ===== 問題一括生成ロジック =====
+    function generateProblemList() {
+        const listDiv = document.getElementById('problem-list');
+        listDiv.innerHTML = '';
+        document.getElementById('quiz-title').innerText = `📝 ${currentUnit} のプリント (${selectedCount}問)`;
 
-    function renderQuizCards() {
-        const container = document.getElementById('quiz-container');
-        container.innerHTML = '';
-        
-        quizList.forEach((q, index) => {
+        for(let i = 1; i <= selectedCount; i++) {
+            let qData = createQuestion(currentSubj, currentUnit);
+            
+            // 1問ごとのHTMLを生成
             let html = `
-            <div class="work-card">
-                <div class="work-q">Q${index + 1}. ${q.q}</div>
-                
-                <button class="btn" style="background:#3498db; color:white; width:100%; margin-bottom:10px;" id="show-btn-${index}" onclick="showAns(${index})">👀 答えを見る</button>
-                
-                <div id="ans-area-${index}" style="display:none;">
-                    <div style="font-size:18px; color:#e74c3c; font-weight:bold; margin-bottom:10px;">正解：${q.a}</div>
-                    <div class="exp-text"><strong>【解説】</strong><br>${q.exp}</div>
-                    ${currentMode === 'test' ? `
-                        <div style="margin-top:15px; display:flex; gap:10px;">
-                            <button class="btn" style="background:#2ecc71; color:white; flex:1;" onclick="markAns(${index}, true, this)">⭕️ 正解できた</button>
-                            <button class="btn" style="background:#e74c3c; color:white; flex:1;" onclick="markAns(${index}, false, this)">❌ 間違えた</button>
-                        </div>
-                    ` : ''}
+                <div class="q-row">
+                    (${i}) &nbsp;&nbsp; ${qData.q} 
+                    <span class="ans-inline">正解：${qData.a}</span>
                 </div>
-            </div>`;
-            container.innerHTML += html;
-        });
-
-        if(currentMode === 'test') {
-            container.innerHTML += `<button class="btn" style="background:#e67e22; color:white; width:100%; font-size:20px; padding:15px; margin-top:20px;" onclick="finishTest()">テストの採点を完了する</button>`;
+                <div class="workspace"></div> <!-- 途中式用の3行スペース -->
+            `;
+            listDiv.innerHTML += html;
         }
-    }
 
-    function showAns(index) {
-        document.getElementById(`ans-area-${index}`).style.display = 'block';
-        document.getElementById(`show-btn-${index}`).style.display = 'none';
-        if(currentMode === 'study') updateStats(quizList[index].subj);
-    }
-
-    function markAns(index, isCorrect, btn) {
-        quizList[index].isCorrect = isCorrect;
-        let buttons = btn.parentElement.querySelectorAll('button');
-        buttons.forEach(b => b.style.opacity = '0.3');
-        btn.style.opacity = '1';
-        if(isCorrect) updateStats(quizList[index].subj);
-    }
-
-    function finishTest() {
-        let unanswered = quizList.filter(q => q.isCorrect === undefined);
-        if(unanswered.length > 0) { alert("まだ丸つけしていない問題があります！"); return; }
-        
-        let correctCount = quizList.filter(q => q.isCorrect).length;
-        let score = (correctCount / quizList.length) * 100;
-        
-        mistakes = quizList.filter(q => q.isCorrect === false);
-        localStorage.setItem('mistakes', JSON.stringify(mistakes));
-        
-        alert(`テスト終了！\nあなたの得点は... 【 ${score}点 / 100点 】です！`);
-        switchView('main');
-    }
-
-    // ===== テストの直し =====
-    function checkMistakes() {
-        const area = document.getElementById('correction-area');
-        area.style.display = (currentMode === 'study' && mistakes.length > 0) ? 'block' : 'none';
-    }
-
-    function startMistakes() {
-        quizList = [...mistakes];
-        currentMode = 'test'; // 直しもテスト形式で採点させる
-        mistakes = []; 
-        localStorage.removeItem('mistakes');
-        
-        document.getElementById('quiz-header').innerText = "⚠️ テストの直し";
-        renderQuizCards();
-        
+        answersVisible = false;
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById('view-quiz').classList.add('active');
         window.scrollTo(0,0);
     }
 
-    // ===== 百ます計算 =====
-    function generateHyakumasu() {
-        let top = [1,2,3,4,5,6,7,8,9].sort(() => Math.random() - 0.5);
-        let side = [1,2,3,4,5,6,7,8,9].sort(() => Math.random() - 0.5);
-        
-        let html = '<table class="hyakumasu"><tr><th>×</th>';
-        top.forEach(n => html += `<th>${n}</th>`);
-        html += '</tr>';
-        
-        side.forEach(s => {
-            html += `<tr><th>${s}</th>`;
-            top.forEach(t => html += `<td></td>`);
-            html += '</tr>';
-        });
-        html += '</table>';
-        
-        document.getElementById('hyakumasu-container').innerHTML = html;
-    }
-
-    // ===== 印刷 =====
-    function printMode() {
-        const printArea = document.getElementById('print-area');
-        let html = `<div class="print-header">名前：<span class="print-name"></span></div>`;
-        html += `<h2>${document.getElementById('quiz-header').innerText}</h2>`;
-        
-        quizList.forEach((q, i) => { html += `<div class="print-q-box"><strong>Q${i+1}.</strong><br>${q.q}</div>`; });
-        html += `<div class="page-break"></div><h2>【解答と解説】</h2>`;
-        quizList.forEach((q, i) => { html += `<div class="print-q-box"><strong>Q${i+1}. 正解：${q.a}</strong><br>解説：${q.exp}</div>`; });
-        
-        printArea.innerHTML = html;
-        window.print();
-    }
-
-    // ===== グラフ・成績 =====
-    function updateStats(subj) {
-        let key = 'soc';
-        if(subj==='数学') key = 'math'; if(subj==='英語') key = 'eng';
-        if(subj==='国語') key = 'jpn'; if(subj==='理科') key = 'sci';
-        userStats[key]++; userStats.today++; userStats.week++;
-        localStorage.setItem('stats', JSON.stringify(userStats));
-    }
-
-    let bChart, rChart;
-    function drawCharts() {
-        if(bChart) bChart.destroy();
-        if(rChart) rChart.destroy();
-
-        bChart = new Chart(document.getElementById('barChart'), {
-            type: 'bar',
-            data: { labels: ['今日', '今週'], datasets: [{ label: '解いた問題数', data: [userStats.today, userStats.week], backgroundColor: ['#3498db', '#2ecc71'] }] },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-
-        rChart = new Chart(document.getElementById('radarChart'), {
-            type: 'radar',
-            data: {
-                labels: ['数学', '英語', '国語', '理科', '社会・検定'],
-                datasets: [{ label: '教科別ステータス', data: [userStats.math, userStats.eng, userStats.jpn, userStats.sci, userStats.soc], backgroundColor: 'rgba(52, 152, 219, 0.4)', borderColor: '#3498db', pointBackgroundColor: '#e74c3c' }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, ticks: { display: false } } } }
+    // ===== 答えの表示切替 =====
+    function toggleAnswers() {
+        answersVisible = !answersVisible;
+        const answers = document.querySelectorAll('.ans-inline');
+        answers.forEach(ans => {
+            ans.style.display = answersVisible ? 'inline' : 'none';
         });
     }
 </script>
