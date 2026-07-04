@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>📚 AI問題メーカー</title>
+    <!-- グラフ用ライブラリ -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* ====== ベースデザイン ====== */
         :root { --bg-color: #f5f7fa; --text-color: #333; --box-bg: white; --box-shadow: rgba(0,0,0,0.05); --head-color: #2c3e50; --border-color: #bdc3c7; }
         body.dark-mode { --bg-color: #121212; --text-color: #e0e0e0; --box-bg: #1e1e1e; --box-shadow: rgba(255,255,255,0.05); --head-color: #f39c12; --border-color: #444; }
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 20px; background-color: var(--bg-color); color: var(--text-color); transition: all 0.3s ease; margin: 0; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 20px; background-color: var(--bg-color); color: var(--text-color); transition: background-color 0.3s ease, color 0.3s ease; margin: 0; }
         
         .container { max-width: 900px; margin: 0 auto; padding-top: 70px; }
         .section { margin-bottom: 20px; background: var(--box-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px var(--box-shadow); }
@@ -36,105 +37,124 @@
         .view { display: none; }
         .view.active { display: block; }
 
-        /* ====== 問題リスト・印刷用のデザイン ====== */
-        .q-row { font-size: 20px; font-weight: bold; margin-bottom: 10px; }
-        .workspace { height: 4.5em; /* 約3行分の空きスペース */ }
-        .ans-inline { display: none; color: #e74c3c; margin-left: 20px; font-size: 20px; font-weight: bold; }
+        /* ====== 問題・計算・グラフ用デザイン ====== */
+        .q-row { font-size: 18px; font-weight: bold; margin-bottom: 5px; padding-top: 15px; }
+        .workspace { height: 5em; border-bottom: 1px dashed var(--border-color); } /* 途中式を書くスペース＆区切り線 */
+        .ans-inline { display: none; color: #e74c3c; margin-left: 20px; font-size: 18px; font-weight: bold; }
         body.dark-mode .ans-inline { color: #ff6b6b; }
         
         #generate-btn { background-color: #e67e22; color: white; font-size: 20px; padding: 15px 40px; display: block; margin: 25px auto; border-radius: 30px; width: 100%; max-width: 400px; }
 
+        table.hyakumasu { width: 100%; border-collapse: collapse; margin-top: 20px; text-align: center; font-size: 20px; font-weight: bold; }
+        table.hyakumasu th, table.hyakumasu td { border: 2px solid var(--border-color); padding: 10px; width: 9%; }
+        table.hyakumasu th { background-color: #3498db; color: white; }
+        .chart-container { position: relative; height: 350px; width: 100%; margin-bottom: 20px; }
+
+        /* ====== 🖨️ 印刷用CSS（真っ白バグ修正版） ====== */
         @media print {
-            body { background: white; color: black; font-size: 14px; }
-            .no-print { display: none !important; }
-            .print-only { display: block !important; }
-            .q-row { font-size: 16px; margin-bottom: 5px; }
-            .workspace { height: 4em; } /* 印刷時もスペースを確保 */
-            h1, h2, h3 { color: black !important; }
-            * { box-shadow: none !important; }
-            /* 答えを印刷時に出したくない場合は表示制御 */
-            .ans-inline { color: black; } 
+            body { background: white; color: black; padding: 0; margin: 0; }
+            /* 印刷時に消したいものだけを指定 */
+            header, #sidebar, .no-print, #view-main, #view-stats { display: none !important; }
+            
+            .container { padding-top: 0; }
+            .section { box-shadow: none; border: none; padding: 0; background: transparent; }
+            
+            /* 問題のレイアウト */
+            #quiz-title { font-size: 22px; text-align: center; margin-bottom: 15px; border: none; }
+            .q-row { font-size: 14px; margin-bottom: 2px; padding-top: 5px; page-break-inside: avoid; }
+            .workspace { height: 4em; border-bottom: 1px dashed #ccc; margin-bottom: 10px; }
+            .ans-inline { display: none !important; } /* 印刷時は答えを強制非表示 */
         }
-        .print-only { display: none; }
     </style>
 </head>
 <body>
 
-<div class="no-print">
-    <header>
-        <button class="menu-btn" onclick="toggleMenu()">≡</button>
-        <div style="font-weight:bold; font-size:18px;">📚 AI問題メーカー</div>
-        <button class="btn" style="margin-left:auto; background:#34495e; color:white;" onclick="toggleDarkMode()">🌙 色変更</button>
-    </header>
+<!-- ヘッダー -->
+<header>
+    <button class="menu-btn" onclick="toggleMenu()">≡</button>
+    <div style="font-weight:bold; font-size:18px;">📚 AI問題メーカー</div>
+    <button class="btn" style="margin-left:auto; background:#34495e; color:white;" onclick="toggleDarkMode()">🌙 色変更</button>
+</header>
 
-    <div id="sidebar">
-        <div onclick="toggleMenu()" style="text-align:right; padding:10px; cursor:pointer;">✕</div>
-        <div class="nav-item" onclick="switchView('main')">📖 勉強・テスト作成</div>
-        <div class="nav-item" onclick="switchView('hyakumasu')">🧮 百ます計算</div>
-        <div class="nav-item" onclick="switchView('stats')">📊 成績・グラフ</div>
+<!-- サイドバー -->
+<div id="sidebar">
+    <div onclick="toggleMenu()" style="text-align:right; padding:10px; cursor:pointer;">✕</div>
+    <div class="nav-item" onclick="switchView('main')">📖 勉強・テスト作成</div>
+    <div class="nav-item" onclick="switchView('hyakumasu')">🧮 百ます計算</div>
+    <div class="nav-item" onclick="switchView('stats')">📊 成績・グラフ</div>
+</div>
+
+<div class="container">
+    <!-- ================= 設定画面 ================= -->
+    <div id="view-main" class="view active">
+        <div class="section">
+            <h3>🎒 学年・検定を選ぶ</h3>
+            <button class="btn grade-btn active" onclick="selectGrade('中一', this)">中一</button>
+            <button class="btn grade-btn" disabled>中二</button>
+            <button class="btn grade-btn" disabled>中三</button>
+            <button class="btn grade-btn" onclick="selectGrade('検定', this)">検定</button>
+        </div>
+        <div class="section">
+            <h3>📚 教科を選ぶ</h3>
+            <div id="subj-container"></div>
+        </div>
+        <div class="section">
+            <h3>🎯 単元を選ぶ</h3>
+            <div id="unit-container"></div>
+        </div>
+        <div class="section" id="count-section">
+            <h3>🔢 問題数を選ぶ</h3>
+            <div id="count-container">
+                <button class="btn count-btn active" onclick="selectCount(15, this)">15問</button>
+                <button class="btn count-btn" onclick="selectCount(30, this)">30問</button>
+                <button class="btn count-btn" onclick="selectCount(45, this)">45問</button>
+                <button class="btn count-btn" onclick="selectCount(60, this)">60問</button>
+                <button class="btn count-btn" onclick="selectCount(75, this)">75問</button>
+                <button class="btn count-btn" onclick="selectCount(90, this)">90問</button>
+                <button class="btn count-btn" onclick="selectCount(105, this)">105問</button>
+                <button class="btn count-btn" onclick="selectCount(120, this)">120問</button>
+                <button class="btn count-btn" onclick="selectCount(135, this)">135問</button>
+                <button class="btn count-btn" onclick="selectCount(150, this)">150問</button>
+            </div>
+        </div>
+        <button id="generate-btn" onclick="generateProblemList()">一気に問題を作成する！</button>
     </div>
 
-    <div class="container">
-        <!-- ================= 設定画面 ================= -->
-        <div id="view-main" class="view active">
-            <div class="section">
-                <h3>🎒 学年・検定を選ぶ</h3>
-                <button class="btn grade-btn active" onclick="selectGrade('中一', this)">中一</button>
-                <button class="btn grade-btn" disabled>中二</button>
-                <button class="btn grade-btn" disabled>中三</button>
-                <button class="btn grade-btn" onclick="selectGrade('検定', this)">検定</button>
-            </div>
-            
-            <div class="section">
-                <h3>📚 教科を選ぶ</h3>
-                <div id="subj-container"></div>
-            </div>
-            
-            <div class="section">
-                <h3>🎯 単元を選ぶ (無限生成対応✨)</h3>
-                <div id="unit-container"></div>
-            </div>
-
-            <div class="section" id="count-section">
-                <h3>🔢 問題数を選ぶ</h3>
-                <div id="count-container">
-                    <button class="btn count-btn active" onclick="selectCount(15, this)">15問</button>
-                    <button class="btn count-btn" onclick="selectCount(30, this)">30問</button>
-                    <button class="btn count-btn" onclick="selectCount(45, this)">45問</button>
-                    <button class="btn count-btn" onclick="selectCount(60, this)">60問</button>
-                    <button class="btn count-btn" onclick="selectCount(75, this)">75問</button>
-                    <button class="btn count-btn" onclick="selectCount(90, this)">90問</button>
-                    <button class="btn count-btn" onclick="selectCount(105, this)">105問</button>
-                    <button class="btn count-btn" onclick="selectCount(120, this)">120問</button>
-                    <button class="btn count-btn" onclick="selectCount(135, this)">135問</button>
-                    <button class="btn count-btn" onclick="selectCount(150, this)">150問</button>
-                </div>
-            </div>
-
-            <button id="generate-btn" onclick="generateProblemList()">一気に問題を作成する！</button>
+    <!-- ================= 問題リスト画面 ================= -->
+    <div id="view-quiz" class="view">
+        <h2 id="quiz-title" style="border-left: 5px solid #3498db; padding-left: 10px;"></h2>
+        <!-- 問題がここに追加される -->
+        <div class="section" id="problem-list" style="background: var(--box-bg);"></div>
+        
+        <!-- 下部の固定ボタン（印刷時は no-print で消える） -->
+        <div class="section no-print" style="text-align: center; position: sticky; bottom: 20px; box-shadow: 0 -4px 10px rgba(0,0,0,0.1);">
+            <button class="btn" style="background:#e74c3c; color:white; font-size:18px; padding:15px; width:45%;" onclick="toggleAnswers()">👀 答えを見る</button>
+            <button class="btn" style="background:#95a5a6; color:white; font-size:18px; padding:15px; width:45%;" onclick="window.print()">🖨️ 印刷する</button>
+            <button class="btn" style="background:#34495e; color:white; width:92%; margin-top:10px;" onclick="switchView('main')">終了して戻る</button>
         </div>
+    </div>
 
-        <!-- ================= 問題リスト画面 ================= -->
-        <div id="view-quiz" class="view">
-            <h2 id="quiz-title" style="border-left: 5px solid #3498db; padding-left: 10px;"></h2>
-            <div class="section" id="problem-list" style="background: var(--box-bg);"></div>
-            
-            <!-- 下部の固定ボタン -->
-            <div class="section" style="text-align: center; position: sticky; bottom: 20px; box-shadow: 0 -4px 10px rgba(0,0,0,0.1);">
-                <button class="btn" style="background:#e74c3c; color:white; font-size:18px; padding:15px; width:45%;" onclick="toggleAnswers()">👀 答えを見る</button>
-                <button class="btn" style="background:#95a5a6; color:white; font-size:18px; padding:15px; width:45%;" onclick="window.print()">🖨️ 印刷する</button>
-                <button class="btn" style="background:#34495e; color:white; width:92%; margin-top:10px;" onclick="switchView('main')">終了して戻る</button>
-            </div>
+    <!-- ================= 百ます計算 ================= -->
+    <div id="view-hyakumasu" class="view">
+        <h1 class="no-print">🧮 百ます掛け算</h1>
+        <div class="section">
+            <p class="no-print">タイマーをセットしてタイムを計ろう！印刷して使うのもおすすめです。</p>
+            <button class="btn no-print" style="background:#2ecc71; color:white;" onclick="generateHyakumasu()">🔄 数字をシャッフル</button>
+            <button class="btn no-print" style="background:#95a5a6; color:white;" onclick="window.print()">🖨️ 印刷する</button>
+            <div id="hyakumasu-container" style="overflow-x: auto;"></div>
         </div>
+    </div>
 
-        <!-- ================= 百ます計算・成績グラフ ================= -->
-        <div id="view-hyakumasu" class="view">
-            <h1>🧮 百ます掛け算</h1>
-            <p>※準備中（前の機能をそのまま移植して使えます！）</p>
+    <!-- ================= 成績グラフ ================= -->
+    <div id="view-stats" class="view">
+        <h1 class="no-print">📊 あなたの頑張りデータ</h1>
+        <div class="section">
+            <h3>📅 今日と今週の勉強数</h3>
+            <div class="chart-container"><canvas id="barChart"></canvas></div>
         </div>
-        <div id="view-stats" class="view">
-            <h1>📊 成績グラフ</h1>
-            <p>※準備中</p>
+        <div class="section">
+            <h3>🌟 全体のステータス (教科別)</h3>
+            <div class="chart-container"><canvas id="radarChart"></canvas></div>
         </div>
     </div>
 </div>
@@ -144,13 +164,13 @@
     const syllabus = {
         "中一": {
             "英語": ["文法とやり方", "be動詞", "一般動詞"],
-            "数学": ["正負の数", "文字式", "方程式", "変化と対応", "平面図形", "空中図形", "データの活用"],
-            "国語": ["中1で習う漢字", "中1で習う文法（解説のみ）", "文法の使い方"],
-            "理科": ["花の作り", "子葉葉根", "動物の体の作りと生活", "身近な大地の変動", "物質の区別", "気体の区別", "小数の計算", "百分率（％）", "光の進み方", "学年のまとめ"]
+            "数学": ["正負の数", "文字式", "方程式", "変化と対応", "平面図形", "空間図形", "データの活用"],
+            "国語": ["中1で習う漢字", "中1で習う文法"],
+            "理科": ["植物の体の作り", "大地の変動", "物質の区別", "光・音・力", "小数の計算", "百分率（％）", "学年のまとめ"]
         },
         "検定": {
-            "国語": ["漢検4級の漢字"],
-            "数学": ["数検5級の計算"],
+            "国語": ["漢検4級", "漢検5級"],
+            "数学": ["数検5級"],
             "英語": ["英検4級", "英検5級"],
             "理科": ["理検5級"],
             "社会": ["社検5級"]
@@ -163,9 +183,13 @@
     let selectedCount = 15;
     let answersVisible = false;
 
+    // 成績データの読み込み
+    let userStats = JSON.parse(localStorage.getItem('stats')) || { math: 0, eng: 0, jpn: 0, sci: 0, soc: 0, today: 0, week: 0 };
+
     window.onload = () => {
         if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
         renderMenus();
+        generateHyakumasu(); // 初期起動時に百ます計算を作っておく
     };
 
     function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
@@ -178,6 +202,7 @@
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById(`view-${id}`).classList.add('active');
         toggleMenu();
+        if (id === 'stats') drawCharts();
     }
 
     function selectGrade(g, btn) {
@@ -217,40 +242,107 @@
         });
     }
 
-    // ===== 無限ランダム問題生成エンジン =====
+    // ===== 便利なランダム関数 =====
+    const randObj = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const randNum = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+    // ===== 5教科完全対応！ 超強化版問題生成エンジン =====
     function createQuestion(subj, unit) {
+        // --- 📊 数学 / 数検 ---
         if(subj === '数学') {
-            if(unit === '正負の数') {
-                let a = Math.floor(Math.random()*20)-10; 
-                let b = Math.floor(Math.random()*20)-10;
+            if(unit.includes('正負の数')) {
+                let a = randNum(-20, 20); let b = randNum(-20, 20);
                 let op = Math.random() > 0.5 ? '+' : '-';
-                
-                // 見た目を綺麗にフォーマット (例: +3 - 8, -5 + -2 など)
-                let strA = a > 0 ? `+${a}` : `${a}`;
-                let strB = b < 0 ? `(${b})` : `${b}`;
-                let ans = op === '+' ? a + b : a - b;
-                
-                return { q: `${strA} ${op} ${strB}`, a: `${ans}` };
+                let strA = a > 0 ? `+${a}` : `${a}`; let strB = b < 0 ? `(${b})` : `${b}`;
+                return { q: `${strA} ${op} ${strB}`, a: `${op === '+' ? a + b : a - b}` };
             }
-            if(unit === '文字式') {
-                let a = Math.floor(Math.random()*9)+2; let b = Math.floor(Math.random()*9)+2;
+            if(unit.includes('文字式')) {
+                let a = randNum(2, 15); let b = randNum(2, 15);
                 return { q: `${a}x + ${b}x`, a: `${a+b}x` };
             }
-            if(unit === '方程式') {
-                let x = Math.floor(Math.random()*10)+1; let a = Math.floor(Math.random()*5)+2; let b = Math.floor(Math.random()*20);
+            if(unit.includes('方程式')) {
+                let x = randNum(1, 10); let a = randNum(2, 6); let b = randNum(1, 20);
                 return { q: `${a}x + ${b} = ${(a * x) + b}`, a: `x = ${x}` };
             }
-        }
-        if(subj === '理科' && unit === '小数の計算') {
-            let a = (Math.random()*10).toFixed(1); let b = (Math.random()*10).toFixed(1);
-            return { q: `${a} + ${b}`, a: `${(parseFloat(a)+parseFloat(b)).toFixed(1)}` };
+            if(unit.includes('数検5級') || unit.includes('変化と対応')) {
+                let type = randNum(1, 4);
+                if (type === 1) return { q: `次の分数の計算をしなさい: 1/3 + 1/4`, a: `7/12` };
+                if (type === 2) return { q: `次の小数の計算をしなさい: ${randNum(2,9)}.${randNum(1,9)} × 100`, a: "小数点を右に2つずらす" };
+                if (type === 3) return { q: `次の比例式を解きなさい: 5/7 : 6 = x : 42`, a: `x = 5` };
+                if (type === 4) return { q: `次の計算をしなさい: ${randNum(2,8)} × ( ${randNum(3,9)} + ${randNum(2,5)} )`, a: "カッコの中から先に計算" };
+            }
+            return { q: `【${unit}】 公式を使って面積や体積を求めなさい。(例題)`, a: "公式を復習しよう" };
         }
         
-        // それ以外はテキスト問題
-        return { q: `【${unit}】の重要語句を答えなさい。`, a: "（ノートで確認）" };
+        // --- 🧪 理科 / 理検 ---
+        if(subj === '理科') {
+            if(unit === '小数の計算') {
+                let a = (Math.random()*10).toFixed(1); let b = (Math.random()*10).toFixed(1);
+                return { q: `${a} + ${b} を計算しなさい。`, a: `${(parseFloat(a)+parseFloat(b)).toFixed(1)}` };
+            }
+            if(unit === '百分率（％）') {
+                let water = randNum(50, 200); let salt = randNum(10, 50);
+                let pct = Math.round((salt / (water + salt)) * 100);
+                return { q: `水${water}gに食塩${salt}gを溶かした。質量パーセント濃度は約何％？`, a: `${pct}％` };
+            }
+            const sciTrivia = [
+                {q: "顕微鏡で観察するとき、最初に対物レンズは低倍率・高倍率のどちらにする？", a: "低倍率"},
+                {q: "植物が光を受けて栄養分を作る働きを何という？", a: "光合成"},
+                {q: "マグマが急に冷えて固まった岩石を何という？", a: "火山岩"},
+                {q: "水溶液に溶けている物質のことを何という？", a: "溶質"},
+                {q: "音の高さは、波の何によって決まるか？", a: "振動数"},
+                {q: "地震の揺れを伝える波のうち、先に届く速い波を何という？", a: "P波"},
+                {q: "質量100gの物体にはたらく重力の大きさは約何N（ニュートン）？", a: "1N"}
+            ];
+            return randObj(sciTrivia);
+        }
+        
+        // --- 🔤 英語 / 英検 ---
+        if(subj === '英語') {
+            const engPool = [
+                {q: "「私は中学生です」を英語にしなさい。", a: "I am a junior high school student."},
+                {q: "「あなたは毎日ピアノを弾きますか」を英語にしなさい。", a: "Do you play the piano every day?"},
+                {q: "「彼女はテニスをしません」を英語にしなさい。", a: "She doesn't play tennis."},
+                {q: "「これは誰のカバンですか」を英語にしなさい。", a: "Whose bag is this?"},
+                {q: "「私は昨日、公園へ行きました」を英語にしなさい。", a: "I went to the park yesterday."},
+                {q: "「彼は私の兄ではありません」を英語にしなさい。", a: "He is not my brother."},
+                {q: "「あなたは朝食に何を食べますか」を英語にしなさい。", a: "What do you have for breakfast?"}
+            ];
+            return randObj(engPool);
+        }
+        
+        // --- 📖 国語 / 漢検 ---
+        if(subj === '国語') {
+            const jpnPool = [
+                {q: "次の漢字の読みをひらがなで答えなさい：「対象」", a: "たいしょう"},
+                {q: "次のカタカナを漢字に直しなさい：「学校のテイシュツ物を出す」", a: "提出"},
+                {q: "次のカタカナを漢字に直しなさい：「植物をカンサツする」", a: "観察"},
+                {q: "「悲しい」の品詞は何ですか？", a: "形容詞"},
+                {q: "「静かだ」の品詞は何ですか？", a: "形容動詞"},
+                {q: "「歩く」の品詞は何ですか？", a: "動詞"},
+                {q: "主語と述語の関係になっている文節を探しなさい：「私は / 全力で / 走る」", a: "私は 走る"}
+            ];
+            return randObj(jpnPool);
+        }
+        
+        // --- 🌍 社会 / 社検 ---
+        if(subj === '社会') {
+            const socPool = [
+                {q: "日本で一番面積が広い都道府県はどこですか？", a: "北海道"},
+                {q: "日本の最南端にある島はどこですか？", a: "沖ノ鳥島"},
+                {q: "世界で一番人口が多い国はどこですか？(2023年時点)", a: "インド"},
+                {q: "アメリカ合衆国の首都はどこですか？", a: "ワシントンD.C."},
+                {q: "地球の表面の約何割が海ですか？", a: "約7割"},
+                {q: "県庁所在地が「名古屋市」である県はどこですか？", a: "愛知県"},
+                {q: "日本の三大平野のうち、関東地方にある平野を何という？", a: "関東平野"}
+            ];
+            return randObj(socPool);
+        }
+        
+        return { q: `【${unit}】の基本問題を解きなさい。`, a: "（ノートで確認）" };
     }
 
-    // ===== 問題一括生成ロジック =====
+    // ===== 問題一括生成 & 成績記録 =====
     function generateProblemList() {
         const listDiv = document.getElementById('problem-list');
         listDiv.innerHTML = '';
@@ -258,14 +350,12 @@
 
         for(let i = 1; i <= selectedCount; i++) {
             let qData = createQuestion(currentSubj, currentUnit);
-            
-            // 1問ごとのHTMLを生成
             let html = `
                 <div class="q-row">
                     (${i}) &nbsp;&nbsp; ${qData.q} 
                     <span class="ans-inline">正解：${qData.a}</span>
                 </div>
-                <div class="workspace"></div> <!-- 途中式用の3行スペース -->
+                <div class="workspace"></div>
             `;
             listDiv.innerHTML += html;
         }
@@ -274,14 +364,65 @@
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById('view-quiz').classList.add('active');
         window.scrollTo(0,0);
+        
+        // 成績データの記録
+        let key = 'soc';
+        if(currentSubj==='数学') key = 'math'; if(currentSubj==='英語') key = 'eng';
+        if(currentSubj==='国語') key = 'jpn'; if(currentSubj==='理科') key = 'sci';
+        userStats[key] += selectedCount;
+        userStats.today += selectedCount;
+        userStats.week += selectedCount;
+        localStorage.setItem('stats', JSON.stringify(userStats)); // キャッシュに安全保存
     }
 
     // ===== 答えの表示切替 =====
     function toggleAnswers() {
         answersVisible = !answersVisible;
         const answers = document.querySelectorAll('.ans-inline');
-        answers.forEach(ans => {
-            ans.style.display = answersVisible ? 'inline' : 'none';
+        answers.forEach(ans => { ans.style.display = answersVisible ? 'inline' : 'none'; });
+    }
+
+    // ===== 🧮 百ます計算エンジン =====
+    function generateHyakumasu() {
+        // 配列をシャッフルする
+        let top = [1,2,3,4,5,6,7,8,9].sort(() => Math.random() - 0.5);
+        let side = [1,2,3,4,5,6,7,8,9].sort(() => Math.random() - 0.5);
+        
+        let html = '<table class="hyakumasu"><tr><th>×</th>';
+        top.forEach(n => html += `<th>${n}</th>`);
+        html += '</tr>';
+        
+        side.forEach(s => {
+            html += `<tr><th>${s}</th>`;
+            top.forEach(t => html += `<td></td>`);
+            html += '</tr>';
+        });
+        html += '</table>';
+        
+        document.getElementById('hyakumasu-container').innerHTML = html;
+    }
+
+    // ===== 📊 成績グラフ描画エンジン =====
+    let bChart, rChart;
+    function drawCharts() {
+        if(bChart) bChart.destroy();
+        if(rChart) rChart.destroy();
+
+        // 棒グラフ（今日・今週）
+        bChart = new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: { labels: ['今日', '今週'], datasets: [{ label: '解いた問題数', data: [userStats.today, userStats.week], backgroundColor: ['#3498db', '#2ecc71'] }] },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // レーダーチャート（教科別ステータス）
+        rChart = new Chart(document.getElementById('radarChart'), {
+            type: 'radar',
+            data: {
+                labels: ['数学', '英語', '国語', '理科', '社会・検定'],
+                datasets: [{ label: 'ステータス', data: [userStats.math, userStats.eng, userStats.jpn, userStats.sci, userStats.soc], backgroundColor: 'rgba(52, 152, 219, 0.4)', borderColor: '#3498db', pointBackgroundColor: '#e74c3c' }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, ticks: { display: false } } } }
         });
     }
 </script>
