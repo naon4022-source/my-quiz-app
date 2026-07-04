@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>AI問題メーカー - ワーク完全連動版</title>
+    <style>
+        :root { --bg-color: #f5f7fa; --text-color: #333; --box-bg: white; --box-shadow: rgba(0,0,0,0.05); --head-color: #2c3e50; --border-color: #bdc3c7; }
+        body.dark-mode { --bg-color: #121212; --text-color: #e0e0e0; --box-bg: #1e1e1e; --box-shadow: rgba(255,255,255,0.05); --head-color: #f39c12; --border-color: #444; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 20px; background-color: var(--bg-color); color: var(--text-color); transition: all 0.3s ease; }
+        h1 { color: var(--head-color); text-align: center; margin-bottom: 30px; }
+        .section { margin-bottom: 20px; background: var(--box-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px var(--box-shadow); }
+        h3 { margin-top: 0; border-left: 4px solid #3498db; padding-left: 10px; }
+        
+        .btn { padding: 10px 18px; margin: 5px; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.2s; }
+        .mode-btn { background-color: #ecf0f1; border: 2px solid #bdc3c7; }
+        .mode-btn.active { background-color: #e74c3c; color: white; border-color: #e74c3c; transform: scale(1.05); }
+        .grade-btn { background-color: #95a5a6; color: white; }
+        .grade-btn.active { background-color: #34495e; transform: scale(1.05); }
+        .subj-btn { background-color: var(--box-bg); border: 2px solid var(--border-color); }
+        .subj-btn.active { background-color: #2ecc71; color: white; border-color: #2ecc71; }
+        .unit-btn { background-color: var(--box-bg); border: 1px solid var(--border-color); }
+        .unit-btn.active { background-color: #9b59b6; color: white; border-color: #9b59b6; }
+        .count-btn { background-color: var(--box-bg); border: 1px solid var(--border-color); }
+        .count-btn.active { background-color: #e74c3c; color: white; border-color: #e74c3c; }
+
+        #generate-btn { background-color: #e67e22; color: white; font-size: 20px; padding: 12px 40px; display: block; margin: 25px auto; border-radius: 30px; }
+        .work-card { background: var(--box-bg); border: 2px solid #3498db; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 8px var(--box-shadow); }
+        .work-q { font-size: 18px; font-weight: bold; margin-bottom: 15px; line-height: 1.4; }
+        .choice-btn { display: block; width: 100%; text-align: left; padding: 12px; margin-bottom: 10px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; font-size: 16px; cursor: pointer; transition: all 0.2s; }
+        .choice-btn:hover { background: #e0f7fa; color: #333; }
+        .choice-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+        .feedback-area { margin-top: 15px; padding: 15px; border-radius: 8px; display: none; font-size: 16px; font-weight: bold; }
+        .feedback-area.correct { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; display: block; }
+        .feedback-area.incorrect { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; display: block; }
+        .exp-text { margin-top: 10px; font-weight: normal; color: #333; font-size: 15px; border-top: 1px dashed #ccc; padding-top: 10px; }
+
+        @media screen and (max-width: 600px) {
+            body { padding: 10px; }
+            #generate-btn { width: 100%; font-size: 18px; padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="no-print">
+    <h1>📚 AI問題メーカー ＆ ワークモード</h1>
+
+    <div class="section" style="background-color: #fff3e0;">
+        <h3 style="border-left-color: #e67e22;">🔄 モードを選ぶ</h3>
+        <button class="btn mode-btn active" onclick="selectMode('normal', this)">📝 普通モード（AI自動生成）</button>
+        <button class="btn mode-btn" onclick="selectMode('work', this)">📖 ワークモード（4択＆解説付）</button>
+    </div>
+
+    <div id="settings-area">
+        <div class="section">
+            <h3>🎒 学年を選ぶ</h3>
+            <button class="btn grade-btn active" onclick="selectGrade(1, this)">中学1年</button>
+            <button class="btn grade-btn" onclick="selectGrade(2, this)">中学2年</button>
+            <button class="btn grade-btn" onclick="selectGrade(3, this)">中学3年</button>
+        </div>
+
+        <div class="section">
+            <h3>📚 教科を選ぶ</h3>
+            <button class="btn subj-btn active" onclick="selectSubj('math', this)">数学</button>
+            <button class="btn subj-btn" onclick="selectSubj('eng', this)">英語</button>
+        </div>
+
+        <div class="section" id="unit-section">
+            <h3>🎯 単元を選ぶ (複数選択OK)</h3>
+            <div id="unit-container"></div>
+        </div>
+
+        <div class="section" id="count-section">
+            <h3>🔢 問題数を選ぶ (普通モード用)</h3>
+            <div id="count-container">
+                <button class="btn count-btn active" onclick="selectCount(10, this)">10問</button>
+                <button class="btn count-btn" onclick="selectCount(20, this)">20問</button>
+                <button class="btn count-btn" onclick="selectCount(30, this)">30問</button>
+                <button class="btn count-btn" onclick="selectCount(40, this)">40問</button>
+                <button class="btn count-btn" onclick="selectCount(50, this)">50問</button>
+            </div>
+        </div>
+    </div>
+
+    <button id="generate-btn" onclick="generate()">問題を作成する！</button>
+</div>
+
+<div id="output-section" class="section" style="display: none;">
+    <div id="problem-list"></div>
+</div>
+
+<script>
+    let currentMode = 'normal';
+    let currentGrade = 1, currentSubj = 'math', selectedUnits = [], selectedCount = 10;
+
+    function selectMode(mode, btn) {
+        currentMode = mode;
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('count-section').style.opacity = mode === 'work' ? '0.4' : '1';
+    }
+
+    const menus = {
+        1: { 
+            math: ['正負の数', '文字式', '1次方程式'], 
+            eng: ['Lesson 1', 'Lesson 2', 'Lesson 3', 'Lesson 4', 'Lesson 5', 'Lesson 6', 'Lesson 7', 'Lesson 8', 'Lesson 9']
+        },
+        2: { math: [], eng: [] }, 
+        3: { math: [], eng: [] }
+    };
+
+    // ★学校のワークに完全準拠した王道の例文データベース
+    const workDB = {
+        eng: {
+            'Lesson 1': [
+                { q: "「私は学生です」にあう英文はどれ？", choices: ["I is a student.", "I am a student.", "I are a student.", "I do a student."], ans: 1, exp: "主語が I のとき、be動詞は am を使います。" },
+                { q: "「あなたはテニス選手ですか」にあう英文になるように並べ替えよう。<br>( you / a / are / tennis player )?", choices: ["Are you a tennis player?", "You are a tennis player?", "Are a tennis player you?", "Do you a tennis player?"], ans: 0, exp: "be動詞の疑問文は、主語(you)の前に be動詞(Are)を出します。" },
+                { q: "「私はカナダ出身ではありません」にあう英文はどれ？", choices: ["I am not from Canada.", "I don't from Canada.", "I doesn't from Canada.", "I no from Canada."], ans: 0, exp: "be動詞の否定文は be動詞の後ろに not を置きます。" },
+                { q: "「私は野球をしません」にあう英文はどれ？", choices: ["I am not play baseball.", "I don't play baseball.", "I doesn't play baseball.", "I no play baseball."], ans: 1, exp: "一般動詞(play)の否定文は、動詞の前に don't を置きます。" },
+                { q: "「あなたはリンゴが好きですか」にあう英文はどれ？", choices: ["Are you like apples?", "Do you like apples?", "Is you like apples?", "Does you like apples?"], ans: 1, exp: "一般動詞(like)の疑問文は Do you ~? で始めます。" }
+            ],
+            'Lesson 2': [
+                { q: "「これはあなたのペンですか」にあう英文はどれ？", choices: ["This is your pen?", "Is this your pen?", "Are this your pen?", "Do this your pen?"], ans: 1, exp: "「これは〜ですか」という疑問文は Is this ~? で始めます。" },
+                { q: "「あなたは何のスポーツが好きですか」にあう英文の（ ）に入る語は？<br>(  ) sport do you like?", choices: ["How", "Who", "When", "What"], ans: 3, exp: "「何の〜」と尋ねる時は What + 名詞 を使います。" },
+                { q: "「あの少年は誰ですか」にあう英文の（ ）に入る語は？<br>(  ) is that boy?", choices: ["What", "Who", "Where", "When"], ans: 1, exp: "「誰」と人を尋ねる疑問詞は Who を使います。" },
+                { q: "「図書館はどこですか」にあう英文の（ ）に入る語は？<br>(  ) is the library?", choices: ["What", "Where", "When", "How"], ans: 1, exp: "「どこ」と場所を尋ねる時は Where を使います。" },
+                { q: "「コンサートはいつですか」にあう英文の（ ）に入る語は？<br>(  ) is the concert?", choices: ["Where", "What", "Who", "When"], ans: 3, exp: "時や日にちを尋ねる疑問詞は When を使います。" }
+            ],
+            'Lesson 3': [
+                { q: "「私たちは昨日、テニスをしました」にあう英文はどれ？", choices: ["We play tennis yesterday.", "We played tennis yesterday.", "We are playing tennis yesterday.", "We playing tennis yesterday."], ans: 1, exp: "昨日(yesterday)のことなので、動詞の過去形(played)を使います。" },
+                { q: "「あなたは昨日、家にいましたか」にあう英文になるように選ぼう。<br>( Were / Was ) you at home yesterday?", choices: ["Were", "Was", "Are", "Is"], ans: 0, exp: "主語がyouのときのbe動詞の過去形は were を使います。" },
+                { q: "「私は昨日、英語を勉強しませんでした」にあう英文になるように選ぼう。<br>I (  ) study English yesterday.", choices: ["don't", "am not", "didn't", "wasn't"], ans: 2, exp: "一般動詞の過去の否定文は didn't (did not) を使います。" },
+                { q: "「あなたは昨夜、テレビを見ましたか」にあう英文はどれ？", choices: ["Do you watch TV last night?", "Are you watch TV last night?", "Did you watch TV last night?", "Were you watch TV last night?"], ans: 2, exp: "一般動詞の過去の疑問文は Did を使います。" },
+                { q: "「彼女は新しい本を買いました」にあう英文の（ ）に入る語は？<br>She (  ) a new book.", choices: ["buy", "buys", "buyed", "bought"], ans: 3, exp: "buy（買う）の過去形は不規則変化の bought です。" }
+            ],
+            'Lesson 4': [
+                { q: "「ケンは音楽が好きです」にあう英文になるように選ぼう。<br>Ken ( like / likes ) music.", choices: ["like", "likes", "is like", "liking"], ans: 1, exp: "主語が3人称単数(Ken)の現在形では、動詞にs(es)をつけます。" },
+                { q: "「あなたのお兄さんはサッカーをしますか」にあう英文になるように選ぼう。<br>( Do / Does ) your brother play soccer?", choices: ["Do", "Does", "Is", "Are"], ans: 1, exp: "主語が3人称単数のときの一般動詞の疑問文は Does で始めます。" },
+                { q: "「彼女は数学が好きではありません」にあう英文の（ ）に入る語は？<br>She (  ) like math.", choices: ["don't", "isn't", "doesn't", "not"], ans: 2, exp: "主語が3人称単数のときの一般動詞の否定文は doesn't を使います。" },
+                { q: "「彼は毎日学校へ行きます」にあう英文の（ ）に入る語は？<br>He (  ) to school every day.", choices: ["go", "goes", "going", "went"], ans: 1, exp: "goのようにoで終わる動詞の3人称単数形は es をつけます。" },
+                { q: "「私の母は車を持っています」にあう英文の（ ）に入る語は？<br>My mother (  ) a car.", choices: ["have", "haves", "has", "having"], ans: 2, exp: "have の3人称単数形は不規則変化の has です。" }
+            ],
+            'Lesson 5': [
+                { q: "「私は今、本を読んでいます」にあう英文になるように選ぼう。<br>I ( am / is ) reading a book now.", choices: ["are", "is", "am", "do"], ans: 2, exp: "現在進行形は「be動詞＋動詞ing形」。主語がIなので am です。" },
+                { q: "「彼らは走っていますか」にあう英文になるように選ぼう。<br>( Do / Are ) they running?", choices: ["Do", "Did", "Are", "Is"], ans: 2, exp: "進行形の疑問文なので、be動詞(Are)を主語の前に出します。" },
+                { q: "「あなたは何をしているのですか」にあう英文になるように並べ替えよう。<br>( you / are / what / doing )?", choices: ["What are you doing?", "What do you doing?", "Are you what doing?", "What doing you are?"], ans: 0, exp: "進行形の疑問文なので、疑問詞Whatのあとに are you ~ と続きます。" },
+                { q: "「彼女は手紙を書いています」にあう英文の（ ）に入る語は？<br>She is (  ) a letter.", choices: ["write", "writes", "writeing", "writing"], ans: 3, exp: "eで終わる動詞は、eをとってingをつけます(writing)。" },
+                { q: "「今、雨が降っています」にあう英文はどれ？", choices: ["It rains now.", "It is raining now.", "It rain now.", "It rained now."], ans: 1, exp: "天気を表す現在進行形は It is raining ~ で表します。" }
+            ],
+            'Lesson 6': [
+                { q: "「あなたはどの教科が好きですか」にあう英文になるように選ぼう。<br>( When / Which ) subject do you like?", choices: ["When", "Who", "Which", "How"], ans: 2, exp: "「どの〜」とたずねるときは Which を使います。" },
+                { q: "「あなたはなぜ理科が好きなのですか」にあう英文になるように選ぼう。<br>( Why / Which ) do you like science?", choices: ["Who", "What", "Why", "How"], ans: 2, exp: "理由をたずねるときは Why を使います。" },
+                { q: "「私は彼女を知っています」の（ ）に入る正しい代名詞は？<br>I know (  ).", choices: ["she", "her", "hers", "he"], ans: 1, exp: "動詞のあとにくる代名詞は、目的格(her)を使います。" },
+                { q: "「あの自転車は誰のものですか」<br>(  ) bike is that?", choices: ["Who", "Whose", "What", "Which"], ans: 1, exp: "「誰のもの」と持ち主をたずねるときは Whose を使います。" },
+                { q: "「私たちは彼が大好きです」<br>We like (  ) very much.", choices: ["he", "his", "him", "he's"], ans: 2, exp: "動詞の目的語になる代名詞は目的格(him)を使います。" }
+            ],
+            'Lesson 7': [
+                { q: "「私たちは部屋を掃除すべきです」<br>We (  ) clean the room.", choices: ["should", "can", "have", "will"], ans: 0, exp: "「〜すべきだ」と助言を表すときは should を使います。" },
+                { q: "「私は母を手伝わなければなりません」<br>I (  ) to help my mother.", choices: ["has", "must", "should", "have"], ans: 3, exp: "「〜しなければならない」は have to を使います。" },
+                { q: "「窓を開けてもよいですか」<br>(  ) I open the window?", choices: ["Am", "Do", "Can", "Are"], ans: 2, exp: "「〜してもよいですか」と許可を求める表現は Can I ~? を使います。" },
+                { q: "「あなたはここで走ってはいけません」<br>You (  ) run here.", choices: ["must not", "don't have to", "shouldn't", "cannot"], ans: 0, exp: "「〜してはいけない」という禁止は must not を使います。" },
+                { q: "「彼らは早く起きる必要はありません」<br>They (  ) get up early.", choices: ["must not", "shouldn't", "don't have to", "cannot"], ans: 2, exp: "「〜する必要はない」は don't have to を使います。" }
+            ],
+            'Lesson 8': [
+                { q: "「私は来週、京都を訪れるつもりです」<br>I am (  ) to visit Kyoto next week.", choices: ["going", "go", "goes", "went"], ans: 0, exp: "未来の予定は be going to + 動詞の原形 を使います。" },
+                { q: "「明日は晴れるでしょう」<br>It (  ) be sunny tomorrow.", choices: ["is", "does", "will", "has"], ans: 2, exp: "未来の予測を表すときは助動詞 will を使います。" },
+                { q: "「なんて美しい花でしょう！」<br>(  ) a beautiful flower!", choices: ["How", "What", "Which", "Who"], ans: 1, exp: "名詞を強調する感嘆文は What a(an) + 形容詞 + 名詞! を使います。" },
+                { q: "「この車はなんて速いんでしょう！」<br>(  ) fast this car is!", choices: ["What", "How", "Which", "Why"], ans: 1, exp: "形容詞を強調する感嘆文は How + 形容詞 + 主語 + 動詞! を使います。" },
+                { q: "「私を手伝ってくれませんか」<br>(  ) you help me?", choices: ["Do", "Are", "Will", "Must"], ans: 2, exp: "「〜してくれませんか」という依頼は Will you ~? を使います。" }
+            ],
+            'Lesson 9': [
+                { q: "「あなたは疲れているように見えます」<br>You (  ) tired.", choices: ["sounds", "look", "sees", "watches"], ans: 1, exp: "「〜に見える」と視覚的な印象は look + 形容詞 を使います。" },
+                { q: "「机の上にペンが1本あります」<br>(  ) is a pen on the desk.", choices: ["Here", "It", "This", "There"], ans: 3, exp: "「〜がある」という時は There is/are ~ を使います。" },
+                { q: "「カバンの中に本はありますか（複数）」<br>(  ) there any books in the bag?", choices: ["Is", "Are", "Do", "Does"], ans: 1, exp: "あとに続く名詞が複数形(books)なので、be動詞は Are を使います。" },
+                { q: "「あなたの学校に先生は何人いますか」<br>(  ) many teachers are there in your school?", choices: ["How", "What", "Who", "When"], ans: 0, exp: "数をたずねるときは How many + 複数形の名詞 を使います。" },
+                { q: "「この町には病院がありません」<br>There (  ) a hospital in this town.", choices: ["isn't", "aren't", "don't", "doesn't"], ans: 0, exp: "単数のものがない時は There isn't を使います。" }
+            ]
+        }
+    };
+
+    window.onload = function() { renderUnits(); };
+
+    function selectGrade(g, btn) { currentGrade = g; document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); selectedUnits = []; renderUnits(); }
+    function selectSubj(s, btn) { currentSubj = s; document.querySelectorAll('.subj-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); selectedUnits = []; renderUnits(); }
+    function selectCount(num, btn) { selectedCount = num; document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
+
+    function renderUnits() {
+        const uContainer = document.getElementById('unit-container');
+        uContainer.innerHTML = '';
+        let units = menus[currentGrade][currentSubj] || [];
+        if (units.length === 0) { uContainer.innerHTML = '<span style="color: gray;">この教科は準備中です</span>'; return; }
+        units.forEach(unit => {
+            let btn = document.createElement('button');
+            btn.className = 'btn unit-btn';
+            btn.innerText = unit;
+            btn.onclick = function() {
+                if(selectedUnits.includes(unit)) { selectedUnits = selectedUnits.filter(u => u !== unit); this.classList.remove('active'); } 
+                else { selectedUnits.push(unit); this.classList.add('active'); }
+            };
+            uContainer.appendChild(btn);
+        });
+    }
+
+    function generate() {
+        if (selectedUnits.length === 0) { alert("⚠️ 先に「単元」を選んでね！"); return; }
+        
+        document.getElementById('output-section').style.display = 'block';
+        const listContainer = document.getElementById('problem-list');
+        listContainer.innerHTML = '';
+
+        if (currentMode === 'normal') {
+            for (let i = 1; i <= selectedCount; i++) {
+                let unit = selectedUnits[Math.floor(Math.random() * selectedUnits.length)];
+                let itemDiv = document.createElement('div');
+                itemDiv.innerHTML = `<span>(${i}) ${unit}の基本問題</span>`;
+                listContainer.appendChild(itemDiv);
+            }
+        } else {
+            let questionsToAsk = [];
+            selectedUnits.forEach(unit => {
+                if (workDB[currentSubj] && workDB[currentSubj][unit]) {
+                    questionsToAsk = questionsToAsk.concat(workDB[currentSubj][unit]);
+                }
+            });
+
+            if (questionsToAsk.length === 0) {
+                listContainer.innerHTML = `<h2 style="text-align:center; color:#e74c3c;">⚠️ この単元のワーク問題はまだありません。</h2>`;
+                return;
+            }
+
+            listContainer.innerHTML = `<h2 style="text-align:center; color:#3498db;">📖 ワークモード（全${questionsToAsk.length}問）</h2>`;
+
+            questionsToAsk.forEach((item, index) => {
+                let html = `
+                <div class="work-card">
+                    <div class="work-q">Q${index + 1}. ${item.q}</div>
+                    <div id="choices-${index}">
+                        ${item.choices.map((choice, cIndex) => 
+                            `<button class="choice-btn" onclick="checkAnswer(this, ${index}, ${cIndex}, ${item.ans}, '${item.exp.replace(/'/g, "\\'")}')">${cIndex + 1}. ${choice}</button>`
+                        ).join('')}
+                    </div>
+                    <div id="feedback-${index}" class="feedback-area"></div>
+                </div>`;
+                listContainer.innerHTML += html;
+            });
+        }
+        document.getElementById('output-section').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function checkAnswer(btnClicked, qIndex, selectedChoice, correctChoice, explanation) {
+        const feedbackDiv = document.getElementById(`feedback-${qIndex}`);
+        const choicesDiv = document.getElementById(`choices-${qIndex}`);
+        
+        const buttons = choicesDiv.querySelectorAll('button');
+        buttons.forEach(btn => btn.disabled = true);
+
+        if (selectedChoice === correctChoice) {
+            btnClicked.style.backgroundColor = '#d4edda';
+            feedbackDiv.className = "feedback-area correct";
+            feedbackDiv.innerHTML = `⭕️ 正解！<div class="exp-text"><strong>【解説】</strong><br>${explanation}</div>`;
+        } else {
+            btnClicked.style.backgroundColor = '#f8d7da';
+            buttons[correctChoice].style.backgroundColor = '#d4edda';
+            feedbackDiv.className = "feedback-area incorrect";
+            feedbackDiv.innerHTML = `❌ 残念！正解は「${correctChoice + 1}」番でした。<div class="exp-text"><strong>【解説】</strong><br>${explanation}</div>`;
+        }
+    }
+</script>
+</body>
+</html>
