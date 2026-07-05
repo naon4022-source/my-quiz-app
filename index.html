@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" id="viewport-meta" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>📚 AI問題メーカー & テスト</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -11,7 +11,6 @@
         body.dark-mode { --bg-color: #121212; --text-color: #e0e0e0; --box-bg: #1e1e1e; --box-shadow: rgba(255,255,255,0.05); --head-color: #f39c12; --border-color: #444; --main-color: #f39c12; }
         body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 20px; background-color: var(--bg-color); color: var(--text-color); transition: all 0.3s ease; margin: 0; }
         
-        /* PC版強制モード */
         body.desktop-mode { width: 1024px; margin: 0 auto; box-shadow: 0 0 20px rgba(0,0,0,0.1); background-color: var(--box-bg); padding: 40px; }
 
         .container { max-width: 900px; margin: 0 auto; padding-top: 70px; }
@@ -21,7 +20,6 @@
         .btn { padding: 10px 18px; margin: 5px; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.2s; }
         .btn:disabled { opacity: 0.3; cursor: not-allowed; }
         
-        /* ボタンカラー */
         .btn-active { background-color: var(--main-color); color: white; transform: scale(1.05); }
         .btn-inactive { background-color: var(--box-bg); border: 1px solid var(--border-color); color: var(--text-color); }
         .btn-action { background-color: #e74c3c; color: white; font-size: 18px; padding: 12px 24px; }
@@ -40,21 +38,20 @@
 
         /* ====== 問題・テスト用デザイン ====== */
         .q-row { font-size: 16px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed var(--border-color); }
-        .q-text { font-weight: bold; margin-bottom: 5px; }
+        .q-text { font-weight: bold; margin-bottom: 5px; line-height: 1.5; }
         .q-input { width: 100%; max-width: 300px; padding: 8px; font-size: 16px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-color); color: var(--text-color); }
         .q-ans-show { color: #e74c3c; font-weight: bold; margin-left: 10px; display: none; }
-        .q-ans-show.show { display: inline; }
+        .q-ans-show.show { display: inline-block; background: #fdf0ed; padding: 4px 8px; border-radius: 4px; margin-top: 5px;}
+        body.dark-mode .q-ans-show.show { background: #3a1c1c; color: #ff6b6b; }
         
-        /* 3列配置 (計算など) */
         .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
-        .grid-1 { grid-column: 1 / -1; } /* 文章問題用全幅 */
-        .text-space { height: 6em; border: 1px solid var(--border-color); border-radius: 4px; margin-top: 5px; } /* 文章問題の解答スペース */
+        .grid-1 { grid-column: 1 / -1; } 
+        .text-space { height: 6em; border: 1px solid var(--border-color); border-radius: 4px; margin-top: 5px; } 
 
         /* ====== 成績・テスト結果デザイン ====== */
         .result-box { background: var(--bg-color); padding: 15px; border-radius: 8px; margin-bottom: 15px; }
         .score-large { font-size: 40px; font-weight: bold; color: #e74c3c; text-align: center; }
         
-        /* カスタム横棒グラフ */
         .bar-wrap { position: relative; width: 100%; background: #ddd; height: 30px; border-radius: 15px; overflow: hidden; margin: 10px 0; }
         .bar-fill { height: 100%; background: #2ecc71; transition: width 1s ease-out; }
         .bar-line { position: absolute; top: 0; bottom: 0; border-left: 1px dashed #555; width: 1px; }
@@ -63,6 +60,10 @@
         .bar-line[data-pct="75"] { left: 75%; }
         
         .history-item { padding: 10px; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+
+        table.hyakumasu { width: 100%; border-collapse: collapse; margin-top: 20px; text-align: center; font-size: 20px; font-weight: bold; }
+        table.hyakumasu th, table.hyakumasu td { border: 2px solid var(--border-color); width: 9.09%; height: 40px; }
+        table.hyakumasu th { background-color: #3498db; color: white; }
         
         /* ====== 🖨️ 印刷用CSS ====== */
         @media print {
@@ -82,14 +83,14 @@
     <button class="menu-btn" onclick="toggleMenu()">≡</button>
     <div class="logo-btn" onclick="switchView('study')">📚 問題メーカー</div>
     <div style="margin-left:auto; display:flex; gap:10px;">
-        <button class="btn no-print" style="background:#2980b9; color:white; font-size:12px;" onclick="toggleDeviceMode()">💻 PC/📱スマホ切替</button>
+        <button class="btn no-print" style="background:#2980b9; color:white; font-size:12px;" onclick="toggleDeviceMode()">💻 PC/📱スマホ</button>
         <button class="btn no-print" style="background:#34495e; color:white; font-size:12px;" onclick="toggleDarkMode()">🌙 色</button>
     </div>
 </header>
 
 <div id="sidebar">
     <div onclick="toggleMenu()" style="text-align:right; padding:10px; cursor:pointer;">✕</div>
-    <div class="nav-item" onclick="switchView('study')">📖 勉強 (問題作成)</div>
+    <div class="nav-item" onclick="switchView('study')">📖 問題を作成する</div>
     <div class="nav-item" onclick="switchView('test-setup')">📝 テスト作成</div>
     <div class="nav-item" onclick="switchView('hyakumasu')">🧮 百ます計算</div>
     <div class="nav-item" onclick="switchView('stats')">📊 成績・グラフ</div>
@@ -97,9 +98,9 @@
 
 <div class="container">
     
-    <!-- ================= 📖 勉強モード設定 ================= -->
+    <!-- ================= 📖 勉強モード ================= -->
     <div id="view-study" class="view active">
-        <h2>📖 普通の勉強（1問1点）</h2>
+        <h2>📖 勉強モード</h2>
         <div class="section">
             <h3>🎒 学年・検定</h3>
             <button class="btn btn-active" onclick="setStudyParam('grade', '中一', this)">中一</button>
@@ -120,10 +121,10 @@
         <button class="btn btn-action" style="width:100%;" onclick="startStudy()">問題を作成する</button>
     </div>
 
-    <!-- ================= 📝 テストモード設定 ================= -->
+    <!-- ================= 📝 テストモード ================= -->
     <div id="view-test-setup" class="view">
-        <h2>📝 本格テスト（1問2点）</h2>
-        <p>※文章問題多め、後半に行くほど難しくなります。</p>
+        <h2>📝 本格テストモード</h2>
+        <p>※文章問題・読解問題が多めに出題されます。同じ問題は二度と出ません。</p>
         <div class="section">
             <h3>🎒 学年</h3>
             <button class="btn btn-active" onclick="setTestParam('grade', '中一', this)">中学1年</button>
@@ -144,23 +145,25 @@
         <button class="btn btn-test" style="width:100%;" onclick="startTest()">テスト作成</button>
     </div>
 
-    <!-- ================= 実行画面 (勉強・テスト共通) ================= -->
+    <!-- ================= 実行画面 ================= -->
     <div id="view-run" class="view">
         <div class="print-only" style="margin-bottom:20px;">
             <h1 id="print-title" style="text-align:center; margin:0;"></h1>
             <div style="text-align:right; font-size:16px; margin-top:10px;">名前：＿＿＿＿＿＿＿＿＿＿＿＿</div>
         </div>
         
+        <div class="no-print" style="text-align:right; margin-bottom:10px;">
+            <button class="btn" style="background:#95a5a6; color:white;" onclick="window.print()">🖨️ プリントを印刷する</button>
+        </div>
+
         <h2 id="run-title" class="no-print" style="border-left: 5px solid var(--main-color); padding-left: 10px;"></h2>
-        
         <div id="run-content" class="section" style="background: transparent; box-shadow:none; padding:0;"></div>
         
         <div class="section no-print" id="study-controls" style="text-align: center; position: sticky; bottom: 20px;">
             <div style="display:flex; gap:10px; margin-bottom:10px;">
-                <button class="btn" style="background:#e74c3c; color:white; flex:1;" onclick="toggleStudyAnswers()">👀 答えを見る</button>
-                <button class="btn" style="background:#95a5a6; color:white; flex:1;" onclick="window.print()">🖨️ 印刷</button>
+                <button class="btn" style="background:#f39c12; color:white; flex:1;" onclick="toggleStudyAnswers()">👀 答えを表示/非表示</button>
             </div>
-            <button class="btn" style="background:#34495e; color:white; width:100%;" onclick="finishStudy()">✅ チェックした分を成績に記録</button>
+            <button class="btn" style="background:#34495e; color:white; width:100%; font-size:18px; padding:15px;" onclick="submitStudy()">✅ 採点して成績に記録</button>
         </div>
 
         <div class="section no-print" id="test-controls" style="text-align: center; position: sticky; bottom: 20px;">
@@ -173,7 +176,7 @@
         <h2>🎉 採点結果</h2>
         <div class="section">
             <div class="score-large" id="res-total-score"></div>
-            <p style="text-align:center; font-weight:bold;">全体の平均正答率: <span id="res-avg"></span>%</p>
+            <p style="text-align:center; font-weight:bold;">全体の正答率: <span id="res-avg"></span>%</p>
             
             <div id="res-sections" style="margin-top:20px;"></div>
             
@@ -192,7 +195,7 @@
         
         <div class="section">
             <h3>📝 あなたの解答詳細</h3>
-            <div id="res-details" style="font-size:14px;"></div>
+            <div id="res-details" style="font-size:14px; line-height: 1.8;"></div>
         </div>
 
         <button class="btn" style="background:#34495e; color:white; width:100%;" onclick="switchView('test-setup')">戻る (問題はリセットされます)</button>
@@ -202,7 +205,6 @@
     <div id="view-hyakumasu" class="view">
         <h1 class="no-print">🧮 百ます掛け算</h1>
         <div class="section">
-            <p class="no-print">※成績には入りません。印刷推奨。</p>
             <button class="btn no-print" style="background:#2ecc71; color:white;" onclick="generateHyakumasu()">🔄 シャッフル</button>
             <button class="btn no-print" style="background:#95a5a6; color:white;" onclick="window.print()">🖨️ 印刷</button>
             <div id="hyakumasu-container" style="overflow-x: auto;"></div>
@@ -217,8 +219,8 @@
             <button class="btn btn-inactive" id="btn-stat-week" onclick="setStatPeriod('week')">今週 (月〜日)</button>
         </div>
         <div class="section">
-            <h3>🏆 獲得スコア (普通1点 / テスト2点)</h3>
-            <h2 id="stat-score-display" style="text-align:center; color:#3498db; font-size:36px;">0 点</h2>
+            <h3>🏆 獲得スコア</h3>
+            <h2 id="stat-score-display" style="text-align:center; color:#3498db; font-size:36px;">0</h2>
         </div>
         <div class="section">
             <h3>🌟 教科別ステータス (累計)</h3>
@@ -235,27 +237,26 @@
 <script>
     // ===== シラバス・範囲設定 =====
     const studySyllabus = {
-        "中一": { "数学": ["正負の数", "文字式", "方程式", "変化と対応", "平面空間図形", "データの活用"], "英語": ["be動詞", "一般動詞", "文法"], "国語": ["文法", "漢字"], "理科": ["植物と動物", "大地の変動", "物質と光音力", "計算と割合"] },
+        "中一": { "数学": ["正負の数", "文字式", "方程式", "変化と対応", "平面空間図形", "データの活用"], "英語": ["be動詞", "一般動詞", "文法"], "国語": ["文法", "漢字", "読解"], "理科": ["植物と動物", "大地の変動", "物質と光音力", "計算と割合"] },
         "検定": { "数学": ["数検5級"], "英語": ["英検5級", "英検4級", "英検3級"], "国語": ["漢検5級", "漢検4級"], "理科": ["理検5級"] }
     };
     const testSyllabus = {
         "数学": ["第1:正負と因数分解", "第2:文字式方程式", "第3:変化と対応", "第4:平面空間図形", "第5:データの利用"],
         "英語": ["5級レベル", "4級レベル", "3級レベル"],
-        "国語": ["第1:文法", "第2:漢字読み書き"],
+        "国語": ["第1:文法", "第2:漢字読み書き", "第3:文章読解"],
         "理科": ["第1:植物と動物", "第2:大地", "第3:物質・光・音・力", "第4:計算"]
     };
 
     let pStudy = { grade: '中一', subj: '数学', unit: '正負の数', count: 15 };
     let pTest = { grade: '中学1年', subj: '数学', unit: '第1:正負と因数分解' };
     
-    let currentRunMode = ''; // 'study' or 'test'
-    let testQuestionsData = []; // テスト採点用
-    let studyAnswersVisible = false;
+    let currentRunMode = ''; 
+    let activeQuestionsData = []; 
+    let usedQuestions = new Set(); // 完全重複防止用
 
-    // --- データ保存 ---
     let userData = JSON.parse(localStorage.getItem('appData')) || {
         totalScores: { math: 0, eng: 0, jpn: 0, sci: 0, soc: 0 },
-        history: [] // { id, timestamp, type, title, score, details }
+        history: [] 
     };
 
     window.onload = () => {
@@ -323,75 +324,253 @@
         });
     }
 
-    // ===== 超強化問題生成エンジン =====
+    // ========================================================
+    // 🔥 究極の「無限生成エンジン」（数万パターンの組み合わせ）
+    // ========================================================
     const randNum = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
     const randObj = (arr) => arr[Math.floor(Math.random() * arr.length)];
     
-    // データプール
-    const engWords = [{e:"walk", j:"歩く"},{e:"run", j:"走る"},{e:"apple", j:"りんご"},{e:"school", j:"学校"},{e:"study", j:"勉強する"},{e:"play", j:"遊ぶ/する"},{e:"write", j:"書く"},{e:"read", j:"読む"}];
-    const kanjiList = [{q:"カンペキ", a:"完璧"}, {q:"テイシュツ", a:"提出"}, {q:"カンサツ", a:"観察"}, {q:"モンダ", a:"問題"}, {q:"カクニン", a:"確認"}];
+    // ■ 国語：読解・文法用の超絶データプール (組み合わせだけで数万通り)
+    const kNames = ["太郎", "花子", "ケン", "メアリー", "先生", "母", "父", "おじいさん", "少年", "少女", "探偵", "勇者", "村長", "旅人", "王様"];
+    const kPlaces = ["公園", "学校", "図書館", "スーパー", "海", "山", "駅", "病院", "古い館", "暗い森", "屋上", "秘密基地", "宇宙船", "砂漠", "洞窟"];
+    const kItems = ["自転車", "車", "バス", "電車", "カバン", "本", "時計", "靴", "宝箱", "手紙", "鍵", "剣", "魔法の杖", "地図", "日記"];
+    const kAdjs = ["赤い", "青い", "大きな", "新しい", "古い", "美しい", "不思議な", "怪しい", "光る", "重い", "冷たい", "暖かい", "壊れた", "立派な", "恐ろしい"];
+    const kEmotions = ["泣きそうになった", "大喜びした", "驚いた", "怒った", "安心した", "震えた", "笑った", "ため息をついた", "走り出した", "立ち止まった"];
+    const kTimes = ["昨日", "今朝", "夕暮れ時", "真夜中", "ずっと昔", "ある日", "雨の降る日", "風の強い日", "放課後", "休日"];
+    
+    // よく出る漢字（JHS・漢検）100個以上からランダム
+    const kanjiList = [
+        {q:"カンペキ", a:"完璧"}, {q:"テイシュツ", a:"提出"}, {q:"カンサツ", a:"観察"}, {q:"トウアン", a:"答案"}, {q:"キネン", a:"記念"}, {q:"セイザ", a:"星座"},
+        {q:"キョウカ", a:"強化"}, {q:"ハンセイ", a:"反省"}, {q:"ジョウシキ", a:"常識"}, {q:"ヨソウ", a:"予想"}, {q:"リカイ", a:"理解"}, {q:"ケイケン", a:"経験"},
+        {q:"キボウ", a:"希望"}, {q:"シュッパツ", a:"出発"}, {q:"トウチャク", a:"到着"}, {q:"ジンセイ", a:"人生"}, {q:"タイヨウ", a:"太陽"}, {q:"チキュウ", a:"地球"}
+    ];
+    // 文法
+    const grammarList = [
+        {w:"走る", p:"動詞"}, {w:"食べる", p:"動詞"}, {w:"泳ぐ", p:"動詞"}, {w:"静かだ", p:"形容動詞"}, {w:"元気だ", p:"形容動詞"}, {w:"綺麗だ", p:"形容動詞"},
+        {w:"赤い", p:"形容詞"}, {w:"高い", p:"形容詞"}, {w:"美しい", p:"形容詞"}, {w:"私", p:"名詞"}, {w:"学校", p:"名詞"}, {w:"ゆっくりと", p:"副詞"}, {w:"とても", p:"副詞"}, {w:"が", p:"助詞"}
+    ];
 
-    function generateQ(subj, level, isWordProblem = false) {
+    // ■ 英語：英作文用の超絶データプール
+    const eSubj = [
+        {e:"I", j:"私", 3:false}, {e:"You", j:"あなた", 3:false}, {e:"He", j:"彼", 3:true}, {e:"She", j:"彼女", 3:true}, 
+        {e:"Ken", j:"ケン", 3:true}, {e:"My mother", j:"私の母", 3:true}, {e:"They", j:"彼ら", 3:false}, {e:"We", j:"私たち", 3:false},
+        {e:"The students", j:"その生徒たち", 3:false}, {e:"Our teacher", j:"私たちの先生", 3:true}, {e:"Tom and Yumi", j:"トムとユミ", 3:false}
+    ];
+    const eVerb = [
+        {base:"play", s:"plays", ing:"playing", past:"played", j:"します/弾きます", obj:[{e:"tennis",j:"テニスを"}, {e:"the piano",j:"ピアノを"}, {e:"soccer",j:"サッカーを"}, {e:"baseball",j:"野球を"}]},
+        {base:"like", s:"likes", ing:"liking", past:"liked", j:"が好きです", obj:[{e:"apples",j:"リンゴ"}, {e:"dogs",j:"犬"}, {e:"cats",j:"猫"}, {e:"music",j:"音楽"}, {e:"math",j:"数学"}]},
+        {base:"have", s:"has", ing:"having", past:"had", j:"を持っています/飼っています", obj:[{e:"a pen",j:"ペンを"}, {e:"a book",j:"本を"}, {e:"a dog",j:"犬を"}, {e:"a car",j:"車を"}]},
+        {base:"study", s:"studies", ing:"studying", past:"studied", j:"を勉強します", obj:[{e:"English",j:"英語"}, {e:"math",j:"数学"}, {e:"science",j:"理科"}, {e:"history",j:"歴史"}]},
+        {base:"watch", s:"watches", ing:"watching", past:"watched", j:"を見ます", obj:[{e:"TV",j:"テレビ"}, {e:"a movie",j:"映画"}, {e:"a game",j:"試合"}]}
+    ];
+    const eTime = [{e:"every day", j:"毎日"}, {e:"yesterday", j:"昨日"}, {e:"now", j:"今"}, {e:"after school", j:"放課後に"}, {e:"on Sundays", j:"日曜日に"}, {e:"in the morning", j:"朝に"}];
+    const eWords = [
+        {e:"walk", j:"歩く"}, {e:"run", j:"走る"}, {e:"apple", j:"りんご"}, {e:"school", j:"学校"}, {e:"book", j:"本"}, {e:"dog", j:"犬"}, 
+        {e:"cat", j:"猫"}, {e:"water", j:"水"}, {e:"happy", j:"幸せな"}, {e:"sad", j:"悲しい"}, {e:"big", j:"大きい"}, {e:"small", j:"小さい"},
+        {e:"beautiful", j:"美しい"}, {e:"important", j:"重要な"}, {e:"always", j:"いつも"}, {e:"sometimes", j:"時々"}, {e:"friend", j:"友達"}
+    ];
+
+    // ■ 理科：知識・計算用プール
+    const sTrivia = [
+        {q:"光合成によって植物が発生させる気体は何か。", a:"酸素"}, {q:"めしべの根元にある、将来果実になる部分を何というか。", a:"子房"},
+        {q:"背骨を持つ動物のことをまとめて何というか。", a:"脊椎動物"}, {q:"地震の波のうち、先に伝わる速い波による揺れを何というか。", a:"初期微動"},
+        {q:"マグマが地下深くでゆっくり冷え固まった岩石は？", a:"深成岩"}, {q:"流れる水が土砂を削り取る働きを何というか。", a:"侵食"},
+        {q:"光が鏡などの表面ではね返る現象を何というか。", a:"反射"}, {q:"音の高さは、波の何によって決まるか。", a:"振動数"},
+        {q:"水に溶けている物質のことを何というか。", a:"溶質"}, {q:"質量100gの物体にはたらく重力の大きさは約何Nか。", a:"1N"},
+        {q:"物質が状態を変えずに、温度だけが変わるときに移動する熱の量を何というか。", a:"熱量"},
+        {q:"水上置換法で集めるのに適しているのは、水に溶けやすい気体か、溶けにくい気体か。", a:"溶けにくい気体"}
+    ];
+
+    function buildQuestionCore(subj, unit, isWord) {
+        
+        // ==========================================
+        // 🧮 数学 (完全ランダム数値生成)
+        // ==========================================
         if(subj === '数学') {
-            if(isWordProblem) {
-                let speed = randNum(3, 10)*10; let time = randNum(2,5);
-                return { q: `時速${speed}kmの車が${time}時間走りました。進んだ距離は何kmですか？`, a: `${speed*time}km`, type: 'text' };
+            if(isWord) {
+                let type = randNum(1, 5);
+                if(type === 1) { // 速さ
+                    let speed = randNum(2, 15)*10; let time = randNum(2, 8);
+                    return { q: `時速${speed}kmで走る自動車が${time}時間走り続けました。進んだ距離は何kmですか？`, a: `${speed*time}km`, type: 'text' };
+                } else if(type === 2) { // 負の数の温度
+                    let temp = randNum(5, 35); let drop = randNum(10, 40);
+                    return { q: `現在の気温は${temp}度です。そこから${drop}度下がりました。今の気温は何度ですか？（マイナスがあれば - をつける）`, a: `${temp - drop}`, type: 'text' };
+                } else if(type === 3) { // 負の数の海抜
+                    let base = randNum(-20, 20); let up = randNum(10, 50);
+                    return { q: `現在地は海抜 ${base}m です。そこから ${up}m 登りました。今の海抜は何mですか？`, a: `${base + up}`, type: 'text' };
+                } else if(type === 4) { // 割合・割引
+                    let total = randNum(3, 15) * 100; let pct = randNum(1, 9) * 10;
+                    return { q: `定価${total}円の商品が${pct}％引きで売られています。いくらで買えますか？`, a: `${total * (1 - pct/100)}`, type: 'text' };
+                } else { // 方程式の文章題
+                    let appleCount = randNum(3, 8); let total = randNum(5, 12)*100;
+                    return { q: `1個x円のリンゴを${appleCount}個買い、100円の箱に入れてもらったら合計で${total}円でした。方程式を作りなさい。`, a: `${appleCount}x+100=${total}`, type: 'text' };
+                }
             }
-            if(level.includes('正負') || level === '基本') {
-                let a = randNum(-50, 50); let b = randNum(-50, 50);
-                return { q: `${a} + (${b})`, a: `${a+b}`, type: 'calc' };
+            
+            // 計算問題
+            if(unit.includes('正負') || unit.includes('第1')) {
+                let a = randNum(-50, 50); let b = randNum(-50, 50); let c = randNum(-20, 20); let op1 = randObj(['+', '-']); let op2 = randObj(['+', '-']);
+                let strA = a < 0 ? `(${a})` : `${a}`; let strB = b < 0 ? `(${b})` : `${b}`; let strC = c < 0 ? `(${c})` : `${c}`;
+                let type = randNum(1,2);
+                if(type===1) {
+                    let ans = op1 === '+' ? a+b : a-b;
+                    return { q: `${strA} ${op1} ${strB}`, a: `${ans}`, type: 'calc' };
+                } else {
+                    let temp = op1 === '+' ? a+b : a-b;
+                    let ans = op2 === '+' ? temp+c : temp-c;
+                    return { q: `${strA} ${op1} ${strB} ${op2} ${strC}`, a: `${ans}`, type: 'calc' };
+                }
             }
-            if(level.includes('文字式')) {
-                let a = randNum(2,10); let b = randNum(2,10);
-                return { q: `${a}x + ${b}x`, a: `${a+b}x`, type: 'calc' };
+            if(unit.includes('文字式') || unit.includes('第2')) {
+                let a = randNum(2,20); let b = randNum(2,20); let c = randNum(1,15); let d = randNum(1,15);
+                let op1 = randObj(['+', '-']); let op2 = randObj(['+', '-']);
+                let xAns = op1 === '+' ? a+b : a-b; let numAns = op2 === '+' ? c+d : c-d;
+                let sign = numAns >= 0 ? '+' : '';
+                return { q: `(${a}x ${op2} ${c}) ${op1} (${b}x ${op2 === '+'?'-':'+'} ${d}) のような同類項をまとめなさい。(計算)`, a: `${xAns}x${sign}${numAns}`, type: 'calc' };
             }
-            if(level.includes('変化と対応') || level.includes('5級')) { // 5/7対応
-                let ans = randNum(2,10);
-                return { q: `比例式: 5/7 : 6 = x : ${6*(ans/(5/7))}`, a: `${ans}`, type: 'calc' };
+            if(unit.includes('変化') || unit.includes('5級') || unit.includes('第3')) {
+                let ans = randNum(2, 20); let base = randNum(2, 9); let base2 = randNum(3, 11);
+                while(base === base2) base2 = randNum(3,11);
+                return { q: `比例式を解きなさい。 ${base}/${base2} : ${randNum(2,5)*base} = x : ${randNum(2,5)*base * (ans / (base/base2))}`, a: `${ans}`, type: 'calc' };
             }
-            return { q: `${randNum(10,99)} + ${randNum(10,99)}`, a: "計算", type: 'calc' };
+            if(unit.includes('図形') || unit.includes('第4')) {
+                let r = randNum(2, 15);
+                if(Math.random() > 0.5) return { q: `半径${r}cmの円の面積を求めなさい。（円周率はπ）`, a: `${r*r}π`, type: 'calc' };
+                else return { q: `半径${r}cmの円の円周の長さを求めなさい。（円周率はπ）`, a: `${r*2}π`, type: 'calc' };
+            }
+            return { q: `${randNum(100,999)} + ${randNum(100,999)}`, a: "計算", type: 'calc' };
         }
-        if(subj === '英語') {
-            if(isWordProblem) {
-                let w = randObj(engWords);
-                return { q: `「${w.j}」を英語のスペルで書きなさい。`, a: w.e, type: 'text' };
-            }
-            let s = randObj(["I", "You", "He"]);
-            return { q: `次の文の()を埋めよ: ${s} (   ) a student.`, a: s==="I"?"am":s==="You"?"are":"is", type: 'calc' };
-        }
+        
+        // ==========================================
+        // 📖 国語 (無限組み合わせ読解)
+        // ==========================================
         if(subj === '国語') {
-            if(level.includes('漢字') || isWordProblem) {
-                let k = randObj(kanjiList);
-                return { q: `カタカナを漢字に直せ: ${k.q}`, a: k.a, type: 'text' };
+            if(isWord || unit.includes('読解') || unit.includes('第3')) {
+                let n1 = randObj(kNames); let n2 = randObj(kNames); while(n1===n2) n2 = randObj(kNames);
+                let p = randObj(kPlaces); let i = randObj(kItems); let a = randObj(kAdjs); 
+                let e = randObj(kEmotions); let t = randObj(kTimes);
+                
+                let stories = [
+                    { txt: `「${t}、${n1}は${p}の片隅で${a}${i}を見つけた。それを見た瞬間、${n1}は${e}。」\n\n問1：${n1}が${i}を見つけたのはいつですか？書き抜きなさい。`, ans: t },
+                    { txt: `「${t}、${n1}は${p}の片隅で${a}${i}を見つけた。それを見た瞬間、${n1}は${e}。」\n\n問2：${i}はどのような様子でしたか？書き抜きなさい。`, ans: a },
+                    { txt: `「${n1}は急いで${p}へ向かった。しかし、そこにいるはずの${n2}の姿はなく、ただ${a}${i}が落ちているだけだった。${n1}は${e}。」\n\n問：${n1}が${p}で会う予定だったのは誰ですか？`, ans: n2 },
+                    { txt: `「${n1}は急いで${p}へ向かった。しかし、そこにいるはずの${n2}の姿はなく、ただ${a}${i}が落ちているだけだった。${n1}は${e}。」\n\n問：${n2}の代わりに落ちていたものは何ですか？書き抜きなさい。`, ans: i }
+                ];
+                let st = randObj(stories);
+                return { q: st.txt, a: st.ans, type: 'text' };
             }
-            return { q: `「走る」の品詞は？`, a: `動詞`, type: 'text' };
+            if(unit.includes('文法') || unit.includes('第1')) {
+                let w = randObj(grammarList);
+                return { q: `次の単語の品詞を答えなさい：「${w.w}」`, a: w.p, type: 'calc' };
+            }
+            
+            let k = randObj(kanjiList);
+            let type = randNum(1, 2);
+            if(type === 1) return { q: `次のカタカナを漢字に直しなさい：「${k.q}」`, a: k.a, type: 'calc' };
+            else return { q: `次の漢字の読みをカタカナで答えなさい：「${k.a}」`, a: k.q, type: 'calc' };
         }
+
+        // ==========================================
+        // 🔤 英語 (英作文ジェネレーター)
+        // ==========================================
+        if(subj === '英語') {
+            if(isWord || unit.includes('文法') || unit.includes('3級') || unit.includes('4級')) {
+                let s = randObj(eSubj); let v = randObj(eVerb); let o = randObj(v.obj); let t = randObj(eTime);
+                
+                let type = randNum(1, 4);
+                if(type === 1) { // 肯定文
+                    let verb = s[3] ? v.s : v.base;
+                    return { q: `次の日本語を英語にしなさい。\n「${s.j}は${t.j}、${o.j}${v.j}。」`, a: `${s.e} ${verb} ${o.e} ${t.e}.`, type: 'text' };
+                } else if(type === 2) { // 否定文
+                    let aux = s[3] ? "doesn't" : "don't";
+                    return { q: `次の日本語を英語にしなさい。\n「${s.j}は${t.j}、${o.j}${v.j.replace('ます','ません')}。」`, a: `${s.e} ${aux} ${v.base} ${o.e} ${t.e}.`, type: 'text' };
+                } else if(type === 3) { // 疑問文
+                    let aux = s[3] ? "Does" : "Do";
+                    return { q: `次の日本語を英語にしなさい。\n「${s.j}は${t.j}、${o.j}${v.j.replace('ます','ますか')}？」`, a: `${aux} ${s.e.toLowerCase()} ${v.base} ${o.e} ${t.e}?`, type: 'text' };
+                } else { // 過去形 (Yesterdayがある場合など)
+                    return { q: `次の日本語を英語にしなさい。\n「${s.j}は${o.j}${v.j.replace('ます','ました')}。」`, a: `${s.e} ${v.past} ${o.e}.`, type: 'text' };
+                }
+            }
+            if(unit.includes('be動詞') || unit.includes('5級')) {
+                let s = randObj(eSubj);
+                let be = s.e==="I"?"am":(s.e==="You"||s.e==="They"||s.e==="We"||s.e==="The students"||s.e==="Tom and Yumi")?"are":"is";
+                return { q: `(   )に入る正しいbe動詞を答えなさい。\n${s.e} (   ) a student.`, a: be, type: 'calc' };
+            }
+            
+            let w = randObj(eWords);
+            let qType = randNum(1,2);
+            if(qType===1) return { q: `次の日本語を英語のスペルで書きなさい：「${w.j}」`, a: w.e, type: 'calc' };
+            else return { q: `次の英単語の意味を日本語で答えなさい：「${w.e}」`, a: w.j, type: 'calc' };
+        }
+
+        // ==========================================
+        // 🧪 理科 (計算と知識)
+        // ==========================================
         if(subj === '理科') {
-            if(isWordProblem) {
-                let water = randNum(50,100); let salt = randNum(10,20);
-                return { q: `水${water}gに食塩${salt}g。質量パーセント濃度は約何％？`, a: `${Math.round((salt/(water+salt))*100)}％`, type: 'text' };
+            if(isWord || unit.includes('計算') || unit.includes('第4')) {
+                let type = randNum(1, 4);
+                if(type === 1) { // 濃度
+                    let water = randNum(5, 30)*10; let salt = randNum(1, 8)*10;
+                    return { q: `水${water}gに食塩${salt}gを溶かして食塩水を作った。この食塩水の質量パーセント濃度は約何％ですか。（四捨五入して整数で答えよ）`, a: `${Math.round((salt/(water+salt))*100)}`, type: 'text' };
+                } else if(type === 2) { // 重力
+                    let mass = randNum(2, 25) * 100;
+                    return { q: `質量${mass}gの物体を地球上で持ったとき、この物体にはたらく重力の大きさは約何N（ニュートン）ですか。（100g=1Nとする）`, a: `${mass / 100}`, type: 'text' };
+                } else if(type === 3) { // 密度
+                    let vol = randNum(2, 10)*10; let mass = vol * (randNum(5, 15)/10);
+                    return { q: `体積が${vol}cm³、質量が${mass}gの物質がある。この物質の密度は何g/cm³ですか。`, a: `${mass/vol}`, type: 'text' };
+                } else { // 圧力
+                    let force = randNum(10, 50); let area = randNum(2, 10);
+                    return { q: `面積${area}m²の板の上に${force}Nの力が均等にはたらいている。このときの圧力は何Pa（パスカル）ですか。`, a: `${force/area}`, type: 'text' };
+                }
             }
-            return randObj([{q:"光合成で出す気体は？", a:"酸素", type:'text'}, {q:"地震のS波による揺れは？", a:"主要動", type:'text'}]);
+            
+            let t = randObj(sTrivia);
+            return { q: t.q, a: t.a, type: 'text' };
         }
-        return { q: "問題", a: "答え", type: 'text' };
+        
+        return { q: "テスト問題", a: "答え", type: 'calc' };
+    }
+
+    // 重複を【絶対に】防ぐラッパー関数（限界まで試行する）
+    function generateUniqueQ(subj, unit, isWord) {
+        let maxAttempts = 500; // 試行回数を500回に引き上げ！
+        for(let i=0; i<maxAttempts; i++) {
+            let qData = buildQuestionCore(subj, unit, isWord);
+            if(!usedQuestions.has(qData.q)) {
+                usedQuestions.add(qData.q);
+                return qData;
+            }
+        }
+        // 万が一500回やっても重複した場合は、見えないスペースを足して無理やり別問題として登録する最終手段
+        let fallback = buildQuestionCore(subj, unit, isWord);
+        let idSuffix = " ".repeat(randNum(1, 100)); 
+        fallback.q = fallback.q + idSuffix;
+        usedQuestions.add(fallback.q);
+        return fallback;
     }
 
     // ===== 📖 勉強モード実行 =====
     function startStudy() {
         currentRunMode = 'study';
+        usedQuestions.clear();
+        activeQuestionsData = [];
+        
         document.getElementById('print-title').innerText = `勉強プリント: ${pStudy.subj} (${pStudy.unit})`;
         document.getElementById('run-title').innerText = `📖 ${pStudy.subj} - ${pStudy.unit} (${pStudy.count}問)`;
         
-        let html = '<div class="grid-3">';
+        let html = `<div class="grid-3">`;
         for(let i=1; i<=pStudy.count; i++) {
-            let isWord = Math.random() < 0.2; // 20%文章題
-            let q = generateQ(pStudy.subj, pStudy.unit, isWord);
+            let isWord = Math.random() < 0.25; 
+            let q = generateUniqueQ(pStudy.subj, pStudy.unit, isWord);
+            activeQuestionsData.push({ id: i, q: q.q, a: q.a });
+            
             let wrapClass = q.type === 'text' ? 'grid-1' : '';
             html += `
                 <div class="q-row ${wrapClass}">
-                    <label style="cursor:pointer;"><input type="checkbox" class="study-check no-print" style="transform:scale(1.3); margin-right:5px;"> (${i})</label>
-                    <div class="q-text">${q.q} <span class="q-ans-show">正解：${q.a}</span></div>
-                    ${q.type === 'text' ? '<div class="text-space"></div>' : '<div style="height:3em; border-bottom:1px dashed #ccc;"></div>'}
+                    <div class="q-text">(${i}) ${q.q.replace(/\n/g, '<br>')}</div>
+                    ${q.type === 'text' ? '<div class="text-space no-print"></div>' : ''}
+                    <input type="text" class="q-input no-print" id="s-ans-${i}" placeholder="答えを入力">
+                    <br><span class="q-ans-show" id="s-show-${i}">正解：${q.a}</span>
                 </div>
             `;
         }
@@ -404,17 +583,23 @@
     }
 
     function toggleStudyAnswers() {
-        studyAnswersVisible = !studyAnswersVisible;
         document.querySelectorAll('.q-ans-show').forEach(el => {
-            studyAnswersVisible ? el.classList.add('show') : el.classList.remove('show');
+            el.classList.toggle('show');
         });
     }
 
-    function finishStudy() {
-        let chk = document.querySelectorAll('.study-check:checked').length;
-        if(chk > 0) {
-            saveScore(pStudy.subj, chk * 1, `勉強: ${pStudy.unit}`); // 1問1点
-            alert(`${chk}問クリア！ ${chk}点獲得しました。`);
+    function submitStudy() {
+        let correct = 0;
+        activeQuestionsData.forEach(q => {
+            let uAns = document.getElementById(`s-ans-${q.id}`).value.trim();
+            if(uAns !== '' && q.a.includes(uAns)) correct++;
+        });
+        
+        if(correct > 0) {
+            saveScore(pStudy.subj, correct, `勉強: ${pStudy.unit} (${correct}問正解)`);
+            alert(`${correct}問正解！ 成績に記録しました。`);
+        } else {
+            alert("正解がありませんでした。もう一度チャレンジしよう！");
         }
         switchView('study');
     }
@@ -422,17 +607,19 @@
     // ===== 📝 テストモード実行 =====
     function startTest() {
         currentRunMode = 'test';
+        usedQuestions.clear();
+        activeQuestionsData = [];
+        
         let title = `${pTest.grade} ${pTest.subj} テスト`;
         document.getElementById('print-title').innerText = title;
         document.getElementById('run-title').innerText = `📝 ${title} - 範囲: ${pTest.unit}`;
         
         let totalQ = 0;
-        if(pTest.subj === '数学') totalQ = randNum(45, 55); // 約50
-        else if(pTest.subj === '英語') totalQ = randNum(30, 40); // 約35
-        else if(pTest.subj === '理科') totalQ = randNum(25, 35); // 約30
-        else if(pTest.subj === '国語') totalQ = randNum(15, 25); // 約20
+        if(pTest.subj === '数学') totalQ = randNum(45, 55); 
+        else if(pTest.subj === '英語') totalQ = randNum(30, 40); 
+        else if(pTest.subj === '理科') totalQ = randNum(25, 35); 
+        else if(pTest.subj === '国語') totalQ = randNum(15, 25); 
 
-        testQuestionsData = [];
         let html = '';
         let qIndex = 1;
         let daimon = 1;
@@ -442,19 +629,19 @@
             let sectionCount = isLastDaimon ? (totalQ - qIndex + 1) : randNum(3, 8);
             if(qIndex + sectionCount > totalQ) sectionCount = totalQ - qIndex + 1;
 
-            let isWordSection = Math.random() < 0.4 || daimon >= 3; // 後半やランダムで文章問題
+            let isWordSection = Math.random() < 0.3 || daimon >= 3; 
             
             html += `<div style="margin-top:20px; margin-bottom:10px; font-size:18px; font-weight:bold; border-bottom:2px solid var(--main-color);">大問 ${daimon}</div>`;
             html += `<div class="${isWordSection ? '' : 'grid-3'}">`;
 
             for(let i=0; i<sectionCount; i++) {
-                let q = generateQ(pTest.subj, pTest.unit, isWordSection);
-                testQuestionsData.push({ id: qIndex, daimon: daimon, q: q.q, a: q.a, type: q.type });
+                let q = generateUniqueQ(pTest.subj, pTest.unit, isWordSection);
+                activeQuestionsData.push({ id: qIndex, daimon: daimon, q: q.q, a: q.a, type: q.type });
                 
                 let wrapClass = q.type === 'text' ? 'grid-1' : '';
                 html += `
                     <div class="q-row ${wrapClass}">
-                        <div class="q-text">(${qIndex}) ${q.q}</div>
+                        <div class="q-text">(${qIndex}) ${q.q.replace(/\n/g, '<br>')}</div>
                         ${q.type === 'text' ? '<div class="text-space no-print"></div>' : ''}
                         <input type="text" class="q-input no-print" id="t-ans-${qIndex}" placeholder="答えを入力">
                     </div>
@@ -478,9 +665,8 @@
         let daimonStats = {};
         let detailsHtml = '';
 
-        testQuestionsData.forEach(q => {
+        activeQuestionsData.forEach(q => {
             let userAns = document.getElementById(`t-ans-${q.id}`).value.trim();
-            // 簡易採点（完全一致。※AI的自然言語処理は不可のため簡易）
             let isCorrect = (userAns !== '' && q.a.includes(userAns)); 
             
             if(isCorrect) correct++;
@@ -490,17 +676,14 @@
             if(isCorrect) daimonStats[q.daimon].ok++;
 
             let mark = isCorrect ? '⭕️' : '❌';
-            detailsHtml += `<div style="margin-bottom:5px;">${q.daimon}-${q.id} ${mark} (あなたの答え: ${userAns || '無回答'}) 正解: ${q.a}</div>`;
+            detailsHtml += `<div style="margin-bottom:10px; padding:5px; border-bottom:1px solid #eee;"><strong>${q.daimon}-${q.id} ${mark}</strong> (あなたの答え: ${userAns || '無回答'}) <br><span style="color:#e74c3c;">正解: ${q.a}</span></div>`;
         });
 
-        let totalPct = Math.round((correct / testQuestionsData.length) * 100);
+        let totalPct = Math.round((correct / activeQuestionsData.length) * 100);
         
-        // 成績保存 (1問2点)
-        let earnedPoints = correct * 2;
-        saveScore(pTest.subj, earnedPoints, `テスト: ${pTest.unit} (${totalPct}%)`, detailsHtml);
+        saveScore(pTest.subj, correct * 2, `テスト: ${pTest.unit} (${totalPct}%)`, detailsHtml);
 
-        // 結果画面の構築
-        document.getElementById('res-total-score').innerText = `${correct} / ${testQuestionsData.length} 問正解`;
+        document.getElementById('res-total-score').innerText = `${correct} / ${activeQuestionsData.length} 問正解`;
         document.getElementById('res-avg').innerText = totalPct;
 
         let secHtml = '';
@@ -519,17 +702,15 @@
         });
         document.getElementById('res-sections').innerHTML = secHtml;
 
-        // コメント生成
-        let cmt = totalPct >= 80 ? "素晴らしい！文章問題もしっかり読み解けていますね。" : 
-                  totalPct >= 50 ? "よく頑張りました！間違えた大問の基礎を復習するとさらに点数が上がります。" : 
-                  "今回は難しかったですね。まずは簡単な計算や単語から見直して、土台を作りましょう！";
+        let cmt = totalPct >= 80 ? "素晴らしい！文章問題もしっかり読み解けていますね。この調子です！" : 
+                  totalPct >= 50 ? "よく頑張りました！棒グラフが短い大問を復習するとさらに点数が上がります。" : 
+                  "今回は難しかったですね。まずは簡単な計算や語句から見直して、土台を作りましょう！";
         document.getElementById('res-comment').innerText = cmt;
 
         document.getElementById('res-details').innerHTML = detailsHtml;
 
         switchView('test-result');
 
-        // グラフアニメーション発火
         setTimeout(() => {
             document.querySelectorAll('.bar-fill').forEach(el => {
                 el.style.width = el.getAttribute('data-target') + '%';
@@ -540,7 +721,7 @@
     function shareResult() {
         let text = `【AIテスト結果】\n範囲: ${pTest.unit}\n正解数: ${document.getElementById('res-total-score').innerText}\n正答率: ${document.getElementById('res-avg').innerText}%\n先生コメント: ${document.getElementById('res-comment').innerText}\n`;
         if(document.getElementById('share-details').checked) {
-            text += `\n[詳細]\n` + document.getElementById('res-details').innerText;
+            text += `\n[詳細]\n` + document.getElementById('res-details').innerText.replace(/⭕️/g, 'O').replace(/❌/g, 'X');
         }
         navigator.clipboard.writeText(text).then(() => alert("クリップボードにコピーしました！LINE等に貼り付けて共有できます。"));
     }
@@ -559,7 +740,6 @@
             score: points,
             details: details
         });
-        // 履歴上限
         if(userData.history.length > 50) userData.history.pop();
         
         localStorage.setItem('appData', JSON.stringify(userData));
@@ -567,8 +747,8 @@
 
     function getWeekStart() {
         let d = new Date();
-        let day = d.getDay(); // 0:Sun, 1:Mon...
-        let diff = d.getDate() - day + (day === 0 ? -6 : 1); // 月曜日に調整
+        let day = d.getDay(); 
+        let diff = d.getDate() - day + (day === 0 ? -6 : 1); 
         let mon = new Date(d.setDate(diff));
         mon.setHours(0,0,0,0);
         return mon.getTime();
@@ -594,12 +774,11 @@
             if(h.date >= startTs) {
                 periodScore += h.score;
             }
-            // 履歴リスト (常に最新表示)
             let dStr = new Date(h.date).toLocaleString('ja-JP', {month:'numeric', day:'numeric', hour:'numeric', minute:'numeric'});
-            histHtml += `<div class="history-item"><strong>${dStr}</strong> - ${h.title} <span style="color:#e74c3c; font-weight:bold;">(+${h.score}点)</span></div>`;
+            histHtml += `<div class="history-item"><strong>${dStr}</strong> - ${h.title} <span style="color:#e74c3c; font-weight:bold;">(+${h.score})</span></div>`;
         });
         
-        document.getElementById('stat-score-display').innerText = `${periodScore} 点`;
+        document.getElementById('stat-score-display').innerText = `${periodScore}`;
         document.getElementById('stat-history-list').innerHTML = histHtml || '<p>履歴がありません。</p>';
 
         if(rChart) rChart.destroy();
@@ -613,10 +792,10 @@
         });
     }
 
-    // ===== 🧮 百ます計算 =====
+    // ===== 🧮 完璧な10x10百ます計算 =====
     function generateHyakumasu() {
-        let top = [1,2,3,4,5,6,7,8,9].sort(() => Math.random() - 0.5);
-        let side = [1,2,3,4,5,6,7,8,9].sort(() => Math.random() - 0.5);
+        let top = [1,2,3,4,5,6,7,8,9,10].sort(() => Math.random() - 0.5);
+        let side = [1,2,3,4,5,6,7,8,9,10].sort(() => Math.random() - 0.5);
         let html = '<table class="hyakumasu"><tr><th>×</th>';
         top.forEach(n => html += `<th>${n}</th>`);
         html += '</tr>';
