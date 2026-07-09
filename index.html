@@ -48,6 +48,20 @@
         
         /* 3列配置 (計算など) */
         .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        /* 単語フラッシュカード */
+        .flash-card { text-align: center; cursor: pointer; user-select: none; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px 8px; }
+        .flash-card .fc-word { font-size: 20px; font-weight: bold; }
+        .flash-card .fc-meaning { display: none; color: #e74c3c; font-weight: bold; margin-top: 6px; }
+        .flash-card.flipped .fc-meaning { display: block; }
+
+        /* ⏰ 英検タイマー */
+        #timer-box { display: none; align-items: center; gap: 6px; margin-left: 18px; background: #e74c3c; color: #fff; padding: 6px 12px; border-radius: 8px; font-weight: bold; font-size: 20px; letter-spacing: 1px; }
+        #timer-box.timer-warn { background: #c0392b; animation: tblink 1s steps(2, start) infinite; }
+        @keyframes tblink { 50% { opacity: 0.45; } }
+        /* 英検 採点表示 */
+        .ek-ans-top { margin-bottom: 4px; }
+        .ek-ans-bottom { margin-top: 4px; font-size: 14px; }
+        #ek-result-banner { background: var(--bg-color); border: 2px solid #e74c3c; border-radius: 10px; padding: 14px; margin-bottom: 16px; }
         .grid-1 { grid-column: 1 / -1; } /* 文章問題用全幅 */
         .text-space { height: 6em; border: 1px solid var(--border-color); border-radius: 4px; margin-top: 5px; } /* 文章問題の解答スペース */
 
@@ -83,6 +97,7 @@
 <header>
     <button class="menu-btn" onclick="toggleMenu()">≡</button>
     <div class="logo-btn" onclick="switchView('study')">📚 問題メーカー</div>
+    <div id="timer-box" class="no-print"><span>⏰</span><span id="timer-text">50:00</span></div>
     <div style="margin-left:auto; display:flex; gap:10px;">
         <button class="btn no-print" style="background:#2980b9; color:white; font-size:12px;" onclick="toggleDeviceMode()">💻 PC/📱スマホ切替</button>
         <button class="btn no-print" style="background:#34495e; color:white; font-size:12px;" onclick="toggleDarkMode()">🌙 色</button>
@@ -116,11 +131,11 @@
         <div class="section">
             <h3>🎯 単元</h3><div id="study-unit-container"></div>
         </div>
-        <div class="section">
+        <div class="section" id="study-level-section">
             <h3>📶 レベル (1:やさしい 〜 6:激ムズ)</h3>
             <div id="study-level-container"></div>
         </div>
-        <div class="section">
+        <div class="section" id="study-count-section">
             <h3>🔢 問題数</h3>
             <div id="study-count-container"></div>
         </div>
@@ -145,10 +160,16 @@
             <button class="btn btn-inactive" onclick="setTestParam('subj', '理科', this)">理科 (約30問)</button>
         </div>
         <div class="section">
+            <h3>🎫 英検（本番形式・記述式・100点・時間制限あり）</h3>
+            <button class="btn btn-inactive" onclick="setTestParam('subj', '英検5級', this)">英検5級 (50分)</button>
+            <button class="btn btn-inactive" onclick="setTestParam('subj', '英検4級', this)">英検4級 (35分)</button>
+            <button class="btn btn-inactive" onclick="setTestParam('subj', '英検3級', this)">英検3級 (50分)</button>
+        </div>
+        <div class="section" id="test-unit-section">
             <h3>🎯 テスト範囲 (単元)</h3>
             <div id="test-unit-container"></div>
         </div>
-        <div class="section">
+        <div class="section" id="test-level-section">
             <h3>📶 レベル (1:やさしい 〜 6:激ムズ)</h3>
             <div id="test-level-container"></div>
         </div>
@@ -163,9 +184,19 @@
         </div>
         
         <h2 id="run-title" class="no-print" style="border-left: 5px solid var(--main-color); padding-left: 10px;"></h2>
-        
+
+        <div id="ek-result-banner" class="no-print" style="display:none;"></div>
+
         <div id="run-content" class="section" style="background: transparent; box-shadow:none; padding:0;"></div>
-        
+
+        <div class="section no-print" id="eiken-controls" style="display:none; text-align: center; position: sticky; bottom: 20px;">
+            <button class="btn btn-test" id="ek-grade-btn" style="width:100%; background:#e74c3c;" onclick="confirmGradeEiken()">✅ 答え合わせをする</button>
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn" style="background:#95a5a6; color:white; flex:1;" onclick="window.print()">🖨️ 印刷</button>
+                <button class="btn" style="background:#34495e; color:white; flex:1;" onclick="exitEikenTest()">🚪 やめて戻る</button>
+            </div>
+        </div>
+
         <div class="section no-print" id="study-controls" style="text-align: center; position: sticky; bottom: 20px;">
             <div style="display:flex; gap:10px; margin-bottom:10px;">
                 <button class="btn" style="background:#e74c3c; color:white; flex:1;" onclick="toggleStudyAnswers()">👀 答えを見る</button>
@@ -262,7 +293,7 @@
     // ===== シラバス・範囲設定 =====
     const studySyllabus = {
         "中一": { "数学": ["正負の数", "文字式", "方程式", "変化と対応", "平面空間図形", "データの活用"], "英語": ["be動詞", "一般動詞", "文法"], "国語": ["文法", "漢字", "物語文"], "理科": ["植物と動物", "大地の変動", "物質と光音力", "計算と割合"] },
-        "検定": { "数学": ["数検5級"], "英語": ["英検5級", "英検4級", "英検3級"], "国語": ["漢検5級", "漢検4級"], "理科": ["理検5級"] }
+        "検定": { "数学": ["数検5級"], "英語": ["英検5級", "英検4級", "英検3級", "単語5級", "単語4級", "単語3級"], "国語": ["漢検5級", "漢検4級"], "理科": ["理検5級"] }
     };
     const testSyllabus = {
         "数学": ["第1:正負と因数分解", "第2:文字式方程式", "第3:変化と対応", "第4:平面空間図形", "第5:データの利用"],
@@ -308,6 +339,8 @@
     function toggleDeviceMode() { document.body.classList.toggle('desktop-mode'); localStorage.setItem('desktopMode', document.body.classList.contains('desktop-mode')); }
 
     function switchView(id) {
+        // 英検テスト以外の画面に入るときはタイマーを止めてバッジを隠す
+        if(id !== 'run' || currentRunMode !== 'eiken') { stopEikenTimer(); let tb = document.getElementById('timer-box'); if(tb) tb.style.display = 'none'; }
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById(`view-${id}`).classList.add('active');
         document.getElementById('sidebar').classList.remove('open');
@@ -321,6 +354,13 @@
         btn.parentElement.querySelectorAll('.btn').forEach(b => { b.classList.remove('btn-active'); b.classList.add('btn-inactive'); });
         btn.classList.add('btn-active'); btn.classList.remove('btn-inactive');
         if(type==='grade') initStudyMenu();
+        updateStudySections();
+    }
+    // 単語（フラッシュカード）単元のときはレベル・問題数を隠す（全単語を出すため）
+    function updateStudySections() {
+        let isFlash = pStudy.subj === '英語' && String(pStudy.unit).includes('単語');
+        document.getElementById('study-level-section').style.display = isFlash ? 'none' : '';
+        document.getElementById('study-count-section').style.display = isFlash ? 'none' : '';
     }
     function initStudyMenu() {
         let sDiv = document.getElementById('study-subj-container'); sDiv.innerHTML = '';
@@ -332,7 +372,7 @@
         updateStudyUnits();
         
         let cDiv = document.getElementById('study-count-container'); cDiv.innerHTML = '';
-        [15,30,45,60,75,90,105,120,135,150].forEach(n => {
+        [15,30,45,60,75,90,105,120,135,150,180,210,250,300].forEach(n => {
             let b = document.createElement('button'); b.className = `btn ${n===pStudy.count?'btn-active':'btn-inactive'}`; b.innerText = n+'問';
             b.onclick = function() { setStudyParam('count', n, this); }; cDiv.appendChild(b);
         });
@@ -350,6 +390,7 @@
             let b = document.createElement('button'); b.className = `btn ${u===pStudy.unit?'btn-active':'btn-inactive'}`; b.innerText = u;
             b.onclick = function() { setStudyParam('unit', u, this); }; uDiv.appendChild(b);
         });
+        updateStudySections();
     }
 
     function initTestMenu() { // 初期表示でテスト範囲(単元)・レベルボタンを用意
@@ -364,7 +405,24 @@
         pTest[type] = val;
         btn.parentElement.querySelectorAll('.btn').forEach(b => { b.classList.remove('btn-active'); b.classList.add('btn-inactive'); });
         btn.classList.add('btn-active'); btn.classList.remove('btn-inactive');
-        if(type==='subj') updateTestUnits();
+        // 教科ボタンは「数学/英語/…」と「英検5/4/3級」で別グループなので、両方の選択をそろえる
+        if(type === 'subj') {
+            document.querySelectorAll('#view-test-setup .section .btn').forEach(b => {
+                let m = b.getAttribute('onclick') || '';
+                if(m.includes("setTestParam('subj'")) {
+                    let isThis = m.includes(`'${val}'`);
+                    b.classList.toggle('btn-active', isThis); b.classList.toggle('btn-inactive', !isThis);
+                }
+            });
+            if(!String(val).startsWith('英検')) updateTestUnits();
+            updateTestSections();
+        }
+    }
+    // 英検を選んだときは単元・レベルは使わないので隠す
+    function updateTestSections() {
+        let isEiken = String(pTest.subj).startsWith('英検');
+        document.getElementById('test-unit-section').style.display = isEiken ? 'none' : '';
+        document.getElementById('test-level-section').style.display = isEiken ? 'none' : '';
     }
     function updateTestUnits() {
         let uDiv = document.getElementById('test-unit-container'); uDiv.innerHTML = '';
@@ -410,7 +468,28 @@
             {e:"hand",j:"手"},{e:"head",j:"頭"},{e:"mother",j:"母"},{e:"father",j:"父"},{e:"brother",j:"兄弟"},
             {e:"sister",j:"姉妹"},{e:"morning",j:"朝"},{e:"night",j:"夜"},{e:"spring",j:"春"},{e:"summer",j:"夏"},
             {e:"winter",j:"冬"},{e:"rain",j:"雨"},{e:"snow",j:"雪"},{e:"big",j:"大きい"},{e:"small",j:"小さい"},
-            {e:"new",j:"新しい"},{e:"old",j:"古い"},{e:"happy",j:"うれしい"},{e:"hungry",j:"空腹の"}
+            {e:"new",j:"新しい"},{e:"old",j:"古い"},{e:"happy",j:"うれしい"},{e:"hungry",j:"空腹の"},
+            {e:"afternoon",j:"午後"},{e:"evening",j:"夕方"},{e:"today",j:"今日"},{e:"tomorrow",j:"明日"},{e:"week",j:"週"},
+            {e:"month",j:"月（1か月）"},{e:"year",j:"年"},{e:"time",j:"時間"},{e:"clock",j:"時計"},{e:"door",j:"ドア"},
+            {e:"window",j:"窓"},{e:"room",j:"部屋"},{e:"house",j:"家"},{e:"family",j:"家族"},{e:"grandmother",j:"祖母"},
+            {e:"grandfather",j:"祖父"},{e:"boy",j:"男の子"},{e:"girl",j:"女の子"},{e:"man",j:"男の人"},{e:"woman",j:"女の人"},
+            {e:"people",j:"人々"},{e:"name",j:"名前"},{e:"number",j:"数"},{e:"color",j:"色"},{e:"black",j:"黒い"},
+            {e:"green",j:"緑の"},{e:"yellow",j:"黄色い"},{e:"brown",j:"茶色の"},{e:"car",j:"車"},{e:"bus",j:"バス"},
+            {e:"train",j:"電車"},{e:"bike",j:"自転車"},{e:"plane",j:"飛行機"},{e:"park",j:"公園"},{e:"zoo",j:"動物園"},
+            {e:"shop",j:"店"},{e:"restaurant",j:"レストラン"},{e:"food",j:"食べ物"},{e:"lunch",j:"昼食"},{e:"rice",j:"ごはん・米"},
+            {e:"meat",j:"肉"},{e:"vegetable",j:"野菜"},{e:"fruit",j:"果物"},{e:"banana",j:"バナナ"},{e:"cake",j:"ケーキ"},
+            {e:"tea",j:"お茶"},{e:"coffee",j:"コーヒー"},{e:"juice",j:"ジュース"},{e:"music",j:"音楽"},{e:"song",j:"歌"},
+            {e:"sing",j:"歌う"},{e:"dance",j:"おどる"},{e:"picture",j:"絵・写真"},{e:"camera",j:"カメラ"},{e:"movie",j:"映画"},
+            {e:"game",j:"ゲーム"},{e:"sport",j:"スポーツ"},{e:"baseball",j:"野球"},{e:"soccer",j:"サッカー"},{e:"tennis",j:"テニス"},
+            {e:"ball",j:"ボール"},{e:"team",j:"チーム"},{e:"club",j:"クラブ"},{e:"classroom",j:"教室"},{e:"homework",j:"宿題"},
+            {e:"test",j:"テスト"},{e:"question",j:"質問"},{e:"answer",j:"答え"},{e:"open",j:"開ける"},{e:"close",j:"閉める"},
+            {e:"read",j:"読む"},{e:"write",j:"書く"},{e:"speak",j:"話す"},{e:"listen",j:"聞く"},{e:"come",j:"来る"},
+            {e:"eat",j:"食べる"},{e:"drink",j:"飲む"},{e:"make",j:"作る"},{e:"use",j:"使う"},{e:"help",j:"手伝う"},
+            {e:"like",j:"好む"},{e:"want",j:"ほしがる"},{e:"know",j:"知っている"},{e:"live",j:"住む"},{e:"cook",j:"料理する"},
+            {e:"clean",j:"そうじする"},{e:"buy",j:"買う"},{e:"get",j:"手に入れる"},{e:"give",j:"あたえる"},{e:"tall",j:"背が高い"},
+            {e:"long",j:"長い"},{e:"fast",j:"速い"},{e:"hot",j:"暑い・熱い"},{e:"cold",j:"寒い・冷たい"},{e:"warm",j:"あたたかい"},
+            {e:"cool",j:"すずしい"},{e:"good",j:"よい"},{e:"nice",j:"すてきな"},{e:"cute",j:"かわいい"},{e:"busy",j:"いそがしい"},
+            {e:"now",j:"今"},{e:"here",j:"ここに"}
         ],
         mid: [ // 英検4級レベル
             {e:"kitchen",j:"台所"},{e:"breakfast",j:"朝食"},{e:"dinner",j:"夕食"},{e:"hospital",j:"病院"},{e:"station",j:"駅"},
@@ -419,7 +498,26 @@
             {e:"arrive",j:"到着する"},{e:"invite",j:"招待する"},{e:"decide",j:"決める"},{e:"understand",j:"理解する"},{e:"future",j:"未来"},
             {e:"holiday",j:"休日"},{e:"weather",j:"天気"},{e:"subject",j:"教科"},{e:"science",j:"理科"},{e:"history",j:"歴史"},
             {e:"culture",j:"文化"},{e:"foreign",j:"外国の"},{e:"enough",j:"十分な"},{e:"brave",j:"勇敢な"},{e:"quiet",j:"静かな"},
-            {e:"cheap",j:"安い"},{e:"heavy",j:"重い"},{e:"useful",j:"役に立つ"},{e:"choose",j:"選ぶ"}
+            {e:"cheap",j:"安い"},{e:"heavy",j:"重い"},{e:"useful",j:"役に立つ"},{e:"choose",j:"選ぶ"},
+            {e:"yesterday",j:"昨日"},{e:"tonight",j:"今夜"},{e:"weekend",j:"週末"},{e:"vacation",j:"休暇"},{e:"trip",j:"旅行"},
+            {e:"visit",j:"訪問する"},{e:"leave",j:"出発する・去る"},{e:"stay",j:"滞在する"},{e:"meet",j:"会う"},{e:"talk",j:"話す"},
+            {e:"tell",j:"伝える"},{e:"ask",j:"たずねる"},{e:"call",j:"電話をかける"},{e:"begin",j:"始める"},{e:"finish",j:"終える"},
+            {e:"try",j:"やってみる"},{e:"need",j:"必要とする"},{e:"find",j:"見つける"},{e:"lose",j:"失う・負ける"},{e:"win",j:"勝つ"},
+            {e:"worry",j:"心配する"},{e:"hope",j:"望む"},{e:"practice",j:"練習する"},{e:"move",j:"引っこす・動く"},{e:"carry",j:"運ぶ"},
+            {e:"bring",j:"持ってくる"},{e:"send",j:"送る"},{e:"show",j:"見せる"},{e:"wear",j:"身につける"},{e:"sleep",j:"ねむる"},
+            {e:"early",j:"早い・早く"},{e:"late",j:"おそい・おくれて"},{e:"soon",j:"すぐに"},{e:"again",j:"ふたたび"},{e:"always",j:"いつも"},
+            {e:"angry",j:"おこった"},{e:"sad",j:"悲しい"},{e:"tired",j:"つかれた"},{e:"glad",j:"うれしい"},{e:"excited",j:"わくわくした"},
+            {e:"surprised",j:"おどろいた"},{e:"sick",j:"病気の"},{e:"doctor",j:"医者"},{e:"nurse",j:"看護師"},{e:"farmer",j:"農家の人"},
+            {e:"driver",j:"運転手"},{e:"singer",j:"歌手"},{e:"writer",j:"作家"},{e:"office",j:"事務所"},{e:"factory",j:"工場"},
+            {e:"museum",j:"博物館"},{e:"theater",j:"劇場"},{e:"airport",j:"空港"},{e:"bridge",j:"橋"},{e:"road",j:"道路"},
+            {e:"street",j:"通り"},{e:"town",j:"町"},{e:"village",j:"村"},{e:"world",j:"世界"},{e:"country",j:"国"},
+            {e:"sea",j:"海"},{e:"beach",j:"浜辺"},{e:"mountain",j:"山"},{e:"river",j:"川"},{e:"lake",j:"湖"},
+            {e:"forest",j:"森"},{e:"flower",j:"花"},{e:"tree",j:"木"},{e:"animal",j:"動物"},{e:"horse",j:"馬"},
+            {e:"rabbit",j:"ウサギ"},{e:"money",j:"お金"},{e:"ticket",j:"切符"},{e:"present",j:"おくり物"},{e:"birthday",j:"誕生日"},
+            {e:"party",j:"パーティー"},{e:"festival",j:"祭り"},{e:"hour",j:"1時間"},{e:"minute",j:"分"},{e:"next",j:"次の"},
+            {e:"other",j:"ほかの"},{e:"same",j:"同じ"},{e:"different",j:"ちがった"},{e:"special",j:"特別な"},{e:"famous",j:"有名な"},
+            {e:"interesting",j:"おもしろい"},{e:"wonderful",j:"すばらしい"},{e:"delicious",j:"とてもおいしい"},{e:"strong",j:"強い"},{e:"weak",j:"弱い"},
+            {e:"young",j:"若い"},{e:"together",j:"いっしょに"},{e:"abroad",j:"外国へ"}
         ],
         hard: [ // 英検3級レベル
             {e:"environment",j:"環境"},{e:"government",j:"政府"},{e:"technology",j:"技術"},{e:"experience",j:"経験"},{e:"expensive",j:"高価な"},
@@ -427,7 +525,24 @@
             {e:"produce",j:"生産する"},{e:"provide",j:"供給する"},{e:"improve",j:"改善する"},{e:"imagine",j:"想像する"},{e:"introduce",j:"紹介する"},
             {e:"continue",j:"続ける"},{e:"prepare",j:"準備する"},{e:"receive",j:"受け取る"},{e:"complete",j:"完成させる"},{e:"protect",j:"守る"},
             {e:"discover",j:"発見する"},{e:"similar",j:"よく似た"},{e:"distance",j:"距離"},{e:"industry",j:"産業"},{e:"medicine",j:"薬"},
-            {e:"chemistry",j:"化学"},{e:"professor",j:"教授"},{e:"various",j:"さまざまな"},{e:"advantage",j:"利点"},{e:"increase",j:"増える"}
+            {e:"chemistry",j:"化学"},{e:"professor",j:"教授"},{e:"various",j:"さまざまな"},{e:"advantage",j:"利点"},{e:"increase",j:"増える"},
+            {e:"society",j:"社会"},{e:"nature",j:"自然"},{e:"energy",j:"エネルギー"},{e:"earth",j:"地球"},{e:"space",j:"宇宙"},
+            {e:"island",j:"島"},{e:"area",j:"地域"},{e:"local",j:"地元の"},{e:"company",j:"会社"},{e:"job",j:"仕事"},
+            {e:"volunteer",j:"ボランティア"},{e:"meeting",j:"会議"},{e:"report",j:"レポート・報告"},{e:"event",j:"行事"},{e:"graduation",j:"卒業"},
+            {e:"university",j:"大学"},{e:"language",j:"言語"},{e:"word",j:"単語・言葉"},{e:"sentence",j:"文"},{e:"meaning",j:"意味"},
+            {e:"message",j:"伝言"},{e:"explain",j:"説明する"},{e:"express",j:"表現する"},{e:"communicate",j:"伝え合う"},{e:"share",j:"共有する"},
+            {e:"support",j:"支える"},{e:"save",j:"救う・節約する"},{e:"waste",j:"むだにする"},{e:"recycle",j:"リサイクルする"},{e:"reduce",j:"減らす"},
+            {e:"collect",j:"集める"},{e:"create",j:"つくり出す"},{e:"invent",j:"発明する"},{e:"design",j:"設計する"},{e:"build",j:"建てる"},
+            {e:"repair",j:"修理する"},{e:"solve",j:"解決する"},{e:"notice",j:"気づく"},{e:"believe",j:"信じる"},{e:"agree",j:"賛成する"},
+            {e:"promise",j:"約束する"},{e:"suggest",j:"提案する"},{e:"respect",j:"尊敬する"},{e:"encourage",j:"はげます"},{e:"appear",j:"現れる"},
+            {e:"disappear",j:"消える"},{e:"happen",j:"起こる"},{e:"grow",j:"成長する・育てる"},{e:"raise",j:"育てる・上げる"},{e:"wild",j:"野生の"},
+            {e:"secret",j:"秘密"},{e:"result",j:"結果"},{e:"purpose",j:"目的"},{e:"effort",j:"努力"},{e:"chance",j:"機会"},
+            {e:"choice",j:"選択"},{e:"skill",j:"技能"},{e:"habit",j:"習慣"},{e:"health",j:"健康"},{e:"healthy",j:"健康的な"},
+            {e:"safe",j:"安全な"},{e:"convenient",j:"便利な"},{e:"traditional",j:"伝統的な"},{e:"international",j:"国際的な"},{e:"several",j:"いくつかの"},
+            {e:"probably",j:"たぶん"},{e:"recently",j:"最近"},{e:"suddenly",j:"突然"},{e:"finally",j:"ついに"},{e:"however",j:"しかしながら"},
+            {e:"until",j:"〜まで"},{e:"through",j:"〜を通って"},{e:"without",j:"〜なしで"},{e:"wide",j:"広い"},{e:"deep",j:"深い"},
+            {e:"empty",j:"からの"},{e:"full",j:"いっぱいの"},{e:"noisy",j:"さわがしい"},{e:"careful",j:"注意深い"},{e:"serious",j:"真剣な・深刻な"},
+            {e:"polite",j:"ていねいな"},{e:"friendly",j:"親しみやすい"},{e:"lonely",j:"孤独な"},{e:"proud",j:"ほこりに思う"},{e:"nervous",j:"緊張した"}
         ]
     };
     const kanjiWrite = [ // カタカナ→漢字（5級・基本）
@@ -739,6 +854,639 @@
         let pool = diff >= 4 ? gens.concat(hardGens) : gens;
         return {...randObj(pool)(), type:'calc'};
     }
+    // ===== 英検 級別問題（本番の出題形式に寄せた穴埋め・会話表現） =====
+    function eiken5Q(diff) {
+        let gens = [
+            () => engBe(diff),
+            () => engVerb(diff),
+            () => { let p=randObj([
+                {s:"(   ) is your birthday? — It's May 5th.",a:"When"},
+                {s:"(   ) is that tall boy? — He is my brother.",a:"Who"},
+                {s:"(   ) do you live? — I live in Osaka.",a:"Where"},
+                {s:"(   ) sport do you like? — I like tennis.",a:"What"},
+                {s:"(   ) do you come to school? — By bike.",a:"How"},
+                {s:"(   ) many pens do you have? — I have three.",a:"How"},
+                {s:"(   ) is your favorite singer? — My favorite singer is Ken.",a:"Who"}
+            ]); return {q:`( )に入る疑問詞を書きなさい：${p.s}`, a:p.a, type:'calc'}; },
+            () => { let p=randObj([
+                {j:"私は速く泳げます。",s:"I (   ) swim fast.",a:"can"},
+                {j:"彼はじょうずに歌えます。",s:"He (   ) sing well.",a:"can"},
+                {j:"すわってください。",s:"(   ) down, please.",a:"Sit"},
+                {j:"この部屋で走ってはいけません。",s:"(   ) run in this room.",a:"Don't"},
+                {j:"窓を開けてください。",s:"Please (   ) the window.",a:"open"},
+                {j:"いっしょにテニスをしましょう。",s:"(   ) play tennis together.",a:"Let's"}
+            ]); return {q:`日本語に合うように( )に1語入れなさい：「${p.j}」 ${p.s}`, a:p.a, type:'calc'}; },
+            () => { let d=randObj([{j:"月曜日",e:"Monday"},{j:"火曜日",e:"Tuesday"},{j:"水曜日",e:"Wednesday"},{j:"木曜日",e:"Thursday"},{j:"金曜日",e:"Friday"},{j:"土曜日",e:"Saturday"},{j:"日曜日",e:"Sunday"},{j:"1月",e:"January"},{j:"3月",e:"March"},{j:"4月",e:"April"},{j:"7月",e:"July"},{j:"12月",e:"December"}]); return {q:`次の日本語を英語（スペル）で書きなさい：「${d.j}」`, a:d.e, type:'text'}; }
+        ];
+        return randObj(gens)();
+    }
+    function eiken4Q(diff) {
+        let gens = [
+            () => { let v=randObj([
+                {b:"go",p:"went",f:"I (   ) to Kyoto #."},
+                {b:"see",p:"saw",f:"I (   ) a beautiful bird #."},
+                {b:"eat",p:"ate",f:"We (   ) pizza #."},
+                {b:"buy",p:"bought",f:"She (   ) a new bag #."},
+                {b:"make",p:"made",f:"Tom (   ) a cake #."},
+                {b:"come",p:"came",f:"He (   ) to my house #."},
+                {b:"get",p:"got",f:"I (   ) a letter from Ken #."},
+                {b:"visit",p:"visited",f:"They (   ) the museum #."},
+                {b:"study",p:"studied",f:"I (   ) math #."},
+                {b:"write",p:"wrote",f:"She (   ) a letter #."}
+            ]), t=randObj(["yesterday","last week","last Sunday","two days ago","last night"]);
+            return {q:`( )に動詞「${v.b}」を過去形にして入れなさい：${v.f.replace('#', t)}`, a:v.p, type:'calc'}; },
+            () => { let p=randObj([
+                {j:"私は明日テニスをするつもりです。",s:"I am (   ) to play tennis tomorrow.",a:"going"},
+                {j:"彼は昨夜テレビを見ていました。",s:"He (   ) watching TV last night.",a:"was"},
+                {j:"彼らはそのとき公園を走っていました。",s:"They (   ) running in the park then.",a:"were"},
+                {j:"私は将来医者になりたいです。",s:"I want (   ) be a doctor in the future.",a:"to"},
+                {j:"明日は雨がふるでしょう。",s:"It (   ) rain tomorrow.",a:"will"}
+            ]); return {q:`日本語に合うように( )に1語入れなさい：「${p.j}」 ${p.s}`, a:p.a, type:'calc'}; },
+            () => { let p=randObj([
+                {v:"play",s:"I enjoyed (   ) soccer with my friends.",a:"playing"},
+                {v:"read",s:"I finished (   ) the book last night.",a:"reading"},
+                {v:"swim",s:"We enjoyed (   ) in the sea.",a:"swimming"},
+                {v:"make",s:"She likes (   ) cookies.（動名詞で）",a:"making"},
+                {v:"rain",s:"It stopped (   ) in the evening.",a:"raining"}
+            ]); return {q:`( )に動詞「${p.v}」を正しい形にして入れなさい：${p.s}`, a:p.a, type:'calc'}; },
+            () => { let p=randObj([
+                {s:"This question is (   ) than that one.（easy の比較級）",a:"easier"},
+                {s:"Mt. Fuji is the (   ) mountain in Japan.（high の最上級）",a:"highest"},
+                {s:"Soccer is (   ) popular than tennis in my school.（1語）",a:"more"},
+                {s:"This is the (   ) interesting movie of the three.（1語）",a:"most"},
+                {s:"My dog is (   ) than yours.（big の比較級）",a:"bigger"}
+            ]); return {q:`( )に入る語を書きなさい：${p.s}`, a:p.a, type:'calc'}; },
+            () => { let p=randObj([
+                {s:"There (   ) a big park near my house.",a:"is"},
+                {s:"There (   ) many students in the gym.",a:"are"},
+                {s:"There (   ) two cats under the table.",a:"are"},
+                {s:"There (   ) an old temple in this town.",a:"is"}
+            ]); return {q:`( )に is / are のどちらかを入れなさい：${p.s}`, a:p.a, type:'calc'}; },
+            () => { let p=randObj([
+                {s:"A: Thank you very much.  B: You're (   ). （どういたしまして）",a:"welcome"},
+                {s:"A: (   ) is the weather today?  B: It's sunny.",a:"How"},
+                {s:"A: Whose bag is this?  B: It's (   ). （私のもの）",a:"mine"},
+                {s:"A: (   ) you help me?  B: Sure. （手伝ってくれますか）",a:"Can"}
+            ]); return {q:`会話が成り立つように( )に1語入れなさい：${p.s}`, a:p.a, type:'calc'}; }
+        ];
+        return randObj(gens)();
+    }
+    function eiken3Q(diff) {
+        let gens = [
+            () => { let p=randObj([
+                {b:"be",pp:"been",s:"I have (   ) to Okinawa twice."},
+                {b:"see",pp:"seen",s:"I have never (   ) such a big dog."},
+                {b:"finish",pp:"finished",s:"She has just (   ) her homework."},
+                {b:"know",pp:"known",s:"I have (   ) him for ten years."},
+                {b:"live",pp:"lived",s:"They have (   ) in Nara since 2010."}
+            ]); return {q:`( )に動詞「${p.b}」を正しい形にして入れなさい（現在完了）：${p.s}`, a:p.pp, type:'calc'}; },
+            () => { let p=randObj([
+                {b:"write",pp:"written",s:"This letter was (   ) by Tom."},
+                {b:"speak",pp:"spoken",s:"English is (   ) in Australia."},
+                {b:"make",pp:"made",s:"This desk was (   ) by my father."},
+                {b:"build",pp:"built",s:"This bridge was (   ) 100 years ago."},
+                {b:"take",pp:"taken",s:"This picture was (   ) in Kyoto."}
+            ]); return {q:`( )に動詞「${p.b}」を正しい形にして入れなさい（受け身）：${p.s}`, a:p.pp, type:'calc'}; },
+            () => { let p=randObj([
+                {j:"私は忙しすぎて眠れませんでした。",s:"I was (   ) busy to sleep.",a:"too"},
+                {j:"英語を勉強することは大切です。",s:"It is important (   ) study English.",a:"to"},
+                {j:"私は何と言えばよいか分かりませんでした。",s:"I didn't know what (   ) say.",a:"to"},
+                {j:"彼女は私に窓を開けるように頼みました。",s:"She asked me (   ) open the window.",a:"to"}
+            ]); return {q:`日本語に合うように( )に1語入れなさい：「${p.j}」 ${p.s}`, a:p.a, type:'calc'}; },
+            () => { let p=randObj([
+                {s:"I have a friend (   ) lives in Canada.",a:"who"},
+                {s:"This is the bus (   ) goes to the station.",a:"which"},
+                {s:"The woman (   ) is singing over there is my aunt.",a:"who"},
+                {s:"I read a book (   ) was written by Soseki.",a:"which"}
+            ]); return {q:`( )に who / which のどちらかを入れなさい：${p.s}`, a:p.a, type:'calc'}; },
+            () => { let p=randObj([
+                {j:"もし明日晴れたら、つりに行きます。",s:"(   ) it is sunny tomorrow, I will go fishing.",a:"If"},
+                {j:"私が帰宅したとき、母は料理をしていました。",s:"My mother was cooking (   ) I came home.",a:"when"},
+                {j:"疲れていたので、早く寝ました。",s:"I went to bed early (   ) I was tired.",a:"because"}
+            ]); return {q:`日本語に合うように( )に1語入れなさい：「${p.j}」 ${p.s}`, a:p.a, type:'calc'}; },
+            () => { let p=randObj([
+                {s:"A: I have a cold.  B: That's too (   ). （お気の毒に）",a:"bad"},
+                {s:"A: Would you like some tea?  B: Yes, (   ). （お願いします）",a:"please"},
+                {s:"A: How (   ) going shopping this weekend?  B: Sounds good! （〜はどうですか）",a:"about"}
+            ]); return {q:`会話が成り立つように( )に1語入れなさい：${p.s}`, a:p.a, type:'calc'}; }
+        ];
+        return randObj(gens)();
+    }
+
+    // ============================================================
+    //  英検テスト（本番形式・記述式・100点満点・時間制限・○△✕採点）
+    //  ※過去問より少し難しめ：選択式ではなく「記述（スペルを書く）」で出題
+    // ============================================================
+    const ekWordQ = (level) => { let w = randObj(engWordsByLevel[level]); return { q:`次の日本語の意味になる英単語を書きなさい。<br>「${w.j}」`, a:w.e }; };
+    // 英検テストの文で使う登場人物・時間（毎回変えて同じ文が続かないように）
+    const EK_SUBJ = ["I", "We", "They", "He", "She", "Tom", "Ken", "Emma", "Lucy", "Nancy", "Yuki", "My brother", "My sister"];
+    const EK_TIME = ["yesterday", "last week", "last night", "two days ago", "last Sunday", "this morning", "last month"];
+
+    // --- 5級 短文の語い（文脈穴埋め・日本語ヒントで答えを一つに確定） ---
+    //  ※過去問と場面・単語が重ならない完全オリジナル文
+    function e5Blank() {
+        const gens = [
+            () => { const p = randObj([
+                {s:"I ( &nbsp; ) my bike to the park every Sunday.", h:"（乗る）", a:"ride"},
+                {s:"I ( &nbsp; ) to music before I go to bed.", h:"（聞く）", a:"listen"},
+                {s:"We ( &nbsp; ) a snowman in the yard every winter.", h:"（作る）", a:"make"},
+                {s:"I ( &nbsp; ) my dog in the park every morning.", h:"（散歩させる）", a:"walk"},
+                {s:"Please ( &nbsp; ) your name on this card.", h:"（書く）", a:"write"},
+                {s:"I ( &nbsp; ) my teeth after every meal.", h:"（みがく）", a:"brush"},
+                {s:"We ( &nbsp; ) pictures of flowers in art class.", h:"（描く）", a:"draw"},
+                {s:"Let's ( &nbsp; ) to this fun song together.", h:"（おどる）", a:"dance"},
+                {s:"I ( &nbsp; ) comic books on rainy days.", h:"（読む）", a:"read"},
+                {s:"I ( &nbsp; ) a birthday card to my grandmother.", h:"（送る）", a:"send"},
+                {s:"Please ( &nbsp; ) the door when you leave.", h:"（閉める）", a:"close"},
+                {s:"We ( &nbsp; ) hello to our teacher every morning.", h:"（言う）", a:"say"}
+            ]); return {q:`( )に入る語を書きなさい。${p.h}<br>${p.s}`, a:p.a}; },
+            () => { const p = randObj([
+                {s:"I keep my coins in my ( &nbsp; ).", h:"（さいふ）", a:"wallet"},
+                {s:"We swim in the ( &nbsp; ) in summer.", h:"（海）", a:"sea"},
+                {s:"The ( &nbsp; ) shines brightly in the daytime.", h:"（太陽）", a:"sun"},
+                {s:"I sleep in my ( &nbsp; ) at night.", h:"（ベッド）", a:"bed"},
+                {s:"A little ( &nbsp; ) is singing in the tree.", h:"（鳥）", a:"bird"},
+                {s:"We cook dinner in the ( &nbsp; ).", h:"（台所）", a:"kitchen"},
+                {s:"My father washes his ( &nbsp; ) on weekends.", h:"（車）", a:"car"},
+                {s:"I wear a warm ( &nbsp; ) when it is cold.", h:"（コート）", a:"coat"},
+                {s:"December is the last ( &nbsp; ) of the year.", h:"（月）", a:"month"},
+                {s:"We watched a soccer ( &nbsp; ) on TV last night.", h:"（試合）", a:"game"},
+                {s:"There are many books in my ( &nbsp; ).", h:"（部屋）", a:"room"},
+                {s:"I write a letter with a ( &nbsp; ).", h:"（ペン）", a:"pen"}
+            ]); return {q:`( )に入る語を書きなさい。${p.h}<br>${p.s}`, a:p.a}; },
+            () => { const p = randObj([
+                {s:"A mouse is a very ( &nbsp; ) animal.", h:"（小さい）", a:"small"},
+                {s:"This box is ( &nbsp; ). I can't carry it.", h:"（重い）", a:"heavy"},
+                {s:"Snow is white and ( &nbsp; ).", h:"（冷たい）", a:"cold"},
+                {s:"My grandmother is ( &nbsp; ), but she is active.", h:"（年をとった）", a:"old"},
+                {s:"These roses are very ( &nbsp; ).", h:"（美しい）", a:"beautiful"},
+                {s:"A cheetah can run very ( &nbsp; ).", h:"（速く）", a:"fast"},
+                {s:"This cake is very ( &nbsp; ). I love it.", h:"（あまい）", a:"sweet"},
+                {s:"A giraffe has a very ( &nbsp; ) neck.", h:"（長い）", a:"long"},
+                {s:"The classroom is very ( &nbsp; ) today. Everyone is talking.", h:"（うるさい）", a:"noisy"}
+            ]); return {q:`( )に入る語を書きなさい。${p.h}<br>${p.s}`, a:p.a}; }
+        ];
+        return randObj(gens)();
+    }
+    // 5級 会話・疑問詞
+    function e5Wh() {
+        const p = randObj([
+            {s:"A: ( &nbsp; ) is your birthday?  B: It's May 5th.", a:"When"},
+            {s:"A: ( &nbsp; ) is that tall boy?  B: He is my brother.", a:"Who"},
+            {s:"A: ( &nbsp; ) do you live?  B: I live in Osaka.", a:"Where"},
+            {s:"A: ( &nbsp; ) do you come to school?  B: By bike.", a:"How"},
+            {s:"A: ( &nbsp; ) sport do you like?  B: I like tennis.", a:"What"},
+            {s:"A: ( &nbsp; ) many pens do you have?  B: I have three.", a:"How"},
+            {s:"A: ( &nbsp; ) bag is this?  B: It's Ken's.", a:"Whose"},
+            {s:"A: ( &nbsp; ) do you like summer?  B: Because I can swim.", a:"Why"},
+            {s:"A: ( &nbsp; ) is your favorite subject?  B: It's music.", a:"What"},
+            {s:"A: ( &nbsp; ) old is your sister?  B: She is ten.", a:"How"},
+            {s:"A: ( &nbsp; ) are you from?  B: I'm from Canada.", a:"Where"},
+            {s:"A: ( &nbsp; ) cap is that?  B: It's my father's.", a:"Whose"},
+            {s:"A: ( &nbsp; ) is that woman?  B: She is our teacher.", a:"Who"},
+            {s:"A: ( &nbsp; ) do you get up?  B: At six thirty.", a:"When"},
+            {s:"A: ( &nbsp; ) color do you like?  B: I like green.", a:"What"}
+        ]);
+        return {q:`会話が成り立つように( )に入る疑問詞を書きなさい。<br>${p.s}`, a:p.a};
+    }
+    function e5Conv() {
+        const p = randObj([
+            {j:"（速く泳げます）", s:"I ( &nbsp; ) swim fast.", a:"can"},
+            {j:"（すわってください）", s:"( &nbsp; ) down, please.", a:"Sit"},
+            {j:"（ここで走ってはいけません）", s:"( &nbsp; ) run here.", a:"Don't"},
+            {j:"（いっしょに歌いましょう）", s:"( &nbsp; ) sing together.", a:"Let's"},
+            {j:"（どういたしまして）", s:"A: Thank you.  B: You're ( &nbsp; ).", a:"welcome"},
+            {j:"（がんばってね）", s:"A: I have a test today.  B: Good ( &nbsp; )!", a:"luck"},
+            {j:"（はじめまして）", s:"( &nbsp; ) to meet you.", a:"Nice"},
+            {j:"（お誕生日おめでとう）", s:"Happy ( &nbsp; ) to you!", a:"birthday"},
+            {j:"（気をつけてね）", s:"( &nbsp; ) careful! The road is wet.", a:"Be"},
+            {j:"（ごめんなさい）", s:"A: You are late.  B: I'm ( &nbsp; ).", a:"sorry"},
+            {j:"（もちろん）", s:"A: Can you help me?  B: ( &nbsp; )!", a:"Sure"},
+            {j:"（元気ですか）", s:"A: How ( &nbsp; ) you?  B: I'm fine.", a:"are"},
+            {j:"（静かにしてください）", s:"( &nbsp; ) quiet, please.", a:"Be"},
+            {j:"（また会いましょう）", s:"See ( &nbsp; ) later!", a:"you"}
+        ]);
+        return {q:`日本語に合うように( )に1語入れなさい。${p.j}<br>${p.s}`, a:p.a};
+    }
+
+    // --- 4級 ---
+    //  ※過去問と場面・単語が重ならない完全オリジナル文
+    function e4Blank() {
+        const p = randObj([
+            {s:"I'm thirsty. Can I have a glass of ( &nbsp; )?", h:"（水）", a:"water"},
+            {s:"You should see a ( &nbsp; ) when you feel sick.", h:"（医者）", a:"doctor"},
+            {s:"We saw many old paintings at the ( &nbsp; ).", h:"（美術館・博物館）", a:"museum"},
+            {s:"I want to ( &nbsp; ) a birthday card to my aunt.", h:"（送る）", a:"send"},
+            {s:"My sister is a member of the tennis ( &nbsp; ).", h:"（部・チーム）", a:"team"},
+            {s:"It was a ( &nbsp; ) day, so we stayed inside.", h:"（雨の）", a:"rainy"},
+            {s:"Could you ( &nbsp; ) me the way to the post office?", h:"（教える）", a:"tell"},
+            {s:"The bus was late, so I was ( &nbsp; ) for the meeting.", h:"（遅れた）", a:"late"},
+            {s:"This science question is really ( &nbsp; ).", h:"（難しい）", a:"difficult"},
+            {s:"I ( &nbsp; ) the piano every day to get better.", h:"（練習する）", a:"practice"},
+            {s:"We enjoyed the summer ( &nbsp; ) and watched fireworks.", h:"（祭り）", a:"festival"},
+            {s:"I'll ( &nbsp; ) you in front of the library at ten.", h:"（会う）", a:"meet"},
+            {s:"Turn ( &nbsp; ) at the next corner and you'll see it.", h:"（左に）", a:"left"},
+            {s:"Please ( &nbsp; ) your report before Friday.", h:"（終える）", a:"finish"},
+            {s:"My dream is to ( &nbsp; ) all over the world someday.", h:"（旅行する）", a:"travel"},
+            {s:"I usually ( &nbsp; ) my grandparents during the summer holidays.", h:"（訪ねる）", a:"visit"},
+            {s:"It's very ( &nbsp; ) in the desert during the day.", h:"（暑い）", a:"hot"},
+            {s:"She won the race because she runs so ( &nbsp; ).", h:"（速く）", a:"fast"}
+        ]);
+        return {q:`( )に入る語を書きなさい。${p.h}<br>${p.s}`, a:p.a};
+    }
+    function e4Past() {
+        // 過去形は主語によって形が変わらないので、主語をランダムに差し替えて文を毎回変える
+        const v = randObj([
+            {b:"go", p:"went", tail:"to the science museum"},
+            {b:"see", p:"saw", tail:"a rainbow in the sky"},
+            {b:"eat", p:"ate", tail:"curry for dinner"},
+            {b:"buy", p:"bought", tail:"a new umbrella"},
+            {b:"make", p:"made", tail:"some sandwiches"},
+            {b:"come", p:"came", tail:"to school early"},
+            {b:"get", p:"got", tail:"a nice present"},
+            {b:"take", p:"took", tail:"a lot of photos"},
+            {b:"study", p:"studied", tail:"English very hard"},
+            {b:"write", p:"wrote", tail:"a long email"},
+            {b:"run", p:"ran", tail:"in the park"},
+            {b:"find", p:"found", tail:"a coin on the street"},
+            {b:"win", p:"won", tail:"the tennis match"},
+            {b:"sing", p:"sang", tail:"a beautiful song"},
+            {b:"swim", p:"swam", tail:"in the river"},
+            {b:"meet", p:"met", tail:"an old friend"},
+            {b:"bring", p:"brought", tail:"a big lunch box"},
+            {b:"catch", p:"caught", tail:"a big fish"},
+            {b:"drink", p:"drank", tail:"a glass of juice"},
+            {b:"speak", p:"spoke", tail:"to the new teacher"},
+            {b:"lose", p:"lost", tail:"the house key"},
+            {b:"sit", p:"sat", tail:"on a bench"},
+            {b:"wear", p:"wore", tail:"a red coat"},
+            {b:"teach", p:"taught", tail:"science at school"},
+            {b:"give", p:"gave", tail:"a present to a friend"}
+        ]);
+        const s = randObj(EK_SUBJ), t = randObj(EK_TIME);
+        return {q:`( )に動詞「${v.b}」を過去形にして入れなさい。<br>${s} ( &nbsp; ) ${v.tail} ${t}.`, a:v.p};
+    }
+    function e4Grammar() {
+        const gens = [
+            () => { const p = randObj([
+                {j:"私は明日テニスをするつもりです。", s:"I am ( &nbsp; ) to play tennis tomorrow.", a:"going"},
+                {j:"彼は昨夜テレビを見ていました。", s:"He ( &nbsp; ) watching TV last night.", a:"was"},
+                {j:"彼らはそのとき公園を走っていました。", s:"They ( &nbsp; ) running in the park then.", a:"were"},
+                {j:"私は将来医者になりたいです。", s:"I want ( &nbsp; ) be a doctor in the future.", a:"to"},
+                {j:"明日は晴れるでしょう。", s:"It ( &nbsp; ) be sunny tomorrow.", a:"will"},
+                {j:"私は今、宿題をしているところです。", s:"I am ( &nbsp; ) my homework now.", a:"doing"},
+                {j:"あなたは昨日、何をしていましたか。", s:"What ( &nbsp; ) you doing yesterday?", a:"were"},
+                {j:"来週、雪が降るでしょう。", s:"It ( &nbsp; ) snow next week.", a:"will"},
+                {j:"私たちは来月、京都を訪れる予定です。", s:"We are ( &nbsp; ) to visit Kyoto next month.", a:"going"}
+            ]); return {q:`日本語に合うように( )に1語入れなさい。${p.j}<br>${p.s}`, a:p.a}; },
+            () => { const p = randObj([
+                {s:"This question is ( &nbsp; ) than that one.（easy の比較級）", a:"easier"},
+                {s:"Mt. Fuji is the ( &nbsp; ) mountain in Japan.（high の最上級）", a:"highest"},
+                {s:"Soccer is ( &nbsp; ) popular than tennis in my class.（1語）", a:"more"},
+                {s:"This is the ( &nbsp; ) interesting movie of the three.（1語）", a:"most"},
+                {s:"My dog is ( &nbsp; ) than yours.（big の比較級）", a:"bigger"},
+                {s:"Today is ( &nbsp; ) than yesterday.（hot の比較級）", a:"hotter"},
+                {s:"This is the ( &nbsp; ) book in the library.（old の最上級）", a:"oldest"},
+                {s:"She runs ( &nbsp; ) than her brother.（fast の比較級）", a:"faster"},
+                {s:"Health is the ( &nbsp; ) important thing.（1語・最上級）", a:"most"},
+                {s:"This river is ( &nbsp; ) than that one.（long の比較級）", a:"longer"},
+                {s:"He is the ( &nbsp; ) student in the class.（tall の最上級）", a:"tallest"}
+            ]); return {q:`( )に入る語を書きなさい。<br>${p.s}`, a:p.a}; }
+        ];
+        return randObj(gens)();
+    }
+    function e4Grammar2() {
+        const gens = [
+            () => { const p = randObj([
+                {v:"play", s:"I enjoyed ( &nbsp; ) soccer with my friends.", a:"playing"},
+                {v:"read", s:"I finished ( &nbsp; ) the book last night.", a:"reading"},
+                {v:"swim", s:"We enjoyed ( &nbsp; ) in the sea.", a:"swimming"},
+                {v:"make", s:"She likes ( &nbsp; ) cookies for her family.", a:"making"},
+                {v:"rain", s:"It stopped ( &nbsp; ) in the evening.", a:"raining"},
+                {v:"sing", s:"He is good at ( &nbsp; ) English songs.", a:"singing"},
+                {v:"take", s:"My hobby is ( &nbsp; ) pictures of animals.", a:"taking"},
+                {v:"study", s:"( &nbsp; ) abroad is a good experience.", a:"Studying"},
+                {v:"run", s:"I like ( &nbsp; ) in the morning.", a:"running"},
+                {v:"write", s:"Thank you for ( &nbsp; ) to me.", a:"writing"}
+            ]); return {q:`( )に動詞「${p.v}」を正しい形（-ing形）にして入れなさい。<br>${p.s}`, a:p.a}; },
+            () => { const p = randObj([
+                {s:"There ( &nbsp; ) a big park near my house.", a:"is"},
+                {s:"There ( &nbsp; ) many students in the gym.", a:"are"},
+                {s:"There ( &nbsp; ) two cats under the table.", a:"are"},
+                {s:"There ( &nbsp; ) an old temple in this town.", a:"is"},
+                {s:"There ( &nbsp; ) some water in the glass.", a:"is"},
+                {s:"There ( &nbsp; ) five books on the shelf.", a:"are"},
+                {s:"There ( &nbsp; ) a lot of snow last winter.", a:"was"},
+                {s:"There ( &nbsp; ) a nice cafe by the station.", a:"is"}
+            ]); return {q:`( )に is / are / was のうち適切なものを入れなさい。<br>${p.s}`, a:p.a}; },
+            () => { const p = randObj([
+                {s:"I get up ( &nbsp; ) seven every morning.", a:"at"},
+                {s:"The cat is sleeping ( &nbsp; ) the desk.", a:"on"},
+                {s:"We have a game ( &nbsp; ) Sunday.", a:"on"},
+                {s:"My uncle lives ( &nbsp; ) Osaka.", a:"in"},
+                {s:"The new term starts ( &nbsp; ) September.", a:"in"},
+                {s:"Let's meet ( &nbsp; ) noon.", a:"at"},
+                {s:"There is a picture ( &nbsp; ) the wall.", a:"on"},
+                {s:"My birthday is ( &nbsp; ) October.", a:"in"},
+                {s:"I usually study ( &nbsp; ) night.", a:"at"}
+            ]); return {q:`( )に in / on / at のうち適切なものを入れなさい。<br>${p.s}`, a:p.a}; }
+        ];
+        return randObj(gens)();
+    }
+    function e4Conv() {
+        const p = randObj([
+            {s:"A: Thank you very much.  B: You're ( &nbsp; ).", h:"（どういたしまして）", a:"welcome"},
+            {s:"A: ( &nbsp; ) is the weather today?  B: It's sunny.", h:"", a:"How"},
+            {s:"A: Whose umbrella is this?  B: It's ( &nbsp; ).", h:"（私のもの）", a:"mine"},
+            {s:"A: ( &nbsp; ) you help me?  B: Sure.", h:"（手伝ってくれますか）", a:"Can"},
+            {s:"A: How ( &nbsp; ) is this cap?  B: Twelve dollars.", h:"（いくら）", a:"much"},
+            {s:"A: Would you ( &nbsp; ) some tea?  B: Yes, please.", h:"（〜はいかがですか）", a:"like"},
+            {s:"A: What's the ( &nbsp; )?  B: I have a headache.", h:"（どうしたの）", a:"matter"},
+            {s:"A: ( &nbsp; ) do you come to school?  B: By bus.", h:"（どうやって）", a:"How"},
+            {s:"A: ( &nbsp; ) we go shopping together?  B: Yes, let's.", h:"（〜しましょうか）", a:"Shall"},
+            {s:"A: What ( &nbsp; ) do you like?  B: I like red.", h:"（何色）", a:"color"},
+            {s:"A: ( &nbsp; ) time do you get up?  B: At six.", h:"（何時に）", a:"What"},
+            {s:"A: Can I speak to Ken?  B: ( &nbsp; ) a moment, please.", h:"（少々お待ちを）", a:"Just"}
+        ]);
+        return {q:`会話が成り立つように( )に1語入れなさい。${p.h}<br>${p.s}`, a:p.a};
+    }
+
+    // --- 3級 ---
+    //  ※過去問と場面・単語が重ならない完全オリジナル文
+    function e3Blank() {
+        const p = randObj([
+            {s:"We should ( &nbsp; ) energy to protect the earth.", h:"（節約する）", a:"save"},
+            {s:"Please ( &nbsp; ) your idea clearly to the class.", h:"（説明する）", a:"explain"},
+            {s:"Getting enough sleep can ( &nbsp; ) your health.", h:"（改善する）", a:"improve"},
+            {s:"I ( &nbsp; ) with you. I think you are right.", h:"（賛成する）", a:"agree"},
+            {s:"We ( &nbsp; ) cans and bottles every Monday.", h:"（リサイクルする）", a:"recycle"},
+            {s:"She made a great ( &nbsp; ) and passed the exam.", h:"（努力）", a:"effort"},
+            {s:"Air pollution is a serious ( &nbsp; ) in big cities.", h:"（問題）", a:"problem"},
+            {s:"I ( &nbsp; ) that hard work is always important.", h:"（信じる）", a:"believe"},
+            {s:"Every student must ( &nbsp; ) the rules of the school.", h:"（従う）", a:"follow"},
+            {s:"I will ( &nbsp; ) my classmates to my birthday party.", h:"（招待する）", a:"invite"},
+            {s:"Volunteers ( &nbsp; ) trash along the river every month.", h:"（集める）", a:"collect"},
+            {s:"This novel is so ( &nbsp; ) that I read it twice.", h:"（おもしろい）", a:"interesting"},
+            {s:"Studying abroad was a wonderful ( &nbsp; ) for me.", h:"（経験）", a:"experience"},
+            {s:"We must ( &nbsp; ) wild animals and their homes.", h:"（守る）", a:"protect"},
+            {s:"New technology can ( &nbsp; ) our daily lives.", h:"（変える）", a:"change"},
+            {s:"The scientist tried to ( &nbsp; ) a new kind of medicine.", h:"（発明する）", a:"invent"},
+            {s:"You should ( &nbsp; ) about your future carefully.", h:"（考える）", a:"think"},
+            {s:"Reading many books can ( &nbsp; ) your knowledge.", h:"（増やす）", a:"increase"}
+        ]);
+        return {q:`( )に入る語を書きなさい。${p.h}<br>${p.s}`, a:p.a};
+    }
+    function e3Perfect() {
+        const p = randObj([
+            {b:"be", pp:"been", s:"I have ( &nbsp; ) to Hokkaido twice."},
+            {b:"see", pp:"seen", s:"I have never ( &nbsp; ) a whale before."},
+            {b:"finish", pp:"finished", s:"He has just ( &nbsp; ) his lunch."},
+            {b:"know", pp:"known", s:"I have ( &nbsp; ) her since I was a child."},
+            {b:"live", pp:"lived", s:"They have ( &nbsp; ) in this town for ten years."},
+            {b:"eat", pp:"eaten", s:"Have you ever ( &nbsp; ) sushi?"},
+            {b:"do", pp:"done", s:"I have already ( &nbsp; ) my homework."},
+            {b:"write", pp:"written", s:"She has ( &nbsp; ) three letters today."},
+            {b:"read", pp:"read", s:"I have already ( &nbsp; ) that book."},
+            {b:"visit", pp:"visited", s:"We have ( &nbsp; ) Kyoto many times."},
+            {b:"make", pp:"made", s:"He has ( &nbsp; ) many friends at school."},
+            {b:"hear", pp:"heard", s:"I have ( &nbsp; ) this song many times."},
+            {b:"lose", pp:"lost", s:"She has ( &nbsp; ) her umbrella again."},
+            {b:"take", pp:"taken", s:"I have ( &nbsp; ) this medicine before."}
+        ]);
+        return {q:`( )に動詞「${p.b}」を正しい形にして入れなさい（現在完了）。<br>${p.s}`, a:p.pp};
+    }
+    function e3Passive() {
+        const p = randObj([
+            {b:"write", pp:"written", s:"This novel was ( &nbsp; ) by a famous writer."},
+            {b:"speak", pp:"spoken", s:"French is ( &nbsp; ) in many countries."},
+            {b:"make", pp:"made", s:"These toys are ( &nbsp; ) in Japan."},
+            {b:"build", pp:"built", s:"This castle was ( &nbsp; ) about 400 years ago."},
+            {b:"take", pp:"taken", s:"These photos were ( &nbsp; ) by a professional."},
+            {b:"clean", pp:"cleaned", s:"Our classroom is ( &nbsp; ) every day."},
+            {b:"read", pp:"read", s:"This book is ( &nbsp; ) all over the world."},
+            {b:"love", pp:"loved", s:"The singer is ( &nbsp; ) by young people."},
+            {b:"use", pp:"used", s:"English is ( &nbsp; ) as an international language."},
+            {b:"paint", pp:"painted", s:"This picture was ( &nbsp; ) by my grandfather."},
+            {b:"teach", pp:"taught", s:"Science is ( &nbsp; ) by Mr. Ito."},
+            {b:"send", pp:"sent", s:"The package was ( &nbsp; ) yesterday."},
+            {b:"find", pp:"found", s:"The lost dog was ( &nbsp; ) in the park."},
+            {b:"break", pp:"broken", s:"The window was ( &nbsp; ) by the strong wind."}
+        ]);
+        return {q:`( )に動詞「${p.b}」を正しい形にして入れなさい（受け身）。<br>${p.s}`, a:p.pp};
+    }
+    function e3Rel() {
+        const p = randObj([
+            {s:"I have a friend ( &nbsp; ) lives in Canada.", a:"who"},
+            {s:"This is the bus ( &nbsp; ) goes to the station.", a:"which"},
+            {s:"The woman ( &nbsp; ) is singing over there is my aunt.", a:"who"},
+            {s:"I bought a bag ( &nbsp; ) has many pockets.", a:"which"},
+            {s:"The man ( &nbsp; ) lives next door is a doctor.", a:"who"},
+            {s:"Do you know the girl ( &nbsp; ) is playing the piano?", a:"who"},
+            {s:"This is the train ( &nbsp; ) goes to Osaka.", a:"which"},
+            {s:"The people ( &nbsp; ) work here are very kind.", a:"who"},
+            {s:"I have a cat ( &nbsp; ) has blue eyes.", a:"which"},
+            {s:"The book ( &nbsp; ) is on the desk is mine.", a:"which"}
+        ]);
+        return {q:`( )に who / which のどちらかを入れなさい。<br>${p.s}`, a:p.a};
+    }
+    function e3Grammar2() {
+        const gens = [
+            () => { const p = randObj([
+                {j:"私は忙しすぎて眠れませんでした。", s:"I was ( &nbsp; ) busy to sleep.", a:"too"},
+                {j:"英語を勉強することは大切です。", s:"It is important ( &nbsp; ) study English.", a:"to"},
+                {j:"私は何と言えばよいか分かりませんでした。", s:"I didn't know what ( &nbsp; ) say.", a:"to"},
+                {j:"彼女は私に窓を開けるように頼みました。", s:"She asked me ( &nbsp; ) open the window.", a:"to"},
+                {j:"私には今日すべき宿題がたくさんあります。", s:"I have a lot of homework ( &nbsp; ) do today.", a:"to"},
+                {j:"彼は医者になるために一生けんめい勉強しました。", s:"He studied hard ( &nbsp; ) become a doctor.", a:"to"},
+                {j:"私はどこへ行けばよいか知りませんでした。", s:"I didn't know where ( &nbsp; ) go.", a:"to"}
+            ]); return {q:`日本語に合うように( )に1語入れなさい。${p.j}<br>${p.s}`, a:p.a}; },
+            () => { const p = randObj([
+                {j:"もし明日晴れたら、つりに行きます。", s:"( &nbsp; ) it is sunny tomorrow, I will go fishing.", a:"If"},
+                {j:"私が帰宅したとき、母は料理をしていました。", s:"My mother was cooking ( &nbsp; ) I came home.", a:"when"},
+                {j:"疲れていたので、早く寝ました。", s:"I went to bed early ( &nbsp; ) I was tired.", a:"because"},
+                {j:"彼は野球だけでなくサッカーも好きです。", s:"He likes not only baseball ( &nbsp; ) also soccer.", a:"but"},
+                {j:"宿題を終えてから、私はテレビを見ました。", s:"( &nbsp; ) I finished my homework, I watched TV.", a:"After"},
+                {j:"バスを待っている間、私は本を読みました。", s:"I read a book ( &nbsp; ) I was waiting for the bus.", a:"while"},
+                {j:"彼女は親切なので、みんなに好かれています。", s:"She is loved by everyone ( &nbsp; ) she is kind.", a:"because"}
+            ]); return {q:`日本語に合うように( )に1語入れなさい。${p.j}<br>${p.s}`, a:p.a}; }
+        ];
+        return randObj(gens)();
+    }
+
+    // 級ごとの大問構成（配点の合計は必ず100点）
+    const eikenConfig = {
+        '英検5級': { minutes: 50, daimons: [
+            { title: '大問1　短文の語い・文法', count: 15, points: 60, gen: () => randObj([e5Blank, e5Blank, () => engBe(2), () => engVerb(2), () => engGrammar(2), e5Wh])() },
+            { title: '大問2　会話文の応答', count: 5, points: 20, gen: e5Conv },
+            { title: '大問3　単語（日本語→英語）', count: 5, points: 20, gen: () => ekWordQ('basic') }
+        ]},
+        '英検4級': { minutes: 35, daimons: [
+            { title: '大問1　短文の語い・文法', count: 15, points: 45, gen: () => randObj([e4Blank, e4Blank, e4Past, e4Grammar])() },
+            { title: '大問2　会話文の応答', count: 5, points: 20, gen: e4Conv },
+            { title: '大問3　単語（日本語→英語）', count: 5, points: 15, gen: () => ekWordQ('mid') },
+            { title: '大問4　文法（動名詞・there is・前置詞など）', count: 5, points: 20, gen: e4Grammar2 }
+        ]},
+        '英検3級': { minutes: 50, daimons: [
+            { title: '大問1　短文の語い・文法', count: 15, points: 45, gen: () => randObj([e3Blank, e3Blank, e3Perfect, e3Rel])() },
+            { title: '大問2　会話文の応答', count: 5, points: 15, gen: () => randObj([e4Conv, e3Grammar2])() },
+            { title: '大問3　単語（日本語→英語）', count: 5, points: 20, gen: () => ekWordQ('hard') },
+            { title: '大問4　文法（不定詞・接続詞・受け身など）', count: 5, points: 20, gen: () => randObj([e3Grammar2, e3Passive])() }
+        ]}
+    };
+
+    // 大問の配点を各問に割り振る（合計は必ずpointsに一致）
+    function distributePoints(total, n) {
+        let base = Math.floor(total / n), r = total - base * n, arr = [];
+        for(let i=0; i<n; i++) arr.push(base + (i < r ? 1 : 0));
+        return arr;
+    }
+
+    // ===== 英検テスト 状態 =====
+    let ekTimer = null, ekRemain = 0, ekGraded = false, ekQData = [];
+
+    function startEikenTest() {
+        currentRunMode = 'eiken';
+        ekGraded = false;
+        const grade = pTest.subj;
+        const cfg = eikenConfig[grade];
+        document.getElementById('print-title').innerText = `${grade} テスト（100点満点）`;
+        document.getElementById('run-title').innerText = `📝 ${grade} テスト（100点満点・制限時間 ${cfg.minutes}分）`;
+        document.getElementById('ek-result-banner').style.display = 'none';
+        document.getElementById('ek-grade-btn').style.display = 'block';
+
+        ekQData = [];
+        let seen = new Set(), html = '', idx = 1;
+        cfg.daimons.forEach((dm, di) => {
+            let pts = distributePoints(dm.points, dm.count);
+            html += `<div style="margin-top:20px; margin-bottom:10px; font-size:18px; font-weight:bold; border-bottom:2px solid var(--main-color);">${dm.title}　<span style="font-size:13px; color:#888;">（この大問 ${dm.points}点）</span></div>`;
+            for(let i=0; i<dm.count; i++) {
+                let q, tries = 0;
+                do { q = dm.gen(); tries++; } while(seen.has(q.q) && tries < 60);
+                seen.add(q.q);
+                let p = pts[i];
+                ekQData.push({ id: idx, daimon: di + 1, q: q.q, a: q.a, points: p });
+                html += `
+                    <div class="q-row grid-1" id="ek-row-${idx}">
+                        <div class="ek-ans-top no-print" id="ek-top-${idx}" style="display:none;"></div>
+                        <div class="q-text"><span id="ek-mark-${idx}">(${idx})</span> ${q.q} <span style="font-size:12px; color:#888;">[${p}点]</span></div>
+                        <input type="text" class="q-input no-print" id="ek-ans-${idx}" placeholder="答えを入力" autocomplete="off" autocapitalize="off" spellcheck="false">
+                        <div class="ek-ans-bottom" id="ek-bot-${idx}" style="display:none;"></div>
+                    </div>`;
+                idx++;
+            }
+        });
+        runShareData = { title: `${grade} テスト`, items: ekQData.map(x => ({ q: x.q, a: x.a })) };
+        document.getElementById('run-content').innerHTML = html;
+        document.getElementById('study-controls').style.display = 'none';
+        document.getElementById('test-controls').style.display = 'none';
+        document.getElementById('eiken-controls').style.display = 'block';
+        switchView('run');
+        startEikenTimer(cfg.minutes);
+        window.scrollTo(0, 0);
+    }
+
+    // ===== タイマー =====
+    const fmtTime = (sec) => { let m = Math.floor(sec / 60), s = sec % 60; return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0'); };
+    function startEikenTimer(min) {
+        stopEikenTimer();
+        ekRemain = min * 60;
+        let box = document.getElementById('timer-box');
+        box.style.display = 'flex'; box.classList.remove('timer-warn');
+        document.getElementById('timer-text').innerText = fmtTime(ekRemain);
+        ekTimer = setInterval(() => {
+            ekRemain--;
+            document.getElementById('timer-text').innerText = fmtTime(Math.max(0, ekRemain));
+            if(ekRemain <= 60) box.classList.add('timer-warn');
+            if(ekRemain <= 0) { stopEikenTimer(); alert('⏰ 時間切れです！自動で答え合わせをします。'); gradeEiken(); }
+        }, 1000);
+    }
+    function stopEikenTimer() { if(ekTimer) { clearInterval(ekTimer); ekTimer = null; } }
+
+    // ===== 採点（○△✕） =====
+    function ekNorm(s) {
+        return String(s || '')
+            .replace(/[！-～]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
+            .trim().toLowerCase()
+            .replace(/[.,!?'’"`]/g, '')
+            .replace(/\s+/g, '');
+    }
+    function ekLev(a, b) {
+        let m = a.length, n = b.length;
+        if(!m) return n; if(!n) return m;
+        let d = []; for(let i=0; i<=m; i++) d[i] = [i];
+        for(let j=0; j<=n; j++) d[0][j] = j;
+        for(let i=1; i<=m; i++) for(let j=1; j<=n; j++)
+            d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+        return d[m][n];
+    }
+    // ○=ほぼ正解 / △=惜しい / ✕=関連なし・無回答
+    function ekJudge(user, ans) {
+        let u = ekNorm(user), c = ekNorm(ans);
+        if(u === '') return '✕';
+        if(u === c) return '○';
+        let dist = ekLev(u, c);
+        if(dist === 1 && c.length >= 4) return '○';                 // 1文字違いのタイプミスはほぼ正解
+        if(dist <= 2 && c.length >= 4 && u[0] === c[0]) return '△'; // 頭文字が同じで惜しい
+        if(dist / Math.max(u.length, c.length) <= 0.34) return '△'; // 3分の1以内の違いは惜しい
+        return '✕';
+    }
+
+    function confirmGradeEiken() {
+        if(ekGraded) return;
+        if(!confirm('答え合わせをします。よろしいですか？（採点後は答えが表示されます）')) return;
+        gradeEiken();
+    }
+    function gradeEiken() {
+        if(ekGraded) return;
+        ekGraded = true;
+        stopEikenTimer();
+        let tb = document.getElementById('timer-box'); if(tb) tb.style.display = 'none';
+
+        let score = 0, dmStats = {}, newWrongs = [], nO = 0, nT = 0, nX = 0;
+        ekQData.forEach(q => {
+            let inp = document.getElementById(`ek-ans-${q.id}`);
+            let user = inp ? inp.value.trim() : '';
+            let mk = ekJudge(user, q.a);
+            let got = mk === '○' ? q.points : mk === '△' ? Math.round(q.points / 2) : 0;
+            score += got;
+            if(mk === '○') nO++; else if(mk === '△') nT++; else nX++;
+            if(!dmStats[q.daimon]) dmStats[q.daimon] = { full: 0, got: 0 };
+            dmStats[q.daimon].full += q.points; dmStats[q.daimon].got += got;
+
+            let color = mk === '○' ? '#27ae60' : mk === '△' ? '#e67e22' : '#e74c3c';
+            let markEl = document.getElementById(`ek-mark-${q.id}`);
+            if(markEl) markEl.innerHTML = `<span style="color:${color}; font-weight:bold; font-size:18px;">${mk}</span>(${q.id})`;
+            let top = document.getElementById(`ek-top-${q.id}`);
+            if(top) { top.style.display = 'block'; top.innerHTML = `<span style="color:#e74c3c; font-weight:bold;">➡ 正解：${q.a}</span>`; }
+            let bot = document.getElementById(`ek-bot-${q.id}`);
+            if(bot) { bot.style.display = 'block'; bot.innerHTML = `<span style="color:#e74c3c; font-weight:bold;">正解：${q.a}</span>　<span style="color:#888;">あなたの答え：${user || '（無回答）'} → ${got}/${q.points}点</span>`; }
+            if(inp) { inp.disabled = true; inp.style.borderColor = color; inp.style.borderWidth = '2px'; }
+            if(mk !== '○') newWrongs.push({ q: q.q, a: q.a, type: 'text', subj: '英語', unit: pTest.subj });
+        });
+
+        let dmHtml = Object.keys(dmStats).map(d => `大問${d}: <b>${dmStats[d].got}</b>/${dmStats[d].full}点`).join('　／　');
+        let banner = document.getElementById('ek-result-banner');
+        banner.style.display = 'block';
+        banner.innerHTML = `
+            <div style="font-size:34px; font-weight:bold; color:#e74c3c; text-align:center;">${score} / 100 点</div>
+            <div style="text-align:center; margin-top:6px;">⭕${nO}問　🔺${nT}問　❌${nX}問</div>
+            <div style="text-align:center; margin-top:6px; font-size:14px;">${dmHtml}</div>
+            <div style="text-align:center; margin-top:8px; font-size:14px; color:#555;">${score >= 80 ? '合格ラインです！すばらしい🎉' : score >= 60 ? 'もう少し！間違えた問題を見直そう。' : '基礎を復習してもう一度チャレンジ！'}</div>`;
+
+        saveScore('英語', score, `英検テスト ${pTest.subj} (${score}点)`);
+        newWrongs.forEach(w => { if(!wrongNotes.some(x => x.q === w.q)) wrongNotes.unshift(w); });
+        if(wrongNotes.length > 100) wrongNotes.length = 100;
+        saveWrongNotes();
+
+        document.getElementById('ek-grade-btn').style.display = 'none';
+        window.scrollTo(0, 0);
+    }
+    function exitEikenTest() {
+        if(!ekGraded && !confirm('テストをやめて戻りますか？（答え合わせをしていません）')) return;
+        stopEikenTimer();
+        switchView('test-setup');
+    }
+
     function engQ(unit, isWord, diff) {
         let pool = engWordsByLevel.basic;
         if(unit.includes('4級')) pool = engWordsByLevel.mid;
@@ -753,10 +1501,9 @@
         if(isWord || unit.includes('単語')) return wordQ();
         if(unit.includes('be')) return engBe(diff);
         if(unit.includes('一般')) return engVerb(diff);
-        if(unit.includes('級')) { // 検定・級レベル：単語と文法をミックス
-            if(Math.random() < 0.5) return wordQ();
-            return randObj([engBe, engVerb, engGrammar])(diff);
-        }
+        if(unit.includes('5級')) return Math.random() < 0.3 ? wordQ() : eiken5Q(diff);
+        if(unit.includes('4級')) return Math.random() < 0.3 ? wordQ() : eiken4Q(diff);
+        if(unit.includes('3級')) return Math.random() < 0.3 ? wordQ() : eiken3Q(diff);
         return randObj([engBe, engVerb, engGrammar])(diff);
     }
 
@@ -839,6 +1586,27 @@
         currentRunMode = 'study';
         studyAnswersVisible = false; // 前回の「答えを見る」状態をリセット
         usedMathT = {};
+
+        // 英単語フラッシュカード（その級の単語を全部・シャッフルして出す）
+        if(pStudy.subj === '英語' && String(pStudy.unit).includes('単語')) {
+            let lvl = pStudy.unit.includes('4級') ? 'mid' : pStudy.unit.includes('3級') ? 'hard' : 'basic';
+            let words = [...engWordsByLevel[lvl]].sort(() => Math.random() - 0.5);
+            document.getElementById('print-title').innerText = `英単語カード: ${pStudy.unit}`;
+            document.getElementById('run-title').innerText = `📖 英語 - ${pStudy.unit} フラッシュカード（全${words.length}語）`;
+            let html = '<p class="no-print">カードを押すと意味が出ます。もう一度押すと隠れます。「👀 答えを見る」で全部めくれます。</p><div class="grid-3">';
+            words.forEach(w => {
+                html += `<div class="flash-card" onclick="this.classList.toggle('flipped')"><div class="fc-word">${w.e}</div><div class="fc-meaning">${w.j}</div></div>`;
+            });
+            html += '</div>';
+            runShareData = { title: `${pStudy.unit} 英単語カード (${words.length}語)`, items: words.map(w => ({q: w.e, a: w.j})) };
+            document.getElementById('run-content').innerHTML = html;
+            document.getElementById('study-controls').style.display = 'block';
+            document.getElementById('test-controls').style.display = 'none';
+            document.getElementById('eiken-controls').style.display = 'none';
+            switchView('run');
+            return;
+        }
+
         document.getElementById('print-title').innerText = `勉強プリント: ${pStudy.subj} (${pStudy.unit}) レベル${pStudy.level}`;
         document.getElementById('run-title').innerText = `📖 ${pStudy.subj} - ${pStudy.unit} (${pStudy.count}問・レベル${pStudy.level})`;
 
@@ -883,6 +1651,10 @@
         studyAnswersVisible = !studyAnswersVisible;
         document.querySelectorAll('.q-ans-show').forEach(el => {
             studyAnswersVisible ? el.classList.add('show') : el.classList.remove('show');
+        });
+        // フラッシュカードは全カードをめくる/もどす
+        document.querySelectorAll('.flash-card').forEach(el => {
+            studyAnswersVisible ? el.classList.add('flipped') : el.classList.remove('flipped');
         });
     }
 
@@ -935,6 +1707,7 @@
 
     // ===== 📝 テストモード実行 =====
     function startTest() {
+        if(String(pTest.subj).startsWith('英検')) { startEikenTest(); return; }
         currentRunMode = 'test';
         let title = `${pTest.grade} ${pTest.subj} テスト`;
         document.getElementById('print-title').innerText = `${title} レベル${pTest.level}`;
@@ -990,6 +1763,7 @@
         document.getElementById('run-content').innerHTML = html;
         document.getElementById('study-controls').style.display = 'none';
         document.getElementById('test-controls').style.display = 'block';
+        document.getElementById('eiken-controls').style.display = 'none';
         switchView('run');
     }
 
