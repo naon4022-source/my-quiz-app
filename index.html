@@ -170,11 +170,16 @@
             <div style="display:flex; gap:10px; margin-bottom:10px;">
                 <button class="btn" style="background:#e74c3c; color:white; flex:1;" onclick="toggleStudyAnswers()">👀 答えを見る</button>
                 <button class="btn" style="background:#95a5a6; color:white; flex:1;" onclick="window.print()">🖨️ 印刷</button>
+                <button class="btn" style="background:#27ae60; color:white; flex:1;" onclick="shareProblems()">📤 共有</button>
             </div>
             <button class="btn" style="background:#34495e; color:white; width:100%;" onclick="finishStudy()">✅ チェックした分を成績に記録</button>
         </div>
 
         <div class="section no-print" id="test-controls" style="text-align: center; position: sticky; bottom: 20px;">
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <button class="btn" style="background:#27ae60; color:white; flex:1;" onclick="shareProblems()">📤 問題を共有</button>
+                <button class="btn" style="background:#95a5a6; color:white; flex:1;" onclick="window.print()">🖨️ 印刷</button>
+            </div>
             <button class="btn btn-test" style="width:100%;" onclick="submitTest()">📝 採点して成績を出す！</button>
         </div>
     </div>
@@ -280,6 +285,9 @@
     let wrongNotes = JSON.parse(localStorage.getItem('wrongNotes') || '[]');
     let reviewList = [];
     function saveWrongNotes() { localStorage.setItem('wrongNotes', JSON.stringify(wrongNotes)); }
+
+    // 問題の共有用（いま画面に出ている問題セット）
+    let runShareData = { title: '', items: [] };
 
     // --- データ保存 ---
     let userData = JSON.parse(localStorage.getItem('appData')) || {
@@ -472,12 +480,19 @@
         {q:"植物が光を受けて養分をつくるはたらきを何といいますか。",a:"光合成"},
         {q:"光合成で植物が出す気体は何ですか。",a:"酸素"},
         {q:"植物が呼吸で取り入れる気体は何ですか。",a:"酸素"},
-        {q:"花の中で花粉がつくられる部分を何といいますか。",a:"おしべ"},
+        {q:"おしべの先にある、花粉が入っている小さな袋を何といいますか。",a:"やく"},
         {q:"種子でふえる植物のうち、胚珠が子房に包まれているものを何といいますか。",a:"被子植物"},
         {q:"背骨をもつ動物をまとめて何といいますか。",a:"セキツイ動物"},
         {q:"エラで呼吸し、水中でくらすセキツイ動物のなかまは？",a:"魚類"},
         {q:"根から吸い上げた水が葉から水蒸気となって出ることを何といいますか。",a:"蒸散"},
-        {q:"葉の表面にある、気体の出入り口を何といいますか。",a:"気孔"}
+        {q:"葉の表面にある、気体の出入り口を何といいますか。",a:"気孔"},
+        {q:"葉でつくられた養分が通る管を何といいますか。",a:"師管"},
+        {q:"根から吸収した水や養分が通る管を何といいますか。",a:"道管"},
+        {q:"胚珠がむき出しになっている植物のなかまを何といいますか。",a:"裸子植物"},
+        {q:"背骨をもたない動物をまとめて何といいますか。",a:"無セキツイ動物"},
+        {q:"子はえらで、親は肺で呼吸するセキツイ動物のなかまは？",a:"両生類"},
+        {q:"花弁が1枚1枚離れている花を何といいますか。",a:"離弁花"},
+        {q:"体の外側がかたい殻でおおわれ、体やあしに節がある動物を何といいますか。",a:"節足動物"}
     ];
     const sciDaichi = [
         {q:"地震が最初に発生した地下の場所を何といいますか。",a:"震源"},
@@ -486,17 +501,30 @@
         {q:"マグマが地表付近で急に冷えてできた火成岩を何といいますか。",a:"火山岩"},
         {q:"マグマが地下深くでゆっくり冷えてできた火成岩を何といいますか。",a:"深成岩"},
         {q:"地震のゆれの大きさを表す階級を何といいますか。",a:"震度"},
-        {q:"流れる水が土砂を運ぶはたらきを何といいますか。",a:"運搬"}
+        {q:"流れる水が土砂を運ぶはたらきを何といいますか。",a:"運搬"},
+        {q:"火山の噴火でふき出される、直径2mm以下の細かい粒を何といいますか。",a:"火山灰"},
+        {q:"地震のはじめに来る小さなゆれを何といいますか。",a:"初期微動"},
+        {q:"初期微動のあとに来る大きなゆれを何といいますか。",a:"主要動"},
+        {q:"れき・砂・泥などが押し固められてできた岩石をまとめて何といいますか。",a:"堆積岩"},
+        {q:"地層が大きな力で波打つように曲がったものを何といいますか。",a:"しゅう曲"},
+        {q:"石灰岩にうすい塩酸をかけたときに発生する気体は何ですか。",a:"二酸化炭素"}
     ];
     const sciButsuri = [
-        {q:"物質が液体から気体に変わることを何といいますか。",a:"蒸発"},
+        {q:"液体が、その表面から気体になっていく現象を何といいますか。",a:"蒸発"},
         {q:"物質が固体から直接気体に変わることを何といいますか。",a:"昇華"},
         {q:"光が異なる物質の境界で曲がって進むことを何といいますか。",a:"屈折"},
         {q:"光が鏡ではね返ることを何といいますか。",a:"反射"},
         {q:"1気圧のとき、水が沸とうする温度は何℃ですか。",a:"100"},
         {q:"力の大きさの単位は何ですか。（カタカナまたは記号）",a:"ニュートン"},
         {q:"物質そのものの量で、場所によって変わらない量を何といいますか。",a:"質量"},
-        {q:"音の高さを決めるのは、1秒間に振動する何の数ですか。",a:"振動数"}
+        {q:"音の高さを決めるのは、1秒間に振動する何の数ですか。",a:"振動数"},
+        {q:"金属をみがいたときに出る特有のかがやきを何といいますか。",a:"金属光沢"},
+        {q:"水にとけている物質のことを何といいますか。",a:"溶質"},
+        {q:"物質をとかしている水などの液体を何といいますか。",a:"溶媒"},
+        {q:"100gの水にとける物質の最大の量を何といいますか。",a:"溶解度"},
+        {q:"ばねののびは加えた力の大きさに比例します。この法則を何といいますか。",a:"フックの法則"},
+        {q:"光が反射するとき、入射角と等しくなる角を何といいますか。",a:"反射角"},
+        {q:"空気のない真空中で、音は伝わりますか。（伝わる／伝わらない）",a:"伝わらない"}
     ];
 
     // ===== 数学 =====
@@ -573,7 +601,7 @@
             return {q:`次のデータの平均値は？ ${arr.join(', ')}`, a:`${sum/5}`, type:'calc'};
         }
         if(type === '範囲') { let arr=[]; for(let i=0;i<6;i++) arr.push(randNum(2,20)); return {q:`次のデータの範囲は？ ${arr.join(', ')}`, a:`${Math.max(...arr)-Math.min(...arr)}`, type:'calc'}; }
-        if(type === '最頻値') { let m=randNum(2,10); let arr=[m,m,randNum(2,10),randNum(2,10),randNum(2,10)].sort(()=>Math.random()-0.5); return {q:`次のデータの最頻値は？ ${arr.join(', ')}`, a:`${m}`, type:'calc'}; }
+        if(type === '最頻値') { let m=randNum(2,10); let cand=[]; for(let v=2;v<=10;v++) if(v!==m) cand.push(v); cand.sort(()=>Math.random()-0.5); let arr=[m,m,...cand.slice(0,3)].sort(()=>Math.random()-0.5); return {q:`次のデータの最頻値は？ ${arr.join(', ')}`, a:`${m}`, type:'calc'}; }
         let arr=[]; for(let i=0;i<5;i++) arr.push(randNum(2,20)); let sorted=[...arr].sort((x,y)=>x-y); return {q:`次のデータの中央値は？ ${arr.join(', ')}`, a:`${sorted[2]}`, type:'calc'};
     }
     // 数学の文章問題テンプレート集（場面・言い回し・数字をすべて変える）
@@ -581,9 +609,9 @@
     const mathWordPool = {
         seifu: [
             (d) => { let start=signed(1,5+d), ch=randNum(3,9+d), up=Math.random()<0.5; return {q:`朝の気温は${start}℃でした。昼までに${ch}℃${up?'上がりました':'下がりました'}。昼の気温は何℃ですか？`, a:`${up?start+ch:start-ch}℃`}; },
-            (d) => { let a=randNum(120,950), b=randNum(30,180); return {q:`地点Aは海面より${a}m高い場所に、地点Bは海面より${b}m低い場所にあります。AとBの高さの差は何mですか？`, a:`${a+b}m`}; },
-            (d) => { let a=randNum(12,45), b=randNum(12,45); return {q:`カードゲームで、はるとさんは1回目に${a}点を獲得し、2回目に${b}点を失いました。2回の合計は何点ですか？`, a:`${a-b}点`}; },
-            (d) => { let p=randNum(300,900), l=randNum(150,850); return {q:`ある商店の利益は、月曜日が${p}円、火曜日は${l}円の赤字でした。2日間を合わせた利益は何円ですか？`, a:`${p-l}円`}; },
+            (d) => { let a=randNum(120,950), b=randNum(30,180); return {q:`地点Aは海面より${a}m高い場所に、地点Bは海面より${b}m低い場所にあります。AとBの高さの差は何mですか？（差＝Aの高さ−Bの高さ。Bはマイナスの高さと考えます）`, a:`${a+b}m`}; },
+            (d) => { let a=randNum(12,45), b=randNum(12,45); return {q:`カードゲームで、はるとさんは1回目に${a}点を獲得し、2回目に${b}点を失いました。2回の合計は何点ですか？（マイナスになる場合は－をつけて答えなさい）`, a:`${a-b}点`}; },
+            (d) => { let p=randNum(300,900), l=randNum(150,850); return {q:`ある商店の利益は、月曜日が${p}円、火曜日は${l}円の赤字でした。2日間を合わせた利益は何円ですか？（赤字になる場合は－をつけて答えなさい）`, a:`${p-l}円`}; },
             (d) => { let a=randNum(2,10), b=randNum(3,12); return {q:`冷凍庫の中の温度は－${a}℃です。設定を変えてさらに${b}℃下げると、温度は何℃になりますか？`, a:`-${a+b}℃`}; },
             (d) => { let a=randNum(3,12), b=randNum(2,10); return {q:`テストの点数をクラスの平均と比べると、英語は平均より${a}点高く、理科は平均より${b}点低い結果でした。英語は理科より何点高いですか？`, a:`${a+b}点`}; },
             (d) => { let a=randNum(5,12)*100, b=randNum(15,48)*10, c=randNum(10,40)*10; return {q:`ゆいさんは${a}円持っていました。${b}円の文ぼう具を買ったあと、お手伝いで${c}円もらいました。いま持っているお金は何円ですか？`, a:`${a-b+c}円`}; }
@@ -601,7 +629,7 @@
             (d) => { let a=randNum(3,6), x=randNum(4,12), r=randNum(1,a-1); return {q:`あめが${a*x+r}個あります。1人に${a}個ずつ配ると${r}個余りました。配った人数は何人ですか？`, a:`${x}人`}; },
             (d) => { let x=randNum(4,12), dd=randNum(2,8); return {q:`よこの長さがたてより${dd}cm長い長方形があり、まわりの長さは${2*(2*x+dd)}cmです。たての長さは何cmですか？`, a:`${x}cm`}; },
             (d) => { let a=randNum(60,120), b=randNum(100,250), x=randNum(3,9); return {q:`1本${a}円の鉛筆を何本かと、${b}円のノートを1冊買ったら、合計${a*x+b}円でした。鉛筆は何本買いましたか？`, a:`${x}本`}; },
-            (d) => { let k=randObj([3,4,5]), x=randNum(1,8), c=x+randNum(2,6), m=k*(c-x)+x; return {q:`現在、母は${m}歳、子どもは${c}歳です。母の年齢が子どもの年齢のちょうど${k}倍だったのは何年前ですか？`, a:`${x}年前`}; }
+            (d) => { let k=randObj([3,4,5]), g=(k===3?randNum(9,13):(k===4?randNum(6,10):randNum(5,8))), x=randNum(1,8), c=x+g, m=k*g+x; return {q:`現在、母は${m}歳、子どもは${c}歳です。母の年齢が子どもの年齢のちょうど${k}倍だったのは何年前ですか？`, a:`${x}年前`}; }
         ],
         hirei: [
             (d) => { let wpm=randNum(20,60), l1=randNum(2,5), l2=randNum(6,12); return {q:`同じ太さの針金${l1}mの重さをはかると${l1*wpm}gありました。この針金${l2}m分の重さは何gですか？`, a:`${l2*wpm}g`}; },
@@ -616,7 +644,7 @@
             (d) => { let w=randNum(6,20)+d, h=randNum(5,15)+d; return {q:`たて${h}m、よこ${w}mの長方形の花だんをつくります。花だんの面積は何m²ですか？`, a:`${w*h}m²`}; },
             (d) => { let b=randNum(6,16), h=randNum(4,12); if((b*h)%2) b++; return {q:`底辺${b}m、高さ${h}mの三角形の形をした土地があります。この土地の面積は何m²ですか？`, a:`${b*h/2}m²`}; },
             (d) => { let r=randNum(3,10); return {q:`半径${r}mの円形の池があります。池のまわりの長さは何mですか？（πを使って表しなさい）`, a:`${2*r}πm`}; },
-            (d) => { let c=randObj([{a:90,rs:[4,6,8,10]},{a:180,rs:[3,5,7,9]},{a:120,rs:[3,6,9]},{a:60,rs:[6,12]}]), r=randObj(c.rs); return {q:`半径${r}cm、中心角${c.a}°のおうぎ形の面積は何cm²ですか？（πを使って表しなさい）`, a:`${r*r*c.a/360}πcm²`}; },
+            (d) => { let c=randObj([{a:90,rs:[4,6,8,10]},{a:180,rs:[4,6,8]},{a:120,rs:[3,6,9]},{a:60,rs:[6,12]}]), r=randObj(c.rs); return {q:`半径${r}cm、中心角${c.a}°のおうぎ形の面積は何cm²ですか？（πを使って表しなさい）`, a:`${r*r*c.a/360}πcm²`}; },
             (d) => { let r=randNum(2,6), h=randNum(4,12); return {q:`底面の半径${r}cm、高さ${h}cmの円柱の体積は何cm³ですか？（πを使って表しなさい）`, a:`${r*r*h}πcm³`}; },
             (d) => { let a=10*randNum(2,5), b=10*randNum(2,6), c=10*randNum(2,4); return {q:`たて${a}cm、よこ${b}cm、深さ${c}cmの直方体の水そうを満水にします。水は何L入りますか？（1L＝1000cm³）`, a:`${a*b*c/1000}L`}; },
             (d) => { let s=randNum(3,9); return {q:`1辺${s}cmの立方体の表面積は何cm²ですか？`, a:`${6*s*s}cm²`}; }
@@ -625,7 +653,7 @@
             (d) => { let s=[randNum(60,100),randNum(60,100),randNum(60,100)]; let sum=s.reduce((a,b)=>a+b,0); s[0]+=(3-(sum%3))%3; sum=s.reduce((a,b)=>a+b,0); return {q:`3回のテストの点数は ${s.join('点, ')}点 でした。平均点は何点ですか？`, a:`${sum/3}点`}; },
             (d) => { let n=randNum(4,6), m=randNum(60,95); return {q:`テストを${n}回受けたところ、平均点はちょうど${m}点でした。${n}回の合計点は何点ですか？`, a:`${n*m}点`}; },
             (d) => { let arr=[]; for(let i=0;i<5;i++) arr.push(randNum(5,30)); let sorted=[...arr].sort((x,y)=>x-y); return {q:`5人の通学時間（分）を調べると次のようになりました。中央値を求めなさい。 ${arr.join(', ')}`, a:`${sorted[2]}分`}; },
-            (d) => { let m=randNum(22,27); let arr=[m,m,randNum(22,27),randNum(22,27),randNum(22,27)].sort(()=>Math.random()-0.5); return {q:`5人の靴のサイズ（cm）は次の通りです。最頻値を求めなさい。 ${arr.join(', ')}`, a:`${m}cm`}; },
+            (d) => { let m=randNum(22,27); let cand=[]; for(let v=22;v<=27;v++) if(v!==m) cand.push(v); cand.sort(()=>Math.random()-0.5); let arr=[m,m,...cand.slice(0,3)].sort(()=>Math.random()-0.5); return {q:`5人の靴のサイズ（cm）は次の通りです。最頻値を求めなさい。 ${arr.join(', ')}`, a:`${m}cm`}; },
             (d) => { let arr=[]; for(let i=0;i<7;i++) arr.push(randNum(18,35)); return {q:`ある1週間の最高気温（℃）は次の通りでした。範囲（レンジ）を求めなさい。 ${arr.join(', ')}`, a:`${Math.max(...arr)-Math.min(...arr)}℃`}; },
             (d) => { let total=randObj([20,25,50]), k=randNum(3,total-3); return {q:`クラス${total}人のうち、${k}人が自転車で通学しています。自転車通学の生徒の相対度数を求めなさい。`, a:`${k/total}`}; }
         ]
@@ -654,19 +682,44 @@
 
     // ===== 英語 =====
     function engBe(diff) {
-        let subs=[{s:"I",b:"am"},{s:"You",b:"are"},{s:"He",b:"is"},{s:"She",b:"is"},{s:"It",b:"is"},{s:"We",b:"are"},{s:"They",b:"are"},{s:"Tom",b:"is"},{s:"Ken and I",b:"are"},{s:"My mother",b:"is"},{s:"These books",b:"are"},{s:"That boy",b:"is"}];
-        let preds=["a student.","happy.","from Japan.","in the classroom.","very tired.","twelve years old.","a good tennis player.","busy today.","kind to everyone.","interested in music."];
-        let x=randObj(subs), p=randObj(preds);
+        // 主語ごとに意味が通る述語だけを組み合わせる
+        let subs=[
+            {s:"I",b:"am",preds:["a student.","happy.","from Japan.","very tired.","busy today.","interested in music."]},
+            {s:"You",b:"are",preds:["a student.","kind to everyone.","a good tennis player.","from Canada."]},
+            {s:"He",b:"is",preds:["a student.","my brother.","from Japan.","a good soccer player.","busy today."]},
+            {s:"She",b:"is",preds:["a teacher.","happy.","in the classroom.","kind to everyone."]},
+            {s:"It",b:"is",preds:["my bag.","new.","on the desk.","very old."]},
+            {s:"We",b:"are",preds:["students.","good friends.","in the same class.","from Japan."]},
+            {s:"They",b:"are",preds:["students.","very tall.","in the library.","busy today."]},
+            {s:"Tom",b:"is",preds:["a student.","from Australia.","twelve years old.","a good tennis player."]},
+            {s:"Ken and I",b:"are",preds:["good friends.","in the same class.","students."]},
+            {s:"My mother",b:"is",preds:["a teacher.","busy today.","kind to everyone."]},
+            {s:"These books",b:"are",preds:["interesting.","new.","on the desk."]},
+            {s:"That boy",b:"is",preds:["my brother.","a good soccer player.","twelve years old."]}
+        ];
+        let x=randObj(subs), p=randObj(x.preds);
         if(diff >= 4 && x.s !== "I") return {q:`次の文を疑問文にすると、文頭に来る語は？  ${x.s} ${x.b} ${p}`, a:(x.b.charAt(0).toUpperCase()+x.b.slice(1)), type:'calc'};
         return {q:`( )に入るbe動詞（am / is / are）を書きなさい：${x.s} (   ) ${p}`, a:x.b, type:'calc'};
     }
     function engVerb(diff) {
-        let verbs=[{b:"play",t:"plays"},{b:"like",t:"likes"},{b:"go",t:"goes"},{b:"watch",t:"watches"},{b:"study",t:"studies"},{b:"have",t:"has"},{b:"teach",t:"teaches"},{b:"live",t:"lives"},{b:"run",t:"runs"},{b:"use",t:"uses"},{b:"wash",t:"washes"}];
-        let objs=["tennis.","English.","to school.","TV.","the guitar.","in the park.","this computer.","soccer after school.","the piano every day."];
-        let v=randObj(verbs), o=randObj(objs);
+        // 動詞ごとに意味が通る目的語だけを組み合わせる
+        let verbs=[
+            {b:"play",t:"plays",objs:["tennis.","the guitar.","soccer after school.","the piano every day."]},
+            {b:"like",t:"likes",objs:["music.","English.","cats.","this book."]},
+            {b:"go",t:"goes",objs:["to school.","to the park.","to bed at ten."]},
+            {b:"watch",t:"watches",objs:["TV.","soccer games.","movies on Sunday."]},
+            {b:"study",t:"studies",objs:["English.","math.","science every day."]},
+            {b:"have",t:"has",objs:["a dog.","two brothers.","many books."]},
+            {b:"teach",t:"teaches",objs:["English.","math.","music."]},
+            {b:"live",t:"lives",objs:["in Tokyo.","in this town.","near the station."]},
+            {b:"run",t:"runs",objs:["in the park.","every morning.","very fast."]},
+            {b:"use",t:"uses",objs:["this computer.","a dictionary.","the internet."]},
+            {b:"wash",t:"washes",objs:["the dishes.","the car.","the cups."]}
+        ];
+        let v=randObj(verbs), o=randObj(v.objs);
         let useThird = Math.random() < 0.5;
         let s = useThird ? randObj(["He","She","Tom","My father","Mr. Sato"]) : randObj(["I","You","We","They","Ken and Mika"]);
-        if(diff >= 4) return {q:`次の文を疑問文にすると、文頭に来る語（Do / Does）は？  ${s} ${v.b} ${o}`, a:(useThird?"Does":"Do"), type:'calc'};
+        if(diff >= 4) return {q:`次の文を疑問文にすると、文頭に来る語（Do / Does）は？  ${s} ${useThird?v.t:v.b} ${o}`, a:(useThird?"Does":"Do"), type:'calc'};
         return {q:`( )に動詞「${v.b}」を正しい形にして入れなさい：${s} (   ) ${o}`, a:(useThird?v.t:v.b), type:'calc'};
     }
     // 文法問題は「単語リスト × 出題形式」の組み合わせで毎回ちがう問題を作る
@@ -675,7 +728,7 @@
             () => { let w=randObj([{s:"box",p:"boxes"},{s:"city",p:"cities"},{s:"child",p:"children"},{s:"man",p:"men"},{s:"woman",p:"women"},{s:"country",p:"countries"},{s:"dish",p:"dishes"},{s:"leaf",p:"leaves"},{s:"foot",p:"feet"},{s:"tooth",p:"teeth"},{s:"bus",p:"buses"},{s:"watch",p:"watches"},{s:"baby",p:"babies"},{s:"knife",p:"knives"},{s:"class",p:"classes"}]); return {q:`複数形にしなさい：${w.s}`, a:w.p}; },
             () => { let pr=randObj([{j:"彼を",e:"him"},{j:"彼女を",e:"her"},{j:"私たちを",e:"us"},{j:"彼らを",e:"them"},{j:"私のもの",e:"mine"},{j:"あなたのもの",e:"yours"},{j:"彼のもの",e:"his"},{j:"彼女のもの",e:"hers"},{j:"私たちのもの",e:"ours"},{j:"私を",e:"me"}]); return {q:`次の日本語を表す代名詞（1語）を英語で書きなさい：「${pr.j}」`, a:pr.e}; },
             () => { let p=randObj([{s:"I get up (   ) seven.",a:"at"},{s:"The book is (   ) the desk.",a:"on"},{s:"We play tennis (   ) Sunday.",a:"on"},{s:"I live (   ) Tokyo.",a:"in"},{s:"School starts (   ) April.",a:"in"},{s:"Look (   ) this picture.",a:"at"},{s:"My birthday is (   ) May.",a:"in"}]); return {q:`( )に in / on / at のうち適切なものを：${p.s}`, a:p.a}; },
-            () => { let w=randObj(["apple","egg","orange","old book","English teacher","umbrella","animal","new bike","interesting story","dog","pen"]); return {q:`( )に a / an のどちらが入りますか：I have (   ) ${w}.`, a:(/^[aeiou]/.test(w)?"an":"a")}; },
+            () => { let w=randObj(["apple","egg","orange","old book","English teacher","umbrella","animal","new bike","interesting story","dog","pen"]); return {q:`( )に a / an のどちらが入りますか：I have (   ) ${w}.`, a:(/^[aeiou]/i.test(w)?"an":"a")}; },
             () => { let p=randObj([{s:"(   ) are my friends.（this / these）",a:"these"},{s:"(   ) is my bag.（this / these）",a:"this"},{s:"(   ) are old temples.（that / those）",a:"those"},{s:"(   ) is our school.（that / those）",a:"that"}]); return {q:`( )に入る語を書きなさい：${p.s}`, a:p.a}; }
         ];
         let hardGens = [
@@ -743,8 +796,10 @@
     function sciCalc(diff) {
         let pool = [
             () => { let w=randNum(80,180), s=randNum(20,60); return {q:`水${w}gに食塩${s}gをとかしました。質量パーセント濃度は約何％ですか？（四捨五入）`, a:`${Math.round(s/(w+s)*100)}％`, type:'text'}; },
-            () => { let m=randNum(20,90), v=randNum(10,30); return {q:`質量${m}g、体積${v}cm³の物体の密度は約何g/cm³ですか？（小数第1位まで）`, a:`${(Math.round(m/v*10)/10)}g/cm³`, type:'text'}; },
-            () => { let f=randNum(2,10), x=randNum(2,10); return {q:`${f}Nの力でばねが${f*2}cmのびました。同じばねを${x}Nで引くと何cmのびますか？（比例）`, a:`${x*2}cm`, type:'text'}; }
+            () => { let m=randNum(20,90), v=randNum(10,30); return {q:`質量${m}g、体積${v}cm³の物体の密度は約何g/cm³ですか？（小数第1位まで）`, a:`${(Math.round(m/v*10)/10).toFixed(1)}g/cm³`, type:'text'}; },
+            () => { let f=randNum(2,10), x=randNum(2,10); return {q:`${f}Nの力でばねが${f*2}cmのびました。同じばねを${x}Nで引くと何cmのびますか？（比例）`, a:`${x*2}cm`, type:'text'}; },
+            () => { let t=randNum(2,8); return {q:`花火が見えてから${t}秒後に音が聞こえました。音の速さを秒速340mとすると、花火までの距離は何mですか？`, a:`${340*t}m`, type:'text'}; },
+            () => { let v=randObj([4,6,8]), d=v*randNum(5,15); return {q:`地震の波が秒速${v}kmで伝わるとき、震源から${d}km離れた地点にゆれが届くのは地震発生から何秒後ですか？`, a:`${d/v}秒後`, type:'text'}; }
         ];
         return randObj(pool)();
     }
@@ -788,6 +843,7 @@
         document.getElementById('run-title').innerText = `📖 ${pStudy.subj} - ${pStudy.unit} (${pStudy.count}問・レベル${pStudy.level})`;
 
         let seenStudy = new Set();
+        let shareItems = [];
         let html = '';
         if(pStudy.subj === '数学') {
             // 数学は【計算問題】→【文章問題】の2部構成
@@ -796,11 +852,13 @@
             let idx = 1;
             html += secTitleHtml('【計算問題】') + '<div class="grid-3">';
             for(let i=1; i<=calcCount; i++, idx++) {
-                html += qRowHtml(idx, genUnique('数学', pStudy.unit, false, rampDiff(i, calcCount, pStudy.level), seenStudy));
+                let q = genUnique('数学', pStudy.unit, false, rampDiff(i, calcCount, pStudy.level), seenStudy);
+                shareItems.push(q); html += qRowHtml(idx, q);
             }
             html += '</div>' + secTitleHtml('【文章問題】') + '<div class="grid-3">';
             for(let i=1; i<=wordCount; i++, idx++) {
-                html += qRowHtml(idx, genUnique('数学', pStudy.unit, true, rampDiff(i, wordCount, pStudy.level), seenStudy));
+                let q = genUnique('数学', pStudy.unit, true, rampDiff(i, wordCount, pStudy.level), seenStudy);
+                shareItems.push(q); html += qRowHtml(idx, q);
             }
             html += '</div>';
         } else {
@@ -808,10 +866,12 @@
             for(let i=1; i<=pStudy.count; i++) {
                 let diff = rampDiff(i, pStudy.count, pStudy.level);
                 let isWord = Math.random() < (0.2 + diff * 0.06); // 後半ほど文章題を増やす
-                html += qRowHtml(i, genUnique(pStudy.subj, pStudy.unit, isWord, diff, seenStudy));
+                let q = genUnique(pStudy.subj, pStudy.unit, isWord, diff, seenStudy);
+                shareItems.push(q); html += qRowHtml(i, q);
             }
             html += '</div>';
         }
+        runShareData = { title: `${pStudy.subj} ${pStudy.unit} レベル${pStudy.level} (${pStudy.count}問)`, items: shareItems };
 
         document.getElementById('run-content').innerHTML = html;
         document.getElementById('study-controls').style.display = 'block';
@@ -827,12 +887,50 @@
     }
 
     function finishStudy() {
+        if(currentRunMode === 'review') {
+            // 間違い直し：チェックした問題はクリア扱いでリストから消す（1問1点）
+            let cleared = [];
+            document.querySelectorAll('.study-check').forEach((c, i) => { if(c.checked && reviewList[i]) cleared.push(reviewList[i]); });
+            if(cleared.length > 0) {
+                let bySubj = {};
+                cleared.forEach(q => { let s = q.subj || '数学'; bySubj[s] = (bySubj[s] || 0) + 1; });
+                Object.keys(bySubj).forEach(s => saveScore(s, bySubj[s], `間違い直し: ${s} (${bySubj[s]}問)`));
+                wrongNotes = wrongNotes.filter(w => !cleared.includes(w));
+                saveWrongNotes();
+                alert(`${cleared.length}問クリア！ ${cleared.length}点獲得。クリアした問題はリストから消えました。`);
+            }
+            switchView('review');
+            return;
+        }
         let chk = document.querySelectorAll('.study-check:checked').length;
         if(chk > 0) {
             saveScore(pStudy.subj, chk * 1, `勉強: ${pStudy.unit}`); // 1問1点
             alert(`${chk}問クリア！ ${chk}点獲得しました。`);
         }
         switchView('study');
+    }
+
+    // ===== 🔁 間違い直し =====
+    function renderReview() {
+        let n = wrongNotes.length;
+        document.getElementById('review-count').innerText = n > 0 ? `${n} 問たまっています` : 'いまは 0 問です';
+        document.getElementById('review-start-btn').disabled = (n === 0);
+    }
+    function startReview() {
+        if(wrongNotes.length === 0) return;
+        currentRunMode = 'review';
+        studyAnswersVisible = false;
+        reviewList = wrongNotes.slice(0, 45); // 一度に最大45問ずつ
+        document.getElementById('print-title').innerText = '間違い直しプリント';
+        document.getElementById('run-title').innerText = `🔁 間違い直し (${reviewList.length}問)`;
+        let html = '<div class="grid-3">';
+        reviewList.forEach((q, i) => { html += qRowHtml(i + 1, q); });
+        html += '</div>';
+        document.getElementById('run-content').innerHTML = html;
+        runShareData = { title: `間違い直し (${reviewList.length}問)`, items: reviewList };
+        document.getElementById('study-controls').style.display = 'block';
+        document.getElementById('test-controls').style.display = 'none';
+        switchView('run');
     }
 
     // ===== 📝 テストモード実行 =====
@@ -887,6 +985,8 @@
             daimon++;
         }
 
+        runShareData = { title: `${title} 範囲:${pTest.unit} レベル${pTest.level} (${testQuestionsData.length}問)`, items: testQuestionsData };
+
         document.getElementById('run-content').innerHTML = html;
         document.getElementById('study-controls').style.display = 'none';
         document.getElementById('test-controls').style.display = 'block';
@@ -899,6 +999,7 @@
         let correct = 0;
         let daimonStats = {};
         let detailsHtml = '';
+        let newWrongs = []; // 間違えた問題を「間違い直し」用にためる
 
         // 表記ゆれを吸収してから完全一致で採点（全角→半角、空白除去、単位の省略を許容）
         const normAns = (s) => String(s || '')
@@ -906,7 +1007,8 @@
             .replace(/[−ーｰ–]/g, '-')
             .replace(/\s+/g, '')
             .toLowerCase()
-            .replace(/(g\/cm3|g\/cm³|cm²|cm³|cm2|cm3|m²|m³|m2|m3|km|cm|mm|kg|g|l|℃|度|円|点|人|個|本|枚|冊|分|回転|年前|年後|時間|%)$/, '');
+            .replace(/(g\/cm3|g\/cm³|cm²|cm³|cm2|cm3|m²|m³|m2|m3|km|cm|mm|kg|g|l|℃|度|円|点|人|個|本|枚|冊|分|回転|年前|年後|時間|秒後|秒|%)$/, '')
+            .replace(/\.0+$/, ''); // 「3.0」と「3」を同じ答えとして扱う
 
         testQuestionsData.forEach(q => {
             let userAns = document.getElementById(`t-ans-${q.id}`).value.trim();
@@ -914,7 +1016,8 @@
             let isCorrect = (ua !== '' && (ua === ca || ua === ca.replace(/^x=/, '') || 'x=' + ua === ca));
             
             if(isCorrect) correct++;
-            
+            else newWrongs.push({ q: q.q, a: q.a, type: q.type, subj: pTest.subj, unit: pTest.unit });
+
             if(!daimonStats[q.daimon]) daimonStats[q.daimon] = { total: 0, ok: 0 };
             daimonStats[q.daimon].total++;
             if(isCorrect) daimonStats[q.daimon].ok++;
@@ -923,8 +1026,13 @@
             detailsHtml += `<div style="margin-bottom:5px;">${q.daimon}-${q.id} ${mark} (あなたの答え: ${userAns || '無回答'}) 正解: ${q.a}</div>`;
         });
 
+        // 間違えた問題を保存（同じ問題文はためない・最大100問）
+        newWrongs.forEach(w => { if(!wrongNotes.some(x => x.q === w.q)) wrongNotes.unshift(w); });
+        if(wrongNotes.length > 100) wrongNotes.length = 100;
+        saveWrongNotes();
+
         let totalPct = Math.round((correct / testQuestionsData.length) * 100);
-        
+
         // 成績保存 (1問2点)
         let earnedPoints = correct * 2;
         saveScore(pTest.subj, earnedPoints, `テスト: ${pTest.unit} (${totalPct}%)`, detailsHtml);
@@ -965,6 +1073,25 @@
                 el.style.width = el.getAttribute('data-target') + '%';
             });
         }, 100);
+    }
+
+    // いま画面に出ている問題セットをテキスト化（HTMLタグは取り除く）
+    function buildShareText(withAns) {
+        let tmp = document.createElement('div');
+        let text = `【問題プリント】${runShareData.title}\n\n`;
+        runShareData.items.forEach((it, i) => {
+            tmp.innerHTML = it.q;
+            text += `(${i + 1}) ${tmp.textContent.replace(/\s+/g, ' ').trim()}\n`;
+            if(withAns) text += `　→ 答え: ${it.a}\n`;
+        });
+        return text;
+    }
+    function shareProblems() {
+        if(!runShareData.items.length) { alert('共有できる問題がありません。'); return; }
+        let withAns = confirm('答えも含めて共有しますか？\n（OK＝答え付き ／ キャンセル＝問題のみ）');
+        navigator.clipboard.writeText(buildShareText(withAns))
+            .then(() => alert('問題をコピーしました！LINE等に貼り付けて共有できます。'))
+            .catch(() => alert('コピーに失敗しました。もう一度お試しください。'));
     }
 
     function shareResult() {
