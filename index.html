@@ -54,10 +54,12 @@
         .flash-card .fc-meaning { display: none; color: #e74c3c; font-weight: bold; margin-top: 6px; }
         .flash-card.flipped .fc-meaning { display: block; }
 
-        /* ⏰ 英検タイマー */
-        #timer-box { display: none; align-items: center; gap: 6px; margin-left: 18px; background: #e74c3c; color: #fff; padding: 6px 12px; border-radius: 8px; font-weight: bold; font-size: 20px; letter-spacing: 1px; }
-        #timer-box.timer-warn { background: #c0392b; animation: tblink 1s steps(2, start) infinite; }
-        @keyframes tblink { 50% { opacity: 0.45; } }
+        /* ⏰ 英検タイマー（残り時間で色が変わる） */
+        #timer-box { display: none; align-items: center; gap: 6px; margin-left: 18px; background: #2ecc71; color: #fff; padding: 6px 12px; border-radius: 8px; font-weight: bold; font-size: 20px; letter-spacing: 1px; transition: background .4s; }
+        #timer-box.timer-caution { background: #f1c40f; color: #4a3b00; }   /* 残り10分 */
+        #timer-box.timer-warn { background: #e67e22; }                      /* 残り5分 */
+        #timer-box.timer-danger { background: #c0392b; animation: tblink 1s steps(2, start) infinite; } /* 残り1分・点滅 */
+        @keyframes tblink { 50% { opacity: 0.4; } }
         /* 英検 採点表示 */
         .ek-ans-top { margin-bottom: 4px; }
         .ek-ans-bottom { margin-top: 4px; font-size: 14px; }
@@ -286,6 +288,15 @@
             <h3>🏆 獲得スコア (普通1点 / テスト2点)</h3>
             <h2 id="stat-score-display" style="text-align:center; color:#3498db; font-size:36px;">0 点</h2>
         </div>
+
+        <!-- 英検 成長データ（キャッシュに積み上げた記録） -->
+        <div class="section" id="ek-growth-section">
+            <h3>🎫 英検テスト 成長データ</h3>
+            <div id="ek-growth-summary"></div>
+            <div style="margin-top:12px; position:relative; height:200px;"><canvas id="ekScoreChart"></canvas></div>
+            <div id="ek-growth-empty" style="text-align:center; color:#888; display:none;">まだ英検テストの記録がありません。テストを受けると、ここにスコアの伸びがたまっていきます📈</div>
+        </div>
+
         <div class="section">
             <h3>🌟 教科別ステータス (累計)</h3>
             <div class="chart-container"><canvas id="radarChart"></canvas></div>
@@ -353,7 +364,7 @@
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById(`view-${id}`).classList.add('active');
         document.getElementById('sidebar').classList.remove('open');
-        if(id === 'stats') renderStats('today');
+        if(id === 'stats') { renderStats('today'); ekRenderGrowth(); }
         if(id === 'review') renderReview();
     }
 
@@ -1338,7 +1349,15 @@
             {en:"There is a cat under the desk", jp:"机の下にねこがいます"},
             {en:"I like summer very much", jp:"私は夏が大好きです"},
             {en:"We play soccer after school", jp:"私たちは放課後サッカーをします"},
-            {en:"That book is very interesting", jp:"あの本はとてもおもしろいです"}
+            {en:"That book is very interesting", jp:"あの本はとてもおもしろいです"},
+            {en:"My sister can cook well", jp:"私の姉はじょうずに料理ができます"},
+            {en:"I go to bed at nine", jp:"私は9時に寝ます"},
+            {en:"This is a present for you", jp:"これはあなたへのプレゼントです"},
+            {en:"We have lunch at noon", jp:"私たちは正午に昼食を食べます"},
+            {en:"He is my best friend", jp:"彼は私の親友です"},
+            {en:"I want to drink some water", jp:"私は水を飲みたいです"},
+            {en:"She studies English every night", jp:"彼女は毎晩英語を勉強します"},
+            {en:"The dog is running in the park", jp:"その犬は公園で走っています"}
         ],
         '4': [
             {en:"I am going to visit my uncle", jp:"私はおじを訪ねるつもりです"},
@@ -1352,7 +1371,15 @@
             {en:"He has a lot of comic books", jp:"彼はたくさんの漫画を持っています"},
             {en:"I will call you after dinner", jp:"私は夕食後にあなたに電話します"},
             {en:"My sister is good at cooking", jp:"私の姉は料理が得意です"},
-            {en:"What time do you go to bed", jp:"あなたは何時に寝ますか"}
+            {en:"What time do you go to bed", jp:"あなたは何時に寝ますか"},
+            {en:"I have lived here for five years", jp:"私は5年間ここに住んでいます"},
+            {en:"This book was written by a famous writer", jp:"この本は有名な作家によって書かれました"},
+            {en:"Would you like something to drink", jp:"何か飲み物はいかがですか"},
+            {en:"He is the tallest boy in his class", jp:"彼はクラスでいちばん背が高い男の子です"},
+            {en:"I don't know what to do next", jp:"私は次に何をすべきか分かりません"},
+            {en:"She was reading a book then", jp:"彼女はそのとき本を読んでいました"},
+            {en:"Please tell me how to get there", jp:"そこへの行き方を教えてください"},
+            {en:"I am looking forward to the trip", jp:"私はその旅行を楽しみにしています"}
         ]
     };
     function orderQ(level) {
@@ -1361,61 +1388,80 @@
         let scrambled;
         do { scrambled = [...words].sort(() => Math.random() - 0.5); }
         while(scrambled.join(' ') === p.en && words.length > 1);
-        return {
-            q: `日本語の意味に合うように語を並べかえ、正しい英文を書きなさい。<br>「${p.jp}」<br><span style="color:#888;">［ ${scrambled.join(' / ')} ］</span>`,
-            a: p.en, order: true
-        };
+        if(Math.random() < 0.5) {
+            // (A) 全文を書く
+            return { q:`日本語の意味に合うように語を並べかえ、正しい英文を書きなさい。<br>「${p.jp}」<br><span style="color:#888;">［ ${scrambled.join(' / ')} ］</span>`, a:p.en, order:true };
+        }
+        // (B) ○番目にくる語を書く（本番の並べかえに近い形）
+        const pos = randNum(2, Math.min(4, words.length));
+        const ordinal = { 2:'2番目', 3:'3番目', 4:'4番目' }[pos];
+        return { q:`日本語の意味になるように並べかえたとき、<b>${ordinal}</b>にくる語を書きなさい。<br>「${p.jp}」<br><span style="color:#888;">［ ${scrambled.map((w,i)=>`(${i+1}) ${w}`).join('　')} ］</span>`, a:words[pos-1], order:false };
     }
 
-    // ===== 読解（掲示・Eメール・説明文）：内容をランダム化して毎回変える／答えは短い語で採点 =====
-    const EK_PPL = ["Jim", "Bob", "Mike", "Tom", "Lucy", "Emma", "Kate", "Nancy", "Sara", "Meg", "Ken", "Anna"];
+    // ===== 読解（掲示・Eメール・説明文）：内容をランダム化して毎回ちがう問題を作る／答えは短い語で採点 =====
+    //  素材を多く持ち、組み合わせで1000通り以上。署名sigをキャッシュに記録して同じ問題を続けて出さない。
+    const EK_PPL = ["Jim","Bob","Mike","Tom","Lucy","Emma","Kate","Nancy","Sara","Meg","Ken","Anna","Paul","Rita","Leo","Mia","Dan","Ivy"];
+    const readNoticeEvents = [
+        {n:"Piano Concert", pl:"gym", br:"ticket"}, {n:"Used Book Sale", pl:"library", br:"bag"},
+        {n:"Cooking Class", pl:"kitchen", br:"apron"}, {n:"Science Show", pl:"hall", br:"notebook"},
+        {n:"Dance Lesson", pl:"gym", br:"shoes"}, {n:"Art Class", pl:"classroom", br:"pencil"},
+        {n:"Tennis Camp", pl:"court", br:"cap"}, {n:"Swimming Class", pl:"pool", br:"towel"},
+        {n:"Photo Contest", pl:"hall", br:"camera"}, {n:"Charity Bazaar", pl:"gym", br:"money"},
+        {n:"Guitar Lesson", pl:"music room", br:"guitar"}, {n:"Flower Show", pl:"garden", br:"hat"},
+        {n:"Movie Night", pl:"hall", br:"blanket"}, {n:"Nature Walk", pl:"park", br:"water"},
+        {n:"Cleaning Day", pl:"school", br:"gloves"}, {n:"English Camp", pl:"library", br:"dictionary"},
+        {n:"Baseball Game", pl:"stadium", br:"glove"}, {n:"Drama Show", pl:"theater", br:"ticket"}
+    ];
     function readNotice() {
-        const ev = randObj([
-            {n:"Piano Concert", pl:"gym", br:"ticket"},
-            {n:"Used Book Sale", pl:"library", br:"bag"},
-            {n:"Cooking Class", pl:"kitchen", br:"apron"},
-            {n:"Science Show", pl:"hall", br:"notebook"},
-            {n:"Dance Lesson", pl:"gym", br:"shoes"},
-            {n:"Art Class", pl:"classroom", br:"pencil"},
-            {n:"Tennis Camp", pl:"court", br:"cap"}
-        ]);
-        const mon = randObj(["May","June","July","September","October","November"]);
-        const day = randNum(3, 26), start = randObj(["10:00 a.m.","1:00 p.m.","2:00 p.m.","3:00 p.m."]);
-        const person = randObj(["Mr. Green","Ms. White","Mr. Ito","Ms. Baker"]);
+        const ev = randObj(readNoticeEvents);
+        const mon = randObj(["May","June","July","August","September","October","November","December"]);
+        const day = randNum(3, 27), start = randObj(["9:00 a.m.","10:00 a.m.","11:00 a.m.","1:00 p.m.","2:00 p.m.","3:00 p.m.","4:00 p.m."]);
+        const person = randObj(["Mr. Green","Ms. White","Mr. Ito","Ms. Baker","Mr. Clark","Ms. Lee","Mr. Adams","Ms. Ford"]);
         const passage = `<div class="read-box"><h4 style="text-align:center;">${ev.n}</h4>
             <p>Our school will have a ${ev.n} next month. Everyone can join it, and ${person} will help us. It will be a lot of fun!</p>
             <p><b>Date:</b> ${mon} ${day}　<b>Time:</b> ${start}　<b>Place:</b> the ${ev.pl}</p>
             <p>★ Don't forget to bring your ${ev.br}.</p></div>`;
-        return { passage, items: [
+        return { sig:`N|${ev.n}|${mon}${day}|${start}|${person}`, passage, items: [
             {q:`Where will the ${ev.n} be held?`, a:ev.pl, read:true},
             {q:`What should students bring to the ${ev.n}?`, a:ev.br, read:true}
         ]};
     }
     function readEmail() {
         const A = randObj(EK_PPL); let B; do { B = randObj(EK_PPL); } while(B === A);
-        const item = randObj(["camera","watch","book","game","cap","cake","racket"]);
-        const place = randObj(["station","park","museum","zoo","library","mall"]);
-        const day = randObj(["Saturday","Sunday","Friday","Monday"]);
+        const item = randObj(["camera","watch","book","game","cap","cake","racket","bike","guitar","hat","doll","ball"]);
+        const place = randObj(["station","park","museum","zoo","library","mall","cafe","bookstore","stadium","beach"]);
+        const day = randObj(["Saturday","Sunday","Friday","Monday","Tuesday","Wednesday","Thursday"]);
+        const hour = randObj(["one","two","three","four","ten","eleven"]);
         const passage = `<div class="read-box"><p><b>From:</b> ${A}　<b>To:</b> ${B}　<b>Subject:</b> This weekend</p>
             <p>Hi ${B},<br>How are you? Last week I bought a new ${item}, and I really like it. Do you want to see it? Let's meet at the ${place} on ${day}. See you soon!<br>Your friend, ${A}</p></div>
             <div class="read-box"><p><b>From:</b> ${B}　<b>To:</b> ${A}　<b>Subject:</b> Sounds good!</p>
-            <p>Hi ${A},<br>Thank you for your e-mail. Yes, I really want to see your new ${item}! The ${place} is a nice place. I will be there at two o'clock on ${day}. I'm looking forward to it!<br>${B}</p></div>`;
-        return { passage, items: [
+            <p>Hi ${A},<br>Thank you for your e-mail. Yes, I really want to see your new ${item}! The ${place} is a nice place. I will be there at ${hour} o'clock on ${day}. I'm looking forward to it!<br>${B}</p></div>`;
+        return { sig:`E|${A}${B}|${item}|${place}|${day}|${hour}`, passage, items: [
             {q:`What did ${A} buy last week?`, a:item, read:true},
             {q:`Where will ${A} and ${B} meet?`, a:place, read:true},
             {q:`When will they meet?`, a:day, read:true}
         ]};
     }
+    const readBioPeople = [
+        {name:"Ken Mori", place:"Osaka", job:"scientist", hobby:"fishing", subj:"science", pet:"dogs"},
+        {name:"Lisa Brown", place:"London", job:"writer", hobby:"reading", subj:"English", pet:"cats"},
+        {name:"Tom Baker", place:"Canada", job:"chef", hobby:"cooking", subj:"art", pet:"birds"},
+        {name:"Emma Hill", place:"Sydney", job:"musician", hobby:"singing", subj:"music", pet:"rabbits"},
+        {name:"Sam Carter", place:"Boston", job:"doctor", hobby:"running", subj:"math", pet:"dogs"},
+        {name:"Nina Adams", place:"Kobe", job:"painter", hobby:"painting", subj:"art", pet:"cats"},
+        {name:"Leo Diaz", place:"Madrid", job:"soccer player", hobby:"swimming", subj:"P.E.", pet:"horses"},
+        {name:"Mia Chen", place:"Taipei", job:"teacher", hobby:"dancing", subj:"history", pet:"fish"},
+        {name:"Ryo Sato", place:"Sendai", job:"farmer", hobby:"gardening", subj:"science", pet:"chickens"},
+        {name:"Amy Wood", place:"Toronto", job:"nurse", hobby:"hiking", subj:"biology", pet:"cats"},
+        {name:"Jun Kim", place:"Seoul", job:"pilot", hobby:"traveling", subj:"geography", pet:"dogs"},
+        {name:"Zoe Bell", place:"Dublin", job:"dancer", hobby:"reading", subj:"music", pet:"birds"},
+        {name:"Max Reed", place:"Berlin", job:"engineer", hobby:"cycling", subj:"math", pet:"turtles"},
+        {name:"Ana Silva", place:"Lisbon", job:"photographer", hobby:"climbing", subj:"art", pet:"cats"},
+        {name:"Yuta Ono", place:"Nagoya", job:"cook", hobby:"fishing", subj:"science", pet:"dogs"}
+    ];
     function readBio(long) {
-        const p = randObj([
-            {name:"Ken Mori", place:"Osaka", job:"scientist", hobby:"fishing", subj:"science", pet:"dogs"},
-            {name:"Lisa Brown", place:"London", job:"writer", hobby:"reading", subj:"English", pet:"cats"},
-            {name:"Tom Baker", place:"Canada", job:"chef", hobby:"cooking", subj:"art", pet:"birds"},
-            {name:"Emma Hill", place:"Sydney", job:"musician", hobby:"singing", subj:"music", pet:"rabbits"},
-            {name:"Sam Carter", place:"Boston", job:"doctor", hobby:"running", subj:"math", pet:"dogs"},
-            {name:"Nina Adams", place:"Kobe", job:"painter", hobby:"painting", subj:"art", pet:"cats"}
-        ]);
-        const first = p.name.split(' ')[0], year = randNum(1890, 1975);
+        const p = randObj(readBioPeople);
+        const first = p.name.split(' ')[0], year = randNum(1890, 1985);
         let text;
         if(long) {
             text = `<h4 style="text-align:center;">The Life of ${p.name}</h4>
@@ -1427,7 +1473,7 @@
             <p>${p.name} was born in ${p.place}. As a child, ${first} liked ${p.hobby} and studying ${p.subj} at school. ${first} also loved ${p.pet}.</p>
             <p>${first} worked very hard and became a ${p.job}. Now a lot of people know ${first}. In ${first}'s free time, ${first} still enjoys ${p.hobby}.</p>`;
         }
-        return { passage: `<div class="read-box">${text}</div>`, items: [
+        return { sig:`B|${p.name}|${year}|${long?'L':'S'}`, passage: `<div class="read-box">${text}</div>`, items: [
             {q:`Where was ${p.name} born?`, a:p.place, read:true},
             {q:`What was ${first}'s favorite subject at school?`, a:p.subj, read:true},
             {q:`What animal does ${first} like?`, a:p.pet, read:true},
@@ -1501,6 +1547,30 @@
     // ===== 英検テスト 状態 =====
     let ekTimer = null, ekRemain = 0, ekGraded = false, ekQData = [], ekHasWriting = false;
 
+    // 英検 累積成績キャッシュ（既存の成績appDataとは別キー。成長グラフ・スタンプ・合否に使う）
+    let ekStats = JSON.parse(localStorage.getItem('ekStats') || 'null') || {
+        history: [], best: {}, totalTests: 0, totalQ: 0, totalCorrect: 0, stamps: 0, streak: 0, bestStreak: 0
+    };
+    function saveEkStats() { localStorage.setItem('ekStats', JSON.stringify(ekStats)); }
+    // 合格ライン（%）
+    const EK_PASS = { '英検5級': 60, '英検4級': 60, '英検3級': 65 };
+
+    // 読解の重複を避けるキャッシュ（出した問題の署名を覚えて、同じ問題を続けて出さない）
+    let ekSeen = JSON.parse(localStorage.getItem('ekSeenReading') || '[]');
+    function ekSeenHas(sig) { return ekSeen.indexOf(sig) !== -1; }
+    function ekSeenAdd(sig) {
+        ekSeen.push(sig);
+        if(ekSeen.length > 500) ekSeen = ekSeen.slice(-350); // たまりすぎたら古いのを捨てて循環
+        localStorage.setItem('ekSeenReading', JSON.stringify(ekSeen));
+    }
+    // 読解を「まだ出していない内容」で生成（署名sigで判定）
+    function genReadingUnique(fn) {
+        let d, tries = 0;
+        do { d = fn(); tries++; } while(d.sig && ekSeenHas(d.sig) && tries < 60);
+        if(d.sig) ekSeenAdd(d.sig);
+        return d;
+    }
+
     // 採点対象の1問の行HTML
     function ekQuestionRow(idx, qtext, pts) {
         return `
@@ -1539,7 +1609,7 @@
                 }
             } else if(block.type === 'reading') {
                 daimonNo++; const dn = daimonNo;
-                const data = block.gen();
+                const data = genReadingUnique(block.gen); // キャッシュで既出を避ける
                 const pts = distributePoints(block.points, data.items.length);
                 html += ekHeader(block.title, `この大問 ${block.points}点`);
                 html += `<div class="q-row grid-1">${data.passage}</div>`;
@@ -1568,16 +1638,24 @@
 
     // ===== タイマー =====
     const fmtTime = (sec) => { let m = Math.floor(sec / 60), s = sec % 60; return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0'); };
+    // 残り時間で色を段階的に変える（緑→黄10分→橙5分→赤点滅1分）
+    function ekTimerColor(box) {
+        box.classList.remove('timer-caution', 'timer-warn', 'timer-danger');
+        if(ekRemain <= 60) box.classList.add('timer-danger');
+        else if(ekRemain <= 300) box.classList.add('timer-warn');
+        else if(ekRemain <= 600) box.classList.add('timer-caution');
+    }
     function startEikenTimer(min) {
         stopEikenTimer();
         ekRemain = min * 60;
         let box = document.getElementById('timer-box');
-        box.style.display = 'flex'; box.classList.remove('timer-warn');
+        box.style.display = 'flex';
         document.getElementById('timer-text').innerText = fmtTime(ekRemain);
+        ekTimerColor(box);
         ekTimer = setInterval(() => {
             ekRemain--;
             document.getElementById('timer-text').innerText = fmtTime(Math.max(0, ekRemain));
-            if(ekRemain <= 60) box.classList.add('timer-warn');
+            ekTimerColor(box);
             if(ekRemain <= 0) { stopEikenTimer(); alert('⏰ 時間切れです！自動で答え合わせをします。'); gradeEiken(); }
         }, 1000);
     }
@@ -1647,17 +1725,37 @@
             if(mk !== '○') newWrongs.push({ q: q.q, a: q.a, type: 'text', subj: '英語', unit: pTest.subj });
         });
 
+        // 合否判定（合格ラインと比較）
+        const grade = pTest.subj;
+        const passLine = EK_PASS[grade] || 60;
+        const pass = score >= passLine;
+
+        // 累積キャッシュに積み上げる（成長グラフ・スタンプ・連続合格に使用）
+        ekStats.totalTests += 1;
+        ekStats.totalQ += ekQData.length;
+        ekStats.totalCorrect += nO;
+        ekStats.best[grade] = Math.max(ekStats.best[grade] || 0, score);
+        ekStats.stamps += pass ? 3 : 1;             // 受けたら1個、合格でさらに+2個
+        ekStats.streak = pass ? (ekStats.streak + 1) : 0;
+        ekStats.bestStreak = Math.max(ekStats.bestStreak || 0, ekStats.streak);
+        ekStats.history.push({ d: Date.now(), level: grade, score, pass });
+        if(ekStats.history.length > 60) ekStats.history = ekStats.history.slice(-60);
+        saveEkStats();
+
         let dmHtml = Object.keys(dmStats).map(d => `大問${d}: <b>${dmStats[d].got}</b>/${dmStats[d].full}点`).join('　／　');
         let banner = document.getElementById('ek-result-banner');
         banner.style.display = 'block';
         banner.innerHTML = `
+            <div style="text-align:center; font-size:22px; font-weight:bold; color:${pass ? '#27ae60' : '#e74c3c'};">${pass ? '🎉 合格ライン突破！' : `あと ${passLine - score} 点で合格ライン`}<span style="font-size:13px; color:#888;">（${grade}の目安：${passLine}点）</span></div>
             <div style="font-size:34px; font-weight:bold; color:#e74c3c; text-align:center;">${score} / 100 点</div>
             <div style="text-align:center; margin-top:6px;">⭕${nO}問　🔺${nT}問　❌${nX}問</div>
             <div style="text-align:center; margin-top:6px; font-size:14px;">${dmHtml}</div>
-            <div style="text-align:center; margin-top:8px; font-size:14px; color:#555;">${score >= 80 ? '合格ラインです！すばらしい🎉' : score >= 60 ? 'もう少し！間違えた問題を見直そう。' : '基礎を復習してもう一度チャレンジ！'}</div>
-            ${ekHasWriting ? '<div style="text-align:center; margin-top:8px; font-size:14px; color:#e67e22; font-weight:bold;">✍️ ライティング（大問4・5）は自動採点されません。書いた英文はスクショして なお に送ってね！</div>' : ''}`;
+            <div style="text-align:center; margin-top:8px; font-size:14px; color:#555;">🏅 スタンプ ${ekStats.stamps}個　🔥 連続合格 ${ekStats.streak}（最高 ${ekStats.bestStreak}）　自己ベスト ${ekStats.best[grade]}点</div>
+            ${ekStats.best[grade] === score && ekStats.totalTests > 1 ? '<div style="text-align:center; margin-top:4px; font-size:14px; color:#e67e22; font-weight:bold;">✨ 自己ベスト更新！</div>' : ''}
+            ${ekHasWriting ? '<div style="text-align:center; margin-top:8px; font-size:14px; color:#e67e22; font-weight:bold;">✍️ ライティング（大問4・5）は自動採点されません。書いた英文はスクショして なお に送ってね！</div>' : ''}
+            <div style="text-align:center; margin-top:8px;"><button class="btn" style="background:#3498db; color:white;" onclick="switchView('stats')">📈 成長グラフを見る</button></div>`;
 
-        saveScore('英語', score, `英検テスト ${pTest.subj} (${score}点)`);
+        saveScore('英語', score, `英検テスト ${grade} (${score}点${pass ? '・合格' : ''})`);
         newWrongs.forEach(w => { if(!wrongNotes.some(x => x.q === w.q)) wrongNotes.unshift(w); });
         if(wrongNotes.length > 100) wrongNotes.length = 100;
         saveWrongNotes();
@@ -2134,6 +2232,52 @@
                 datasets: [{ label: '累計スコア', data: [userData.totalScores.math, userData.totalScores.eng, userData.totalScores.jpn, userData.totalScores.sci, userData.totalScores.soc], backgroundColor: 'rgba(52, 152, 219, 0.4)', borderColor: '#3498db', pointBackgroundColor: '#e74c3c' }]
             },
             options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true } } }
+        });
+    }
+
+    // ===== 🎫 英検 成長データ（ekStats キャッシュから描画。renderStats/appDataには触れない） =====
+    let ekChart;
+    function ekRenderGrowth() {
+        let empty = document.getElementById('ek-growth-empty');
+        let sum = document.getElementById('ek-growth-summary');
+        let canvas = document.getElementById('ekScoreChart');
+        if(!ekStats.history.length) {
+            empty.style.display = 'block';
+            sum.innerHTML = '';
+            if(ekChart) { ekChart.destroy(); ekChart = null; }
+            canvas.style.display = 'none';
+            return;
+        }
+        empty.style.display = 'none';
+        canvas.style.display = 'block';
+        let acc = ekStats.totalQ ? Math.round(ekStats.totalCorrect / ekStats.totalQ * 100) : 0;
+        let bestHtml = ['英検5級','英検4級','英検3級'].filter(g => ekStats.best[g] != null)
+            .map(g => `${g.replace('英検','')} <b>${ekStats.best[g]}</b>点`).join('　/　') || '—';
+        sum.innerHTML = `
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; text-align:center;">
+                <div class="result-box"><div style="font-size:12px; color:#888;">受けた回数</div><div style="font-size:22px; font-weight:bold;">${ekStats.totalTests}回</div></div>
+                <div class="result-box"><div style="font-size:12px; color:#888;">スタンプ</div><div style="font-size:22px; font-weight:bold;">🏅${ekStats.stamps}</div></div>
+                <div class="result-box"><div style="font-size:12px; color:#888;">連続合格</div><div style="font-size:22px; font-weight:bold;">🔥${ekStats.streak}<span style="font-size:12px;">（最高${ekStats.bestStreak}）</span></div></div>
+                <div class="result-box"><div style="font-size:12px; color:#888;">累計正解率</div><div style="font-size:22px; font-weight:bold;">${acc}%</div></div>
+            </div>
+            <div style="text-align:center; margin-top:8px; font-size:14px;">自己ベスト： ${bestHtml}　<span style="color:#888;">（累計 ${ekStats.totalCorrect}⭕ / ${ekStats.totalQ}問）</span></div>`;
+
+        // スコア推移の折れ線（合格ラインより上は緑点）
+        let recent = ekStats.history.slice(-20);
+        let labels = recent.map((h, i) => (i + 1) + '回目');
+        let scores = recent.map(h => h.score);
+        let pointColors = recent.map(h => h.pass ? '#27ae60' : '#e74c3c');
+        if(ekChart) ekChart.destroy();
+        ekChart = new Chart(canvas, {
+            type: 'line',
+            data: { labels, datasets: [{
+                label: '英検テストのスコア', data: scores,
+                borderColor: '#3498db', backgroundColor: 'rgba(52,152,219,0.15)',
+                pointBackgroundColor: pointColors, pointRadius: 5, tension: 0.25, fill: true
+            }]},
+            options: { responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, max: 100 } } }
         });
     }
 
