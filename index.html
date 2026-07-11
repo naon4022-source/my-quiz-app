@@ -997,7 +997,17 @@
     //  英検テスト（本番形式・記述式・100点満点・時間制限・○△✕採点）
     //  ※過去問より少し難しめ：選択式ではなく「記述（スペルを書く）」で出題
     // ============================================================
-    const ekWordQ = (level) => { let w = randObj(engWordsByLevel[level]); return { q:`次の日本語の意味になる英単語を書きなさい。<br>「${w.j}」`, a:w.e }; };
+    // 日本語→その意味を持つ英単語すべて（同義語を全部正解にするため。例: うれしい→happy/glad, 話す→speak/talk）
+    const EK_JP2EN = (() => {
+        const m = {};
+        Object.values(engWordsByLevel).forEach(arr => arr.forEach(w => { (m[w.j] = m[w.j] || []).push(w.e); }));
+        return m;
+    })();
+    const ekWordQ = (level) => {
+        let w = randObj(engWordsByLevel[level]);
+        let alts = [...new Set(EK_JP2EN[w.j] || [w.e])]; // 同義語（別レベルの語も含む）はすべて正解扱い
+        return { q:`次の日本語の意味になる英単語を書きなさい。<br>「${w.j}」`, a:w.e, alts };
+    };
     // 英検テストの文で使う登場人物・時間（毎回変えて同じ文が続かないように）
     const EK_SUBJ = ["I", "We", "They", "He", "She", "Tom", "Ken", "Emma", "Lucy", "Nancy", "Yuki", "My brother", "My sister"];
     const EK_TIME = ["yesterday", "last week", "last night", "two days ago", "last Sunday", "this morning", "last month"];
@@ -1357,7 +1367,7 @@
             {en:"He is my best friend", jp:"彼は私の親友です"},
             {en:"I want to drink some water", jp:"私は水を飲みたいです"},
             {en:"She studies English every night", jp:"彼女は毎晩英語を勉強します"},
-            {en:"The dog is running in the park", jp:"その犬は公園で走っています"}
+            {en:"My dog is running very fast", jp:"私の犬はとても速く走っています"}
         ],
         '4': [
             {en:"I am going to visit my uncle", jp:"私はおじを訪ねるつもりです"},
@@ -1390,12 +1400,12 @@
         while(scrambled.join(' ') === p.en && words.length > 1);
         if(Math.random() < 0.5) {
             // (A) 全文を書く
-            return { q:`日本語の意味に合うように語を並べかえ、正しい英文を書きなさい。<br>「${p.jp}」<br><span style="color:#888;">［ ${scrambled.join(' / ')} ］</span>`, a:p.en, order:true };
+            return { key:`O|${p.en}`, q:`日本語の意味に合うように語を並べかえ、正しい英文を書きなさい。<br>「${p.jp}」<br><span style="color:#888;">［ ${scrambled.join(' / ')} ］</span>`, a:p.en, order:true };
         }
         // (B) ○番目にくる語を書く（本番の並べかえに近い形）
         const pos = randNum(2, Math.min(4, words.length));
         const ordinal = { 2:'2番目', 3:'3番目', 4:'4番目' }[pos];
-        return { q:`日本語の意味になるように並べかえたとき、<b>${ordinal}</b>にくる語を書きなさい。<br>「${p.jp}」<br><span style="color:#888;">［ ${scrambled.map((w,i)=>`(${i+1}) ${w}`).join('　')} ］</span>`, a:words[pos-1], order:false };
+        return { key:`O|${p.en}`, q:`日本語の意味になるように並べかえたとき、<b>${ordinal}</b>にくる語を書きなさい。<br>「${p.jp}」<br><span style="color:#888;">［ ${scrambled.map((w,i)=>`(${i+1}) ${w}`).join('　')} ］</span>`, a:words[pos-1], order:false };
     }
 
     // ===== 読解（掲示・Eメール・説明文）：内容をランダム化して毎回ちがう問題を作る／答えは短い語で採点 =====
@@ -1602,9 +1612,10 @@
                 html += ekHeader(block.title, `この大問 ${block.points}点`);
                 for(let i=0; i<block.count; i++) {
                     let q, tries = 0;
-                    do { q = block.gen(); tries++; } while(seen.has(q.q) && tries < 60);
-                    seen.add(q.q);
-                    ekQData.push({ id: idx, daimon: dn, q: q.q, a: q.a, points: pts[i], read: false, order: !!q.order });
+                    // 語順は並び替え表示が毎回違うので、安定キー(元の英文)で重複判定する
+                    do { q = block.gen(); tries++; } while(seen.has(q.key || q.q) && tries < 60);
+                    seen.add(q.key || q.q);
+                    ekQData.push({ id: idx, daimon: dn, q: q.q, a: q.a, points: pts[i], read: false, order: !!q.order, alts: q.alts });
                     html += ekQuestionRow(idx, q.q, pts[i]); idx++;
                 }
             } else if(block.type === 'reading') {
@@ -1706,21 +1717,31 @@
         ekQData.forEach(q => {
             let inp = document.getElementById(`ek-ans-${q.id}`);
             let user = inp ? inp.value.trim() : '';
-            // 読解の答えは「the/a/an」を付けても正解にする
-            let mk = q.read ? ekJudge(stripArt(user), stripArt(q.a)) : ekJudge(user, q.a);
+            let mk;
+            if(q.alts && q.alts.length) {
+                // 同義語はどれでも正解（○＞△＞✕ の順で一番良い判定を採用）
+                const rank = { '○':2, '△':1, '✕':0 };
+                mk = q.alts.map(a => ekJudge(user, a)).reduce((b, m) => rank[m] > rank[b] ? m : b, '✕');
+            } else {
+                // 読解の答えは「the/a/an」を付けても正解にする
+                mk = q.read ? ekJudge(stripArt(user), stripArt(q.a)) : ekJudge(user, q.a);
+            }
             let got = mk === '○' ? q.points : mk === '△' ? Math.round(q.points / 2) : 0;
             score += got;
             if(mk === '○') nO++; else if(mk === '△') nT++; else nX++;
             if(!dmStats[q.daimon]) dmStats[q.daimon] = { full: 0, got: 0 };
             dmStats[q.daimon].full += q.points; dmStats[q.daimon].got += got;
 
+            // 正解表示（同義語がある単語問題は「他の正解」も表示して学べるように）
+            let ansLabel = q.a;
+            if(q.alts && q.alts.length > 1) { let others = q.alts.filter(a => a !== q.a); if(others.length) ansLabel = `${q.a}（${others.join(' / ')} も可）`; }
             let color = mk === '○' ? '#27ae60' : mk === '△' ? '#e67e22' : '#e74c3c';
             let markEl = document.getElementById(`ek-mark-${q.id}`);
             if(markEl) markEl.innerHTML = `<span style="color:${color}; font-weight:bold; font-size:18px;">${mk}</span>(${q.id})`;
             let top = document.getElementById(`ek-top-${q.id}`);
-            if(top) { top.style.display = 'block'; top.innerHTML = `<span style="color:#e74c3c; font-weight:bold;">➡ 正解：${q.a}</span>`; }
+            if(top) { top.style.display = 'block'; top.innerHTML = `<span style="color:#e74c3c; font-weight:bold;">➡ 正解：${ansLabel}</span>`; }
             let bot = document.getElementById(`ek-bot-${q.id}`);
-            if(bot) { bot.style.display = 'block'; bot.innerHTML = `<span style="color:#e74c3c; font-weight:bold;">正解：${q.a}</span>　<span style="color:#888;">あなたの答え：${user || '（無回答）'} → ${got}/${q.points}点</span>`; }
+            if(bot) { bot.style.display = 'block'; bot.innerHTML = `<span style="color:#e74c3c; font-weight:bold;">正解：${ansLabel}</span>　<span style="color:#888;">あなたの答え：${user || '（無回答）'} → ${got}/${q.points}点</span>`; }
             if(inp) { inp.disabled = true; inp.style.borderColor = color; inp.style.borderWidth = '2px'; }
             if(mk !== '○') newWrongs.push({ q: q.q, a: q.a, type: 'text', subj: '英語', unit: pTest.subj });
         });
