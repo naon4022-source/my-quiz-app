@@ -64,6 +64,14 @@
         .ek-ans-top { margin-bottom: 4px; }
         .ek-ans-bottom { margin-top: 4px; font-size: 14px; }
         #ek-result-banner { background: var(--bg-color); border: 2px solid #e74c3c; border-radius: 10px; padding: 14px; margin-bottom: 16px; }
+
+        /* 🧮 百ます計算（マス目のグリッド） */
+        .hyakumasu { border-collapse: collapse; margin: 15px auto; }
+        .hyakumasu th, .hyakumasu td { border: 2px solid #7f8c9b; width: 46px; height: 46px; text-align: center; vertical-align: middle; font-size: 20px; font-weight: bold; box-sizing: border-box; }
+        .hyakumasu th { background: var(--bg-color); color: var(--main-color); }
+        .hyakumasu td { background: var(--box-bg); color: var(--text-color); }
+        .hyakumasu tr:first-child th:first-child { background: var(--head-color); color: #fff; } /* 左上の「×」 */
+        .hyakumasu td.hm-answer { color: #e74c3c; } /* 答えを表示したときの色 */
         /* 英検 読解パッセージ */
         .read-box { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px 16px; margin: 6px 0 14px; line-height: 1.9; font-weight: normal; }
         .read-box h4 { margin: 4px 0 10px; }
@@ -100,6 +108,10 @@
             .q-input { border: none; border-bottom: 1px solid black; background: transparent; }
             .text-space { border: 1px dashed #999; }
             .q-ans-show { display: none !important; }
+            /* 百ます計算を印刷でもはっきりしたマス目で出す */
+            .hyakumasu { page-break-inside: avoid; }
+            .hyakumasu th, .hyakumasu td { border: 2px solid #000 !important; width: 48px; height: 48px; color: #000 !important; background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .hyakumasu td.hm-answer { color: #000 !important; }
         }
     </style>
 </head>
@@ -270,9 +282,12 @@
     <div id="view-hyakumasu" class="view">
         <h1 class="no-print">🧮 百ます掛け算</h1>
         <div class="section">
-            <p class="no-print">※成績には入りません。印刷推奨。</p>
-            <button class="btn no-print" style="background:#2ecc71; color:white;" onclick="generateHyakumasu()">🔄 シャッフル</button>
-            <button class="btn no-print" style="background:#95a5a6; color:white;" onclick="window.print()">🖨️ 印刷</button>
+            <p class="no-print">※成績には入りません。マスに答えを書いて練習しよう。答えを見て丸つけ・答え入り印刷もできます。</p>
+            <div class="no-print" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                <button class="btn" style="background:#2ecc71; color:white;" onclick="generateHyakumasu()">🔄 シャッフル</button>
+                <button class="btn" style="background:#e74c3c; color:white;" id="hyakumasu-ans-btn" onclick="toggleHyakumasuAnswers()">👀 答えを見る</button>
+                <button class="btn" style="background:#95a5a6; color:white;" onclick="window.print()">🖨️ 印刷</button>
+            </div>
             <div id="hyakumasu-container" style="overflow-x: auto;"></div>
         </div>
     </div>
@@ -2303,6 +2318,7 @@
     }
 
     // ===== 🧮 百ます計算 =====
+    let hyakumasuAnswersVisible = false;
     function generateHyakumasu() {
         let top = [1,2,3,4,5,6,7,8,9].sort(() => Math.random() - 0.5);
         let side = [1,2,3,4,5,6,7,8,9].sort(() => Math.random() - 0.5);
@@ -2311,11 +2327,24 @@
         html += '</tr>';
         side.forEach(s => {
             html += `<tr><th>${s}</th>`;
-            top.forEach(t => html += `<td></td>`);
+            top.forEach(t => html += `<td data-a="${s * t}"></td>`); // 答え(積)をマスに記憶しておく
             html += '</tr>';
         });
         html += '</table>';
         document.getElementById('hyakumasu-container').innerHTML = html;
+        hyakumasuAnswersVisible = false;
+        let btn = document.getElementById('hyakumasu-ans-btn');
+        if(btn) btn.innerText = '👀 答えを見る';
+    }
+    // 答えの表示/非表示を切り替え（答え合わせ・答え入り印刷用）
+    function toggleHyakumasuAnswers() {
+        hyakumasuAnswersVisible = !hyakumasuAnswersVisible;
+        document.querySelectorAll('#hyakumasu-container td[data-a]').forEach(td => {
+            if(hyakumasuAnswersVisible) { td.innerText = td.getAttribute('data-a'); td.classList.add('hm-answer'); }
+            else { td.innerText = ''; td.classList.remove('hm-answer'); }
+        });
+        let btn = document.getElementById('hyakumasu-ans-btn');
+        if(btn) btn.innerText = hyakumasuAnswersVisible ? '🙈 答えをかくす' : '👀 答えを見る';
     }
 </script>
 </body>
