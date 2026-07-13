@@ -72,6 +72,28 @@
         .hyakumasu td { background: var(--box-bg); color: var(--text-color); }
         .hyakumasu tr:first-child th:first-child { background: var(--head-color); color: #fff; } /* 左上の「×」 */
         .hyakumasu td.hm-answer { color: #e74c3c; } /* 答えを表示したときの色 */
+
+        /* ===== 🔥 モチベUP ===== */
+        /* 応援バナー */
+        .moti-banner { background: linear-gradient(100deg, #ff8a00, #e91e63 55%, #7b2ff7); color: #fff; border-radius: 14px; padding: 14px 18px; margin-bottom: 16px; box-shadow: 0 6px 18px rgba(233,30,99,.28); display: flex; align-items: center; gap: 12px; }
+        .moti-banner .moti-emoji { font-size: 30px; line-height: 1; animation: motiBob 1.8s ease-in-out infinite; }
+        .moti-banner .moti-text { font-weight: bold; font-size: 16px; }
+        .moti-banner .moti-sub { font-size: 12px; opacity: .92; margin-top: 2px; }
+        @keyframes motiBob { 0%,100%{ transform: translateY(0) rotate(-4deg);} 50%{ transform: translateY(-4px) rotate(4deg);} }
+        /* ちいさな応援チップ（各セクション見出し用） */
+        .moti-chip { display: inline-block; font-size: 11px; font-weight: bold; color: #fff; background: #f39c12; border-radius: 999px; padding: 2px 9px; margin-left: 8px; vertical-align: middle; }
+        /* 達成バッジ（採点結果など） */
+        .moti-cheer { text-align: center; font-size: 20px; font-weight: bold; margin: 8px 0; animation: motiPop .5s cubic-bezier(.2,1.4,.4,1); }
+        @keyframes motiPop { 0%{ transform: scale(.4); opacity:0;} 100%{ transform: scale(1); opacity:1;} }
+        /* 紙吹雪 */
+        #confetti-layer { position: fixed; inset: 0; pointer-events: none; z-index: 4000; overflow: hidden; display: none; }
+        #confetti-layer.on { display: block; }
+        .confetti-piece { position: absolute; top: -14px; width: 10px; height: 14px; opacity: .95; will-change: transform; animation: confettiFall linear forwards; }
+        @keyframes confettiFall { 0%{ transform: translateY(-10px) rotate(0deg);} 100%{ transform: translateY(105vh) rotate(720deg);} }
+        /* ボタンにワクワク感 */
+        .btn-action, .btn-test { position: relative; }
+        .btn-action:hover, .btn-test:hover { transform: translateY(-1px) scale(1.01); box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+
         /* 英検 読解パッセージ */
         .read-box { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px 16px; margin: 6px 0 14px; line-height: 1.9; font-weight: normal; }
         .read-box h4 { margin: 4px 0 10px; }
@@ -117,6 +139,9 @@
 </head>
 <body>
 
+<!-- 🎉 紙吹雪レイヤー -->
+<div id="confetti-layer" class="no-print"></div>
+
 <header>
     <button class="menu-btn" onclick="toggleMenu()">≡</button>
     <div class="logo-btn" onclick="switchView('study')">📚 問題メーカー</div>
@@ -140,6 +165,13 @@
     
     <!-- ================= 📖 勉強モード設定 ================= -->
     <div id="view-study" class="view active">
+        <div id="moti-home" class="moti-banner no-print" onclick="rotateMotivation()" style="cursor:pointer;">
+            <div class="moti-emoji" id="moti-emoji">🔥</div>
+            <div>
+                <div class="moti-text" id="moti-text">今日もはじめよう！</div>
+                <div class="moti-sub" id="moti-sub">タップで応援メッセージが変わるよ</div>
+            </div>
+        </div>
         <h2>📖 普通の勉強（1問1点）</h2>
         <div class="section">
             <h3>🎒 学年・検定</h3>
@@ -207,6 +239,7 @@
         </div>
         
         <h2 id="run-title" class="no-print" style="border-left: 5px solid var(--main-color); padding-left: 10px;"></h2>
+        <div id="run-cheer" class="no-print" style="display:none; background:var(--bg-color); border-left:4px solid #2ecc71; border-radius:8px; padding:8px 12px; margin-bottom:12px; font-weight:bold; color:#27ae60;"></div>
 
         <div id="ek-result-banner" class="no-print" style="display:none;"></div>
 
@@ -367,7 +400,72 @@
         initStudyMenu();
         initTestMenu();
         generateHyakumasu();
+        showMotivation();
     };
+
+    // ===== 🔥 モチベUP：応援メッセージ＆紙吹雪 =====
+    const MOTI_LINES = [
+        { e:"🔥", t:"昨日の自分をこえよう！", s:"1問でも進めば、それは前進。" },
+        { e:"🌱", t:"コツコツが最強。", s:"小さな積み重ねが大きな力になる。" },
+        { e:"💪", t:"できないは、まだできてないだけ。", s:"くり返せば必ずできるようになる。" },
+        { e:"⭐", t:"今日のがんばり、未来のじぶんが喜ぶ。", s:"やった分だけ強くなる。" },
+        { e:"🚀", t:"まちがえた数だけ、かしこくなる。", s:"ミスは成長のチャンス！" },
+        { e:"🏆", t:"続けた人が、最後に勝つ。", s:"今日も続けたキミはえらい。" },
+        { e:"✨", t:"5分だけでもOK。", s:"はじめれば、勝ち。" },
+        { e:"🎯", t:"ねらうは自己ベスト更新！", s:"きのうの点をこえていこう。" },
+        { e:"🍀", t:"やる気は、やりはじめると出てくる。", s:"まず1問、いってみよう。" }
+    ];
+    let motiIdx = Math.floor(Math.random() * MOTI_LINES.length);
+    // 今日やった問題数（appDataとは別キー。日付が変わったらリセット）
+    function motiToday() { const d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+    let motiDaily = JSON.parse(localStorage.getItem('motiDaily') || 'null') || { date: motiToday(), count: 0, best: 0 };
+    if(motiDaily.date !== motiToday()) motiDaily = { date: motiToday(), count: 0, best: motiDaily.best || 0 };
+    function motiAddDone(n) {
+        if(!n || n <= 0) return;
+        if(motiDaily.date !== motiToday()) motiDaily = { date: motiToday(), count: 0, best: motiDaily.best || 0 };
+        motiDaily.count += n;
+        motiDaily.best = Math.max(motiDaily.best || 0, motiDaily.count);
+        localStorage.setItem('motiDaily', JSON.stringify(motiDaily));
+        showMotivation();
+    }
+    function showMotivation() {
+        const m = MOTI_LINES[motiIdx % MOTI_LINES.length];
+        const e = document.getElementById('moti-emoji'), t = document.getElementById('moti-text'), s = document.getElementById('moti-sub');
+        if(e) e.textContent = m.e; if(t) t.textContent = m.t;
+        if(s) s.textContent = (motiDaily.count > 0 ? `📚 今日はもう ${motiDaily.count} 問クリア！えらい🎉　` : '') + m.s;
+    }
+    function rotateMotivation() { motiIdx = (motiIdx + 1) % MOTI_LINES.length; showMotivation(); }
+
+    // 🎉 紙吹雪（成功したときのごほうび演出）
+    function celebrate(power) {
+        const layer = document.getElementById('confetti-layer');
+        if(!layer) return;
+        layer.classList.add('on'); layer.innerHTML = '';
+        const colors = ['#ff595e','#ffca3a','#8ac926','#1982c4','#6a4c93','#ff924c','#ff5ab0'];
+        const n = power === 'big' ? 140 : 70;
+        for(let i=0; i<n; i++) {
+            const p = document.createElement('div');
+            p.className = 'confetti-piece';
+            p.style.left = Math.random() * 100 + 'vw';
+            p.style.background = colors[i % colors.length];
+            p.style.transform = `rotate(${Math.random()*360}deg)`;
+            const dur = 2.2 + Math.random() * 1.8;
+            p.style.animationDuration = dur + 's';
+            p.style.animationDelay = (Math.random() * 0.5) + 's';
+            if(Math.random() < 0.5) p.style.borderRadius = '50%';
+            layer.appendChild(p);
+        }
+        clearTimeout(window.__confettiTimer);
+        window.__confettiTimer = setTimeout(() => { layer.classList.remove('on'); layer.innerHTML = ''; }, 4200);
+    }
+    // 問題を解く画面での応援メッセージ（英検テスト中は集中のため出さない）
+    const RUN_CHEERS = ["💪 自分のペースでOK！ていねいに解こう。", "🔥 まちがえても大丈夫。まちがいは成長のもと！", "✏️ 分かる問題からでいいよ。落ち着いていこう。", "🌱 1問ずつ、確実に。キミならできる！", "⭐ 集中モードON！終わったら紙吹雪が待ってるよ🎉", "🎯 見直しも大事。ケアレスミスに気をつけて！"];
+    function showRunCheer() {
+        const el = document.getElementById('run-cheer'); if(!el) return;
+        if(currentRunMode === 'eiken') { el.style.display = 'none'; return; } // 本番テストは静かに
+        el.textContent = RUN_CHEERS[Math.floor(Math.random() * RUN_CHEERS.length)];
+        el.style.display = 'block';
+    }
 
     function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
     function toggleDarkMode() { document.body.classList.toggle('dark-mode'); localStorage.setItem('darkMode', document.body.classList.contains('dark-mode')); }
@@ -381,6 +479,8 @@
         document.getElementById('sidebar').classList.remove('open');
         if(id === 'stats') { renderStats('today'); ekRenderGrowth(); }
         if(id === 'review') renderReview();
+        if(id === 'study') rotateMotivation(); // 勉強画面に来るたび新しい応援メッセージ
+        if(id === 'run') showRunCheer();
     }
 
     // ===== メニューUI制御 =====
@@ -1778,10 +1878,17 @@
         if(ekStats.history.length > 60) ekStats.history = ekStats.history.slice(-60);
         saveEkStats();
 
+        // 🎉 ごほうび演出（合格 or 自己ベスト更新で紙吹雪）
+        motiAddDone(ekQData.length);
+        const isBest = ekStats.best[grade] === score && ekStats.totalTests > 1;
+        if(pass || isBest) celebrate('big');
+        const cheer = pass ? (score >= 90 ? '天才！パーフェクトに近いよ🏆' : 'やったね、合格ライン突破！🎉') : (score >= passLine - 10 ? 'おしい！あと一歩、いける！🔥' : 'ここからが伸びどき。次で自己ベストねらおう💪');
+
         let dmHtml = Object.keys(dmStats).map(d => `大問${d}: <b>${dmStats[d].got}</b>/${dmStats[d].full}点`).join('　／　');
         let banner = document.getElementById('ek-result-banner');
         banner.style.display = 'block';
         banner.innerHTML = `
+            <div class="moti-cheer" style="color:${pass ? '#27ae60' : '#e67e22'};">${cheer}</div>
             <div style="text-align:center; font-size:22px; font-weight:bold; color:${pass ? '#27ae60' : '#e74c3c'};">${pass ? '🎉 合格ライン突破！' : `あと ${passLine - score} 点で合格ライン`}<span style="font-size:13px; color:#888;">（${grade}の目安：${passLine}点）</span></div>
             <div style="font-size:34px; font-weight:bold; color:#e74c3c; text-align:center;">${score} / 100 点</div>
             <div style="text-align:center; margin-top:6px;">⭕${nO}問　🔺${nT}問　❌${nX}問</div>
@@ -1957,8 +2064,8 @@
             }
             html += '</div>';
         }
-        // 英検（英語・検定）のときは最後にライティング練習を1問つける
-        if(pStudy.subj === '英語' && String(pStudy.unit).includes('級') && !String(pStudy.unit).includes('単語')) {
+        // ライティング練習は3級だけ（4級・5級はテストに作文が無いので出さない）
+        if(pStudy.subj === '英語' && String(pStudy.unit).includes('3級') && !String(pStudy.unit).includes('単語')) {
             let w = Math.random() < 0.5 ? writeEmail() : writeOpinion();
             html += secTitleHtml('【ライティング練習（1問）】');
             html += `<div class="q-row grid-1"><div class="q-text" style="font-weight:normal;">${w.prompt}</div>${w.body}
@@ -1996,7 +2103,9 @@
                 Object.keys(bySubj).forEach(s => saveScore(s, bySubj[s], `間違い直し: ${s} (${bySubj[s]}問)`));
                 wrongNotes = wrongNotes.filter(w => !cleared.includes(w));
                 saveWrongNotes();
-                alert(`${cleared.length}問クリア！ ${cleared.length}点獲得。クリアした問題はリストから消えました。`);
+                motiAddDone(cleared.length);
+                celebrate(cleared.length >= 10 ? 'big' : '');
+                alert(`🎉 ${cleared.length}問クリア！ +${cleared.length}点ゲット！\n苦手をやっつけたキミ、最高だ！💪`);
             }
             switchView('review');
             return;
@@ -2004,7 +2113,10 @@
         let chk = document.querySelectorAll('.study-check:checked').length;
         if(chk > 0) {
             saveScore(pStudy.subj, chk * 1, `勉強: ${pStudy.unit}`); // 1問1点
-            alert(`${chk}問クリア！ ${chk}点獲得しました。`);
+            motiAddDone(chk);
+            celebrate(chk >= 20 ? 'big' : '');
+            let praise = chk >= 30 ? 'すごい集中力！天才かも✨' : chk >= 15 ? 'その調子！よくがんばった🔥' : 'ナイス！1歩前進だね🌱';
+            alert(`🎉 ${chk}問クリア！ +${chk}点ゲット！\n${praise}`);
         }
         switchView('study');
     }
@@ -2167,6 +2279,11 @@
         document.getElementById('res-details').innerHTML = detailsHtml;
 
         switchView('test-result');
+
+        motiAddDone(testQuestionsData.length);
+        // 🎉 高得点は紙吹雪でお祝い
+        if(totalPct >= 80) celebrate('big');
+        else if(totalPct >= 60) celebrate('');
 
         // グラフアニメーション発火
         setTimeout(() => {
