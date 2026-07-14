@@ -791,121 +791,121 @@
     }
     function mSeifu(diff) {
         if(diff <= 1) {
-            if(Math.random() < 0.5) { let a=signed(10,40), b=signed(10,40); return {q:`${a} + ${fmtP(b)}`, a:`${a+b}`, type:'calc'}; }
-            let a=signed(10,45), b=signed(10,45); return {q:`${a} - ${fmtP(b)}`, a:`${a-b}`, type:'calc'};
+            if(Math.random() < 0.5) { let a=signed(10,40), b=signed(10,40); return {q:`${a} + ${fmtP(b)}`, a:`${a+b}`, work:`${a} + ${fmtP(b)} = ${a+b}`, type:'calc'}; }
+            let a=signed(10,45), b=signed(10,45); return {q:`${a} - ${fmtP(b)}`, a:`${a-b}`, work:`${a} - ${fmtP(b)} = ${a-b}`, type:'calc'};
         }
         if(diff === 2) {
-            if(Math.random() < 0.5) { let a=signed(10,45), b=signed(10,45); return {q:`${a} - ${fmtP(b)}`, a:`${a-b}`, type:'calc'}; }
-            let b=signed(2,9), c=signed(3,12), a=b*c; return {q:`${fmtP(a)} ÷ ${fmtP(b)}`, a:`${a/b}`, type:'calc'};
+            if(Math.random() < 0.5) { let a=signed(10,45), b=signed(10,45); return {q:`${a} - ${fmtP(b)}`, a:`${a-b}`, work:`${a} - ${fmtP(b)} = ${a-b}`, type:'calc'}; }
+            let b=signed(2,9), c=signed(3,12), a=b*c; return {q:`${fmtP(a)} ÷ ${fmtP(b)}`, a:`${a/b}`, work:`${fmtP(a)} ÷ ${fmtP(b)} = ${a/b}`, type:'calc'};
         }
         if(diff === 3) {
-            if(Math.random() < 0.5) { let a=signed(11,20), b=signed(2,9); return {q:`${fmtP(a)} × ${fmtP(b)}`, a:`${a*b}`, type:'calc'}; }
-            let a=signed(2,9), e=Math.random()<0.5?2:3; return {q:`${fmtP(a)}${e===2?'²':'³'} を計算しなさい`, a:`${Math.pow(a,e)}`, type:'calc'};
+            if(Math.random() < 0.5) { let a=signed(11,20), b=signed(2,9); return {q:`${fmtP(a)} × ${fmtP(b)}`, a:`${a*b}`, work:`${fmtP(a)} × ${fmtP(b)} = ${a*b}`, type:'calc'}; }
+            let a=signed(2,9), e=Math.random()<0.5?2:3; let expand = e===2 ? `${fmtP(a)}×${fmtP(a)}` : `${fmtP(a)}×${fmtP(a)}×${fmtP(a)}`; return {q:`${fmtP(a)}${e===2?'²':'³'} を計算しなさい`, a:`${Math.pow(a,e)}`, work:`${fmtP(a)}${e===2?'²':'³'} = ${expand} = ${Math.pow(a,e)}`, type:'calc'};
         }
         if(diff === 4) {
-            if(Math.random() < 0.5) { let a=signed(10,30), b=signed(10,30), c=signed(10,30); return {q:`${a} + ${fmtP(b)} - ${fmtP(c)}`, a:`${a+b-c}`, type:'calc'}; }
-            let a=signed(11,20), b=signed(2,9), c=signed(10,40); return {q:`${fmtP(a)} × ${fmtP(b)} - ${fmtP(c)}`, a:`${a*b-c}`, type:'calc'};
+            if(Math.random() < 0.5) { let a=signed(10,30), b=signed(10,30), c=signed(10,30); return {q:`${a} + ${fmtP(b)} - ${fmtP(c)}`, a:`${a+b-c}`, work:`${a} + ${fmtP(b)} - ${fmtP(c)} = ${a+b} - ${fmtP(c)} = ${a+b-c}`, type:'calc'}; }
+            let a=signed(11,20), b=signed(2,9), c=signed(10,40); return {q:`${fmtP(a)} × ${fmtP(b)} - ${fmtP(c)}`, a:`${a*b-c}`, work:`${fmtP(a)} × ${fmtP(b)} - ${fmtP(c)} = ${a*b} - ${fmtP(c)} = ${a*b-c}`, type:'calc'};
         }
-        if(Math.random() < 0.5) { let a=signed(11,20), b=signed(2,9), c=signed(10,40); return {q:`${fmtP(a)} × ${fmtP(b)} + ${fmtP(c)}`, a:`${a*b+c}`, type:'calc'}; }
-        let a=signed(10,25), b=signed(10,25), c=signed(2,9); return {q:`(${a} + ${fmtP(b)}) × ${fmtP(c)}`, a:`${(a+b)*c}`, type:'calc'};
+        if(Math.random() < 0.5) { let a=signed(11,20), b=signed(2,9), c=signed(10,40); return {q:`${fmtP(a)} × ${fmtP(b)} + ${fmtP(c)}`, a:`${a*b+c}`, work:`${fmtP(a)} × ${fmtP(b)} + ${fmtP(c)} = ${a*b} + ${fmtP(c)} = ${a*b+c}`, type:'calc'}; }
+        let a=signed(10,25), b=signed(10,25), c=signed(2,9); return {q:`(${a} + ${fmtP(b)}) × ${fmtP(c)}`, a:`${(a+b)*c}`, work:`(${a} + ${fmtP(b)}) × ${fmtP(c)} = (${a+b}) × ${fmtP(c)} = ${(a+b)*c}`, type:'calc'};
     }
     function mMoji(diff) {
-        if(diff <= 1) { let a=randNum(2,9), b=randNum(2,9); return {q:`${a}x + ${b}x を計算しなさい`, a:`${a+b}x`, type:'calc'}; }
-        if(diff === 2) { let a=randNum(2,9), b=randNum(1,9), c=randNum(2,9), d=randNum(1,9); return {q:`${a}x + ${b} + ${c}x + ${d} を計算しなさい`, a:fmtLin(a+c, b+d), type:'calc'}; }
-        if(diff === 3) { let a=randNum(2,6), b=randNum(2,9); return {q:`${a}(x + ${b}) を計算しなさい`, a:fmtLin(a, a*b), type:'calc'}; }
-        if(diff === 4) { let a=randNum(2,5), b=randNum(1,6), c=randNum(2,6); return {q:`${a}(x + ${b}) + ${c}x を計算しなさい`, a:fmtLin(a+c, a*b), type:'calc'}; }
-        let a=randNum(2,5), b=randNum(1,6), c=randNum(2,4), d=randNum(1,5); return {q:`${a}(x + ${b}) - ${c}(x + ${d}) を計算しなさい`, a:fmtLin(a-c, a*b - c*d), type:'calc'};
+        if(diff <= 1) { let a=randNum(2,9), b=randNum(2,9); return {q:`${a}x + ${b}x を計算しなさい`, a:`${a+b}x`, work:`${a}x + ${b}x = (${a}+${b})x = ${a+b}x`, type:'calc'}; }
+        if(diff === 2) { let a=randNum(2,9), b=randNum(1,9), c=randNum(2,9), d=randNum(1,9); return {q:`${a}x + ${b} + ${c}x + ${d} を計算しなさい`, a:fmtLin(a+c, b+d), work:`${a}x + ${b} + ${c}x + ${d} = (${a}+${c})x + (${b}+${d}) = ${fmtLin(a+c, b+d)}`, type:'calc'}; }
+        if(diff === 3) { let a=randNum(2,6), b=randNum(2,9); return {q:`${a}(x + ${b}) を計算しなさい`, a:fmtLin(a, a*b), work:`${a}(x + ${b}) = ${a}×x + ${a}×${b} = ${fmtLin(a, a*b)}`, type:'calc'}; }
+        if(diff === 4) { let a=randNum(2,5), b=randNum(1,6), c=randNum(2,6); return {q:`${a}(x + ${b}) + ${c}x を計算しなさい`, a:fmtLin(a+c, a*b), work:`${a}(x + ${b}) + ${c}x = ${a}x + ${a*b} + ${c}x = ${fmtLin(a+c, a*b)}`, type:'calc'}; }
+        let a=randNum(2,5), b=randNum(1,6), c=randNum(2,4), d=randNum(1,5); return {q:`${a}(x + ${b}) - ${c}(x + ${d}) を計算しなさい`, a:fmtLin(a-c, a*b - c*d), work:`${a}(x + ${b}) - ${c}(x + ${d}) = ${a}x + ${a*b} - ${c}x - ${c*d} = ${fmtLin(a-c, a*b - c*d)}`, type:'calc'};
     }
     function mHouteishiki(diff) {
-        if(diff <= 1) { let x=randNum(2,20), b=randNum(2,20); return {q:`方程式を解きなさい: x + ${b} = ${x+b}`, a:`x=${x}`, type:'calc'}; }
-        if(diff === 2) { let a=randNum(2,9), x=randNum(2,12); return {q:`方程式を解きなさい: ${a}x = ${a*x}`, a:`x=${x}`, type:'calc'}; }
+        if(diff <= 1) { let x=randNum(2,20), b=randNum(2,20); return {q:`方程式を解きなさい: x + ${b} = ${x+b}`, a:`x=${x}`, work:`x + ${b} = ${x+b}<br>x = ${x+b} - ${b}<br>x = ${x}`, type:'calc'}; }
+        if(diff === 2) { let a=randNum(2,9), x=randNum(2,12); return {q:`方程式を解きなさい: ${a}x = ${a*x}`, a:`x=${x}`, work:`${a}x = ${a*x}<br>x = ${a*x} ÷ ${a}<br>x = ${x}`, type:'calc'}; }
         if(diff === 3) {
             let a=randNum(2,9), x=randNum(2,12), b=randNum(2,15);
-            if(Math.random() < 0.5) return {q:`方程式を解きなさい: ${a}x + ${b} = ${a*x+b}`, a:`x=${x}`, type:'calc'};
-            return {q:`方程式を解きなさい: ${a}x - ${b} = ${a*x-b}`, a:`x=${x}`, type:'calc'};
+            if(Math.random() < 0.5) return {q:`方程式を解きなさい: ${a}x + ${b} = ${a*x+b}`, a:`x=${x}`, work:`${a}x + ${b} = ${a*x+b}<br>${a}x = ${a*x+b} - ${b} = ${a*x}<br>x = ${a*x} ÷ ${a} = ${x}`, type:'calc'};
+            return {q:`方程式を解きなさい: ${a}x - ${b} = ${a*x-b}`, a:`x=${x}`, work:`${a}x - ${b} = ${a*x-b}<br>${a}x = ${a*x-b} + ${b} = ${a*x}<br>x = ${a*x} ÷ ${a} = ${x}`, type:'calc'};
         }
-        if(diff === 4) { let a=randNum(4,9), c=randNum(2,3), x=randNum(2,10), b=randNum(2,15); let d=(a-c)*x+b; return {q:`方程式を解きなさい: ${a}x + ${b} = ${c}x + ${d}`, a:`x=${x}`, type:'calc'}; }
-        if(Math.random() < 0.5) { let a=randNum(2,6), x=randNum(2,10), b=randNum(1,8); return {q:`方程式を解きなさい: ${a}(x + ${b}) = ${a*(x+b)}`, a:`x=${x}`, type:'calc'}; }
-        let a=randNum(2,6), b=randNum(2,9); return {q:`方程式を解きなさい: x/${a} = ${b}`, a:`x=${a*b}`, type:'calc'};
+        if(diff === 4) { let a=randNum(4,9), c=randNum(2,3), x=randNum(2,10), b=randNum(2,15); let d=(a-c)*x+b; return {q:`方程式を解きなさい: ${a}x + ${b} = ${c}x + ${d}`, a:`x=${x}`, work:`${a}x + ${b} = ${c}x + ${d}<br>${a}x - ${c}x = ${d} - ${b}<br>${a-c}x = ${d-b}<br>x = ${d-b} ÷ ${a-c} = ${x}`, type:'calc'}; }
+        if(Math.random() < 0.5) { let a=randNum(2,6), x=randNum(2,10), b=randNum(1,8); return {q:`方程式を解きなさい: ${a}(x + ${b}) = ${a*(x+b)}`, a:`x=${x}`, work:`${a}(x + ${b}) = ${a*(x+b)}<br>${a}x + ${a*b} = ${a*(x+b)}<br>${a}x = ${a*(x+b)} - ${a*b} = ${a*x}<br>x = ${a*x} ÷ ${a} = ${x}`, type:'calc'}; }
+        let a=randNum(2,6), b=randNum(2,9); return {q:`方程式を解きなさい: x/${a} = ${b}`, a:`x=${a*b}`, work:`x ÷ ${a} = ${b}<br>x = ${b} × ${a}<br>x = ${a*b}`, type:'calc'};
     }
     function mHirei(diff) {
-        if(diff <= 2) { let a=randNum(2,9), x=randNum(2,9); return {q:`yはxに比例し、y = ${a}x です。x = ${x} のときのyの値は？`, a:`${a*x}`, type:'calc'}; }
-        if(diff === 3) { let a=randNum(2,9), x=randNum(2,9); return {q:`yはxに比例します。x = ${x} のとき y = ${a*x} です。比例定数aは？`, a:`${a}`, type:'calc'}; }
+        if(diff <= 2) { let a=randNum(2,9), x=randNum(2,9); return {q:`yはxに比例し、y = ${a}x です。x = ${x} のときのyの値は？`, a:`${a*x}`, work:`y = ${a}x に x = ${x} を代入<br>y = ${a} × ${x} = ${a*x}`, type:'calc'}; }
+        if(diff === 3) { let a=randNum(2,9), x=randNum(2,9); return {q:`yはxに比例します。x = ${x} のとき y = ${a*x} です。比例定数aは？`, a:`${a}`, work:`y = ax より a = y ÷ x<br>a = ${a*x} ÷ ${x} = ${a}`, type:'calc'}; }
         let A=randObj([12,18,24,36,48]); let divs=[]; for(let d=2; d<=A; d++) if(A%d===0) divs.push(d); let x=randObj(divs);
-        if(diff === 4) return {q:`yはxに反比例し、y = ${A}/x です。x = ${x} のときのyは？`, a:`${A/x}`, type:'calc'};
-        return {q:`yはxに反比例します。x = ${x} のとき y = ${A/x} です。比例定数aは？`, a:`${A}`, type:'calc'};
+        if(diff === 4) return {q:`yはxに反比例し、y = ${A}/x です。x = ${x} のときのyは？`, a:`${A/x}`, work:`y = ${A}/x に x = ${x} を代入<br>y = ${A} ÷ ${x} = ${A/x}`, type:'calc'};
+        return {q:`yはxに反比例します。x = ${x} のとき y = ${A/x} です。比例定数aは？`, a:`${A}`, work:`反比例は a = x × y<br>a = ${x} × ${A/x} = ${A}`, type:'calc'};
     }
     function mZukei(diff) {
-        if(diff <= 1) { let w=randNum(4,15), h=randNum(4,15); return {q:`たて${h}cm、よこ${w}cmの長方形の面積は？`, a:`${w*h}cm²`, type:'calc'}; }
-        if(diff === 2) { let b=randNum(4,16), h=randNum(3,12); if((b*h)%2) b++; return {q:`底辺${b}cm、高さ${h}cmの三角形の面積は？`, a:`${b*h/2}cm²`, type:'calc'}; }
-        if(diff === 3) { let r=randNum(3,9); return {q:`半径${r}cmの円の面積は？（π=円周率）`, a:`${r*r}πcm²`, type:'calc'}; }
-        if(diff === 4) { let a=randNum(3,9), b=randNum(3,9), c=randNum(3,9); return {q:`たて${a}cm、よこ${b}cm、高さ${c}cmの直方体の体積は？`, a:`${a*b*c}cm³`, type:'calc'}; }
-        if(Math.random() < 0.5) { let s=randNum(3,9); return {q:`1辺${s}cmの立方体の体積は？`, a:`${s*s*s}cm³`, type:'calc'}; }
-        let b=randNum(4,10), h=randNum(3,9); if((b*h)%2) b++; let L=randNum(5,12); return {q:`底面が底辺${b}cm・高さ${h}cmの三角形、高さ${L}cmの三角柱の体積は？`, a:`${b*h/2*L}cm³`, type:'calc'};
+        if(diff <= 1) { let w=randNum(4,15), h=randNum(4,15); return {q:`たて${h}cm、よこ${w}cmの長方形の面積は？`, a:`${w*h}cm²`, work:`長方形の面積 = たて × よこ<br>= ${h} × ${w} = ${w*h}（cm²）`, type:'calc'}; }
+        if(diff === 2) { let b=randNum(4,16), h=randNum(3,12); if((b*h)%2) b++; return {q:`底辺${b}cm、高さ${h}cmの三角形の面積は？`, a:`${b*h/2}cm²`, work:`三角形の面積 = 底辺 × 高さ ÷ 2<br>= ${b} × ${h} ÷ 2 = ${b*h/2}（cm²）`, type:'calc'}; }
+        if(diff === 3) { let r=randNum(3,9); return {q:`半径${r}cmの円の面積は？（π=円周率）`, a:`${r*r}πcm²`, work:`円の面積 = 半径 × 半径 × π<br>= ${r} × ${r} × π = ${r*r}π（cm²）`, type:'calc'}; }
+        if(diff === 4) { let a=randNum(3,9), b=randNum(3,9), c=randNum(3,9); return {q:`たて${a}cm、よこ${b}cm、高さ${c}cmの直方体の体積は？`, a:`${a*b*c}cm³`, work:`直方体の体積 = たて × よこ × 高さ<br>= ${a} × ${b} × ${c} = ${a*b*c}（cm³）`, type:'calc'}; }
+        if(Math.random() < 0.5) { let s=randNum(3,9); return {q:`1辺${s}cmの立方体の体積は？`, a:`${s*s*s}cm³`, work:`立方体の体積 = 1辺 × 1辺 × 1辺<br>= ${s} × ${s} × ${s} = ${s*s*s}（cm³）`, type:'calc'}; }
+        let b=randNum(4,10), h=randNum(3,9); if((b*h)%2) b++; let L=randNum(5,12); return {q:`底面が底辺${b}cm・高さ${h}cmの三角形、高さ${L}cmの三角柱の体積は？`, a:`${b*h/2*L}cm³`, work:`三角柱の体積 = 底面積 × 高さ<br>底面積 = ${b} × ${h} ÷ 2 = ${b*h/2}<br>体積 = ${b*h/2} × ${L} = ${b*h/2*L}（cm³）`, type:'calc'};
     }
     function mData(diff) {
         let type = diff <= 1 ? '平均' : randObj(['平均','中央値','最頻値','範囲']);
         if(type === '平均') {
             let arr=[]; for(let i=0;i<5;i++) arr.push(randNum(2,10));
             let sum=arr.reduce((a,b)=>a+b,0); arr[0]+=(5-(sum%5))%5; sum=arr.reduce((a,b)=>a+b,0);
-            return {q:`次のデータの平均値は？ ${arr.join(', ')}`, a:`${sum/5}`, type:'calc'};
+            return {q:`次のデータの平均値は？ ${arr.join(', ')}`, a:`${sum/5}`, work:`平均 = 合計 ÷ 個数<br>= (${arr.join(' + ')}) ÷ 5 = ${sum} ÷ 5 = ${sum/5}`, type:'calc'};
         }
-        if(type === '範囲') { let arr=[]; for(let i=0;i<6;i++) arr.push(randNum(2,20)); return {q:`次のデータの範囲は？ ${arr.join(', ')}`, a:`${Math.max(...arr)-Math.min(...arr)}`, type:'calc'}; }
-        if(type === '最頻値') { let m=randNum(2,10); let cand=[]; for(let v=2;v<=10;v++) if(v!==m) cand.push(v); cand.sort(()=>Math.random()-0.5); let arr=[m,m,...cand.slice(0,3)].sort(()=>Math.random()-0.5); return {q:`次のデータの最頻値は？ ${arr.join(', ')}`, a:`${m}`, type:'calc'}; }
-        let arr=[]; for(let i=0;i<5;i++) arr.push(randNum(2,20)); let sorted=[...arr].sort((x,y)=>x-y); return {q:`次のデータの中央値は？ ${arr.join(', ')}`, a:`${sorted[2]}`, type:'calc'};
+        if(type === '範囲') { let arr=[]; for(let i=0;i<6;i++) arr.push(randNum(2,20)); let mx=Math.max(...arr), mn=Math.min(...arr); return {q:`次のデータの範囲は？ ${arr.join(', ')}`, a:`${mx-mn}`, work:`範囲 = 最大 − 最小<br>= ${mx} − ${mn} = ${mx-mn}`, type:'calc'}; }
+        if(type === '最頻値') { let m=randNum(2,10); let cand=[]; for(let v=2;v<=10;v++) if(v!==m) cand.push(v); cand.sort(()=>Math.random()-0.5); let arr=[m,m,...cand.slice(0,3)].sort(()=>Math.random()-0.5); return {q:`次のデータの最頻値は？ ${arr.join(', ')}`, a:`${m}`, work:`最頻値 = いちばん多く出てくる数<br>${m} が2回で最多 → ${m}`, type:'calc'}; }
+        let arr=[]; for(let i=0;i<5;i++) arr.push(randNum(2,20)); let sorted=[...arr].sort((x,y)=>x-y); return {q:`次のデータの中央値は？ ${arr.join(', ')}`, a:`${sorted[2]}`, work:`中央値 = 小さい順に並べたまん中<br>小さい順： ${sorted.join(', ')} → まん中は ${sorted[2]}`, type:'calc'};
     }
     // 数学の文章問題テンプレート集（場面・言い回し・数字をすべて変える）
     let usedMathT = {}; // 1回の問題作成中に同じテンプレートを使い回さないための記録
     const mathWordPool = {
         seifu: [
-            (d) => { let start=signed(1,5+d), ch=randNum(3,9+d), up=Math.random()<0.5; return {q:`朝の気温は${start}℃でした。昼までに${ch}℃${up?'上がりました':'下がりました'}。昼の気温は何℃ですか？`, a:`${up?start+ch:start-ch}℃`}; },
-            (d) => { let a=randNum(120,950), b=randNum(30,180); return {q:`地点Aは海面より${a}m高い場所に、地点Bは海面より${b}m低い場所にあります。AとBの高さの差は何mですか？（差＝Aの高さ−Bの高さ。Bはマイナスの高さと考えます）`, a:`${a+b}m`}; },
-            (d) => { let a=randNum(12,45), b=randNum(12,45); return {q:`カードゲームで、はるとさんは1回目に${a}点を獲得し、2回目に${b}点を失いました。2回の合計は何点ですか？（マイナスになる場合は－をつけて答えなさい）`, a:`${a-b}点`}; },
-            (d) => { let p=randNum(300,900), l=randNum(150,850); return {q:`ある商店の利益は、月曜日が${p}円、火曜日は${l}円の赤字でした。2日間を合わせた利益は何円ですか？（赤字になる場合は－をつけて答えなさい）`, a:`${p-l}円`}; },
-            (d) => { let a=randNum(2,10), b=randNum(3,12); return {q:`冷凍庫の中の温度は－${a}℃です。設定を変えてさらに${b}℃下げると、温度は何℃になりますか？`, a:`-${a+b}℃`}; },
-            (d) => { let a=randNum(3,12), b=randNum(2,10); return {q:`テストの点数をクラスの平均と比べると、英語は平均より${a}点高く、理科は平均より${b}点低い結果でした。英語は理科より何点高いですか？`, a:`${a+b}点`}; },
-            (d) => { let a=randNum(5,12)*100, b=randNum(15,48)*10, c=randNum(10,40)*10; return {q:`ゆいさんは${a}円持っていました。${b}円の文ぼう具を買ったあと、お手伝いで${c}円もらいました。いま持っているお金は何円ですか？`, a:`${a-b+c}円`}; }
+            (d) => { let start=signed(1,5+d), ch=randNum(3,9+d), up=Math.random()<0.5; return {q:`朝の気温は${start}℃でした。昼までに${ch}℃${up?'上がりました':'下がりました'}。昼の気温は何℃ですか？`, a:`${up?start+ch:start-ch}℃`, work:`${start} ${up?'+':'−'} ${ch} = ${up?start+ch:start-ch}（℃）`}; },
+            (d) => { let a=randNum(120,950), b=randNum(30,180); return {q:`地点Aは海面より${a}m高い場所に、地点Bは海面より${b}m低い場所にあります。AとBの高さの差は何mですか？（差＝Aの高さ−Bの高さ。Bはマイナスの高さと考えます）`, a:`${a+b}m`, work:`${a} − (−${b}) = ${a} + ${b} = ${a+b}（m）`}; },
+            (d) => { let a=randNum(12,45), b=randNum(12,45); return {q:`カードゲームで、はるとさんは1回目に${a}点を獲得し、2回目に${b}点を失いました。2回の合計は何点ですか？（マイナスになる場合は－をつけて答えなさい）`, a:`${a-b}点`, work:`${a} + (−${b}) = ${a} − ${b} = ${a-b}（点）`}; },
+            (d) => { let p=randNum(300,900), l=randNum(150,850); return {q:`ある商店の利益は、月曜日が${p}円、火曜日は${l}円の赤字でした。2日間を合わせた利益は何円ですか？（赤字になる場合は－をつけて答えなさい）`, a:`${p-l}円`, work:`${p} + (−${l}) = ${p} − ${l} = ${p-l}（円）`}; },
+            (d) => { let a=randNum(2,10), b=randNum(3,12); return {q:`冷凍庫の中の温度は－${a}℃です。設定を変えてさらに${b}℃下げると、温度は何℃になりますか？`, a:`-${a+b}℃`, work:`−${a} − ${b} = −${a+b}（℃）`}; },
+            (d) => { let a=randNum(3,12), b=randNum(2,10); return {q:`テストの点数をクラスの平均と比べると、英語は平均より${a}点高く、理科は平均より${b}点低い結果でした。英語は理科より何点高いですか？`, a:`${a+b}点`, work:`(+${a}) − (−${b}) = ${a} + ${b} = ${a+b}（点）`}; },
+            (d) => { let a=randNum(5,12)*100, b=randNum(15,48)*10, c=randNum(10,40)*10; return {q:`ゆいさんは${a}円持っていました。${b}円の文ぼう具を買ったあと、お手伝いで${c}円もらいました。いま持っているお金は何円ですか？`, a:`${a-b+c}円`, work:`${a} − ${b} + ${c} = ${a-b} + ${c} = ${a-b+c}（円）`}; }
         ],
         moji: [
-            (d) => { let a=randNum(80,200); return {q:`1冊${a}円のノートをx冊買ったときの代金を、xを使った式で表しなさい。`, a:`${a}x円`}; },
-            (d) => { let a=randNum(90,160); return {q:`1000円を出して、1本${a}円のジュースをx本買いました。おつりを、xを使った式で表しなさい。`, a:`1000-${a}x円`}; },
-            (d) => { let v=randNum(30,80); return {q:`時速${v}kmのバスがx時間走ったときに進む道のりを、xを使った式で表しなさい。`, a:`${v}xkm`}; },
-            (d) => { let n=randNum(3,8); return {q:`xLのジュースを${n}人で等しく分けます。1人分の量を、xを使った式で表しなさい。`, a:`x/${n}L`}; },
-            (d) => { return {q:`1辺の長さがxcmの正三角形があります。まわりの長さを、xを使った式で表しなさい。`, a:`3xcm`}; }
+            (d) => { let a=randNum(80,200); return {q:`1冊${a}円のノートをx冊買ったときの代金を、xを使った式で表しなさい。`, a:`${a}x円`, work:`（1冊の値段）×（冊数）= ${a} × x = ${a}x（円）`}; },
+            (d) => { let a=randNum(90,160); return {q:`1000円を出して、1本${a}円のジュースをx本買いました。おつりを、xを使った式で表しなさい。`, a:`1000-${a}x円`, work:`（出したお金）−（代金）= 1000 − ${a}×x = 1000 − ${a}x（円）`}; },
+            (d) => { let v=randNum(30,80); return {q:`時速${v}kmのバスがx時間走ったときに進む道のりを、xを使った式で表しなさい。`, a:`${v}xkm`, work:`（速さ）×（時間）= ${v} × x = ${v}x（km）`}; },
+            (d) => { let n=randNum(3,8); return {q:`xLのジュースを${n}人で等しく分けます。1人分の量を、xを使った式で表しなさい。`, a:`x/${n}L`, work:`（全体の量）÷（人数）= x ÷ ${n} = x/${n}（L）`}; },
+            (d) => { return {q:`1辺の長さがxcmの正三角形があります。まわりの長さを、xを使った式で表しなさい。`, a:`3xcm`, work:`正三角形は3辺すべて同じ長さ<br>x × 3 = 3x（cm）`}; }
         ],
         houteishiki: [
-            (d) => { let a=randNum(2,6), b=randNum(3,20), x=randNum(3,15); return {q:`ある数xを${a}倍してから${b}をひくと${a*x-b}になりました。ある数xを求めなさい。`, a:`${x}`}; },
-            (d) => { let p=randNum(80,180), n=randNum(3,8), pay=100*Math.ceil((p*n+50)/100); return {q:`1個${p}円のパンを${n}個買って${pay}円払いました。おつりはいくらですか？`, a:`${pay-p*n}円`}; },
-            (d) => { let a=randNum(3,6), x=randNum(4,12), r=randNum(1,a-1); return {q:`あめが${a*x+r}個あります。1人に${a}個ずつ配ると${r}個余りました。配った人数は何人ですか？`, a:`${x}人`}; },
-            (d) => { let x=randNum(4,12), dd=randNum(2,8); return {q:`よこの長さがたてより${dd}cm長い長方形があり、まわりの長さは${2*(2*x+dd)}cmです。たての長さは何cmですか？`, a:`${x}cm`}; },
-            (d) => { let a=randNum(60,120), b=randNum(100,250), x=randNum(3,9); return {q:`1本${a}円の鉛筆を何本かと、${b}円のノートを1冊買ったら、合計${a*x+b}円でした。鉛筆は何本買いましたか？`, a:`${x}本`}; },
-            (d) => { let k=randObj([3,4,5]), g=(k===3?randNum(9,13):(k===4?randNum(6,10):randNum(5,8))), x=randNum(1,8), c=x+g, m=k*g+x; return {q:`現在、母は${m}歳、子どもは${c}歳です。母の年齢が子どもの年齢のちょうど${k}倍だったのは何年前ですか？`, a:`${x}年前`}; }
+            (d) => { let a=randNum(2,6), b=randNum(3,20), x=randNum(3,15); return {q:`ある数xを${a}倍してから${b}をひくと${a*x-b}になりました。ある数xを求めなさい。`, a:`${x}`, work:`${a}x − ${b} = ${a*x-b}<br>${a}x = ${a*x-b} + ${b} = ${a*x}<br>x = ${a*x} ÷ ${a} = ${x}`}; },
+            (d) => { let p=randNum(80,180), n=randNum(3,8), pay=100*Math.ceil((p*n+50)/100); return {q:`1個${p}円のパンを${n}個買って${pay}円払いました。おつりはいくらですか？`, a:`${pay-p*n}円`, work:`代金 = ${p} × ${n} = ${p*n}<br>おつり = ${pay} − ${p*n} = ${pay-p*n}（円）`}; },
+            (d) => { let a=randNum(3,6), x=randNum(4,12), r=randNum(1,a-1); return {q:`あめが${a*x+r}個あります。1人に${a}個ずつ配ると${r}個余りました。配った人数は何人ですか？`, a:`${x}人`, work:`(${a*x+r} − ${r}) ÷ ${a} = ${a*x} ÷ ${a} = ${x}（人）`}; },
+            (d) => { let x=randNum(4,12), dd=randNum(2,8); return {q:`よこの長さがたてより${dd}cm長い長方形があり、まわりの長さは${2*(2*x+dd)}cmです。たての長さは何cmですか？`, a:`${x}cm`, work:`たてをx とすると よこ = x+${dd}<br>まわり = (x + x+${dd}) × 2 = ${2*(2*x+dd)}<br>(2x+${dd}) × 2 = ${2*(2*x+dd)}<br>2x + ${dd} = ${2*x+dd}<br>2x = ${2*x}<br>x = ${x}（cm）`}; },
+            (d) => { let a=randNum(60,120), b=randNum(100,250), x=randNum(3,9); return {q:`1本${a}円の鉛筆を何本かと、${b}円のノートを1冊買ったら、合計${a*x+b}円でした。鉛筆は何本買いましたか？`, a:`${x}本`, work:`鉛筆をx本とすると<br>${a}x + ${b} = ${a*x+b}<br>${a}x = ${a*x+b} − ${b} = ${a*x}<br>x = ${a*x} ÷ ${a} = ${x}（本）`}; },
+            (d) => { let k=randObj([3,4,5]), g=(k===3?randNum(9,13):(k===4?randNum(6,10):randNum(5,8))), x=randNum(1,8), c=x+g, m=k*g+x; return {q:`現在、母は${m}歳、子どもは${c}歳です。母の年齢が子どもの年齢のちょうど${k}倍だったのは何年前ですか？`, a:`${x}年前`, work:`${x}年前は 母${m-x}歳・子${c-x}歳<br>${m-x} = ${c-x} × ${k} が成り立つ → ${x}年前`}; }
         ],
         hirei: [
-            (d) => { let wpm=randNum(20,60), l1=randNum(2,5), l2=randNum(6,12); return {q:`同じ太さの針金${l1}mの重さをはかると${l1*wpm}gありました。この針金${l2}m分の重さは何gですか？`, a:`${l2*wpm}g`}; },
-            (d) => { let a=randNum(3,9), x0=randNum(2,6), x=randNum(7,12); return {q:`yはxに比例し、x=${x0}のときy=${a*x0}です。x=${x}のときのyの値を求めなさい。`, a:`${a*x}`}; },
-            (d) => { let k=randNum(8,20), L=randNum(5,30); return {q:`1Lのガソリンで${k}km走る自動車があります。ガソリン${L}Lでは何km走れますか？`, a:`${k*L}km`}; },
-            (d) => { let n=randNum(12,40), t=randNum(3,15); return {q:`1分間に${n}枚印刷できる印刷機があります。${t}分間では何枚印刷できますか？`, a:`${n*t}枚`}; },
-            (d) => { let z1=randObj([24,36,48,60]), r1=randNum(2,6), prod=z1*r1, cands=[]; for(let z=10; z<=prod/2; z++) if(prod%z===0 && z!==z1) cands.push(z); let z2=cands.length?randObj(cands):prod/2; return {q:`歯数${z1}の歯車Aが毎秒${r1}回転しています。歯車Aとかみ合っている歯数${z2}の歯車Bは、毎秒何回転しますか？`, a:`${prod/z2}回転`}; },
-            (d) => { let v1=randObj([50,60,80]), t1=randNum(4,12), dist=v1*t1, cands=[]; for(let t=3; t<=20; t++) if(dist%t===0 && t!==t1) cands.push(t); let t2=cands.length?randObj(cands):t1*2; return {q:`家から公園まで、分速${v1}mで歩くと${t1}分かかります。同じ道を分速${Math.round(dist/t2)}mで歩くと何分かかりますか？`, a:`${t2}分`}; },
-            (d) => { let A=randObj([24,36,48,60]), divs=[]; for(let dv=2; dv<A; dv++) if(A%dv===0) divs.push(dv); let x=randObj(divs); return {q:`yはxに反比例し、x=${x}のときy=${A/x}です。比例定数を求めなさい。`, a:`${A}`}; }
+            (d) => { let wpm=randNum(20,60), l1=randNum(2,5), l2=randNum(6,12); return {q:`同じ太さの針金${l1}mの重さをはかると${l1*wpm}gありました。この針金${l2}m分の重さは何gですか？`, a:`${l2*wpm}g`, work:`1mあたり ${l1*wpm} ÷ ${l1} = ${wpm}（g）<br>${l2}m分 = ${wpm} × ${l2} = ${l2*wpm}（g）`}; },
+            (d) => { let a=randNum(3,9), x0=randNum(2,6), x=randNum(7,12); return {q:`yはxに比例し、x=${x0}のときy=${a*x0}です。x=${x}のときのyの値を求めなさい。`, a:`${a*x}`, work:`比例定数 = ${a*x0} ÷ ${x0} = ${a}<br>y = ${a} × ${x} = ${a*x}`}; },
+            (d) => { let k=randNum(8,20), L=randNum(5,30); return {q:`1Lのガソリンで${k}km走る自動車があります。ガソリン${L}Lでは何km走れますか？`, a:`${k*L}km`, work:`${k} × ${L} = ${k*L}（km）`}; },
+            (d) => { let n=randNum(12,40), t=randNum(3,15); return {q:`1分間に${n}枚印刷できる印刷機があります。${t}分間では何枚印刷できますか？`, a:`${n*t}枚`, work:`${n} × ${t} = ${n*t}（枚）`}; },
+            (d) => { let z1=randObj([24,36,48,60]), r1=randNum(2,6), prod=z1*r1, cands=[]; for(let z=10; z<=prod/2; z++) if(prod%z===0 && z!==z1) cands.push(z); let z2=cands.length?randObj(cands):prod/2; return {q:`歯数${z1}の歯車Aが毎秒${r1}回転しています。歯車Aとかみ合っている歯数${z2}の歯車Bは、毎秒何回転しますか？`, a:`${prod/z2}回転`, work:`歯数×回転数は等しい：${z1} × ${r1} = ${prod}<br>${prod} ÷ ${z2} = ${prod/z2}（回転）`}; },
+            (d) => { let v1=randObj([50,60,80]), t1=randNum(4,12), dist=v1*t1, cands=[]; for(let t=3; t<=20; t++) if(dist%t===0 && t!==t1) cands.push(t); let t2=cands.length?randObj(cands):t1*2; return {q:`家から公園まで、分速${v1}mで歩くと${t1}分かかります。同じ道を分速${Math.round(dist/t2)}mで歩くと何分かかりますか？`, a:`${t2}分`, work:`道のり = ${v1} × ${t1} = ${dist}（m）<br>${dist} ÷ ${Math.round(dist/t2)} = ${t2}（分）`}; },
+            (d) => { let A=randObj([24,36,48,60]), divs=[]; for(let dv=2; dv<A; dv++) if(A%dv===0) divs.push(dv); let x=randObj(divs); return {q:`yはxに反比例し、x=${x}のときy=${A/x}です。比例定数を求めなさい。`, a:`${A}`, work:`反比例は 比例定数 = x × y<br>= ${x} × ${A/x} = ${A}`}; }
         ],
         zukei: [
-            (d) => { let w=randNum(6,20)+d, h=randNum(5,15)+d; return {q:`たて${h}m、よこ${w}mの長方形の花だんをつくります。花だんの面積は何m²ですか？`, a:`${w*h}m²`}; },
-            (d) => { let b=randNum(6,16), h=randNum(4,12); if((b*h)%2) b++; return {q:`底辺${b}m、高さ${h}mの三角形の形をした土地があります。この土地の面積は何m²ですか？`, a:`${b*h/2}m²`}; },
-            (d) => { let r=randNum(3,10); return {q:`半径${r}mの円形の池があります。池のまわりの長さは何mですか？（πを使って表しなさい）`, a:`${2*r}πm`}; },
-            (d) => { let c=randObj([{a:90,rs:[4,6,8,10]},{a:180,rs:[4,6,8]},{a:120,rs:[3,6,9]},{a:60,rs:[6,12]}]), r=randObj(c.rs); return {q:`半径${r}cm、中心角${c.a}°のおうぎ形の面積は何cm²ですか？（πを使って表しなさい）`, a:`${r*r*c.a/360}πcm²`}; },
-            (d) => { let r=randNum(2,6), h=randNum(4,12); return {q:`底面の半径${r}cm、高さ${h}cmの円柱の体積は何cm³ですか？（πを使って表しなさい）`, a:`${r*r*h}πcm³`}; },
-            (d) => { let a=10*randNum(2,5), b=10*randNum(2,6), c=10*randNum(2,4); return {q:`たて${a}cm、よこ${b}cm、深さ${c}cmの直方体の水そうを満水にします。水は何L入りますか？（1L＝1000cm³）`, a:`${a*b*c/1000}L`}; },
-            (d) => { let s=randNum(3,9); return {q:`1辺${s}cmの立方体の表面積は何cm²ですか？`, a:`${6*s*s}cm²`}; }
+            (d) => { let w=randNum(6,20)+d, h=randNum(5,15)+d; return {q:`たて${h}m、よこ${w}mの長方形の花だんをつくります。花だんの面積は何m²ですか？`, a:`${w*h}m²`, work:`たて × よこ = ${h} × ${w} = ${w*h}（m²）`}; },
+            (d) => { let b=randNum(6,16), h=randNum(4,12); if((b*h)%2) b++; return {q:`底辺${b}m、高さ${h}mの三角形の形をした土地があります。この土地の面積は何m²ですか？`, a:`${b*h/2}m²`, work:`底辺 × 高さ ÷ 2 = ${b} × ${h} ÷ 2 = ${b*h/2}（m²）`}; },
+            (d) => { let r=randNum(3,10); return {q:`半径${r}mの円形の池があります。池のまわりの長さは何mですか？（πを使って表しなさい）`, a:`${2*r}πm`, work:`円周 = 半径 × 2 × π = ${r} × 2 × π = ${2*r}π（m）`}; },
+            (d) => { let c=randObj([{a:90,rs:[4,6,8,10]},{a:180,rs:[4,6,8]},{a:120,rs:[3,6,9]},{a:60,rs:[6,12]}]), r=randObj(c.rs); return {q:`半径${r}cm、中心角${c.a}°のおうぎ形の面積は何cm²ですか？（πを使って表しなさい）`, a:`${r*r*c.a/360}πcm²`, work:`半径 × 半径 × π × (中心角/360)<br>= ${r} × ${r} × π × ${c.a}/360 = ${r*r*c.a/360}π（cm²）`}; },
+            (d) => { let r=randNum(2,6), h=randNum(4,12); return {q:`底面の半径${r}cm、高さ${h}cmの円柱の体積は何cm³ですか？（πを使って表しなさい）`, a:`${r*r*h}πcm³`, work:`底面積 × 高さ = (${r} × ${r} × π) × ${h} = ${r*r*h}π（cm³）`}; },
+            (d) => { let a=10*randNum(2,5), b=10*randNum(2,6), c=10*randNum(2,4); return {q:`たて${a}cm、よこ${b}cm、深さ${c}cmの直方体の水そうを満水にします。水は何L入りますか？（1L＝1000cm³）`, a:`${a*b*c/1000}L`, work:`体積 = ${a} × ${b} × ${c} = ${a*b*c}（cm³）<br>${a*b*c} ÷ 1000 = ${a*b*c/1000}（L）`}; },
+            (d) => { let s=randNum(3,9); return {q:`1辺${s}cmの立方体の表面積は何cm²ですか？`, a:`${6*s*s}cm²`, work:`正方形の面 ${s}×${s}=${s*s} が6面<br>${s*s} × 6 = ${6*s*s}（cm²）`}; }
         ],
         data: [
-            (d) => { let s=[randNum(60,100),randNum(60,100),randNum(60,100)]; let sum=s.reduce((a,b)=>a+b,0); s[0]+=(3-(sum%3))%3; sum=s.reduce((a,b)=>a+b,0); return {q:`3回のテストの点数は ${s.join('点, ')}点 でした。平均点は何点ですか？`, a:`${sum/3}点`}; },
-            (d) => { let n=randNum(4,6), m=randNum(60,95); return {q:`テストを${n}回受けたところ、平均点はちょうど${m}点でした。${n}回の合計点は何点ですか？`, a:`${n*m}点`}; },
-            (d) => { let arr=[]; for(let i=0;i<5;i++) arr.push(randNum(5,30)); let sorted=[...arr].sort((x,y)=>x-y); return {q:`5人の通学時間（分）を調べると次のようになりました。中央値を求めなさい。 ${arr.join(', ')}`, a:`${sorted[2]}分`}; },
-            (d) => { let m=randNum(22,27); let cand=[]; for(let v=22;v<=27;v++) if(v!==m) cand.push(v); cand.sort(()=>Math.random()-0.5); let arr=[m,m,...cand.slice(0,3)].sort(()=>Math.random()-0.5); return {q:`5人の靴のサイズ（cm）は次の通りです。最頻値を求めなさい。 ${arr.join(', ')}`, a:`${m}cm`}; },
-            (d) => { let arr=[]; for(let i=0;i<7;i++) arr.push(randNum(18,35)); return {q:`ある1週間の最高気温（℃）は次の通りでした。範囲（レンジ）を求めなさい。 ${arr.join(', ')}`, a:`${Math.max(...arr)-Math.min(...arr)}℃`}; },
-            (d) => { let total=randObj([20,25,50]), k=randNum(3,total-3); return {q:`クラス${total}人のうち、${k}人が自転車で通学しています。自転車通学の生徒の相対度数を求めなさい。`, a:`${k/total}`}; }
+            (d) => { let s=[randNum(60,100),randNum(60,100),randNum(60,100)]; let sum=s.reduce((a,b)=>a+b,0); s[0]+=(3-(sum%3))%3; sum=s.reduce((a,b)=>a+b,0); return {q:`3回のテストの点数は ${s.join('点, ')}点 でした。平均点は何点ですか？`, a:`${sum/3}点`, work:`(${s.join(' + ')}) ÷ 3 = ${sum} ÷ 3 = ${sum/3}（点）`}; },
+            (d) => { let n=randNum(4,6), m=randNum(60,95); return {q:`テストを${n}回受けたところ、平均点はちょうど${m}点でした。${n}回の合計点は何点ですか？`, a:`${n*m}点`, work:`合計 = 平均 × 回数 = ${m} × ${n} = ${n*m}（点）`}; },
+            (d) => { let arr=[]; for(let i=0;i<5;i++) arr.push(randNum(5,30)); let sorted=[...arr].sort((x,y)=>x-y); return {q:`5人の通学時間（分）を調べると次のようになりました。中央値を求めなさい。 ${arr.join(', ')}`, a:`${sorted[2]}分`, work:`小さい順： ${sorted.join(', ')}<br>まん中（3番目）は ${sorted[2]}（分）`}; },
+            (d) => { let m=randNum(22,27); let cand=[]; for(let v=22;v<=27;v++) if(v!==m) cand.push(v); cand.sort(()=>Math.random()-0.5); let arr=[m,m,...cand.slice(0,3)].sort(()=>Math.random()-0.5); return {q:`5人の靴のサイズ（cm）は次の通りです。最頻値を求めなさい。 ${arr.join(', ')}`, a:`${m}cm`, work:`いちばん多く出てくるのは ${m}（2回） → ${m}（cm）`}; },
+            (d) => { let arr=[]; for(let i=0;i<7;i++) arr.push(randNum(18,35)); let mx=Math.max(...arr), mn=Math.min(...arr); return {q:`ある1週間の最高気温（℃）は次の通りでした。範囲（レンジ）を求めなさい。 ${arr.join(', ')}`, a:`${mx-mn}℃`, work:`範囲 = 最大 − 最小 = ${mx} − ${mn} = ${mx-mn}（℃）`}; },
+            (d) => { let total=randObj([20,25,50]), k=randNum(3,total-3); return {q:`クラス${total}人のうち、${k}人が自転車で通学しています。自転車通学の生徒の相対度数を求めなさい。`, a:`${k/total}`, work:`相対度数 = その人数 ÷ 全体 = ${k} ÷ ${total} = ${k/total}`}; }
         ]
     };
     function mathWord(cat, diff) {
@@ -1890,15 +1890,16 @@
         banner.innerHTML = `
             <div class="moti-cheer" style="color:${pass ? '#27ae60' : '#e67e22'};">${cheer}</div>
             <div style="text-align:center; font-size:22px; font-weight:bold; color:${pass ? '#27ae60' : '#e74c3c'};">${pass ? '🎉 合格ライン突破！' : `あと ${passLine - score} 点で合格ライン`}<span style="font-size:13px; color:#888;">（${grade}の目安：${passLine}点）</span></div>
-            <div style="font-size:34px; font-weight:bold; color:#e74c3c; text-align:center;">${score} / 100 点</div>
-            <div style="text-align:center; margin-top:6px;">⭕${nO}問　🔺${nT}問　❌${nX}問</div>
+            <div style="font-size:22px; font-weight:bold; text-align:center; color:#2c3e50;">${ekQData.length}問中 <span style="color:#27ae60;">${nO}問</span> 正解！</div>
+            <div style="font-size:34px; font-weight:bold; color:#e74c3c; text-align:center;">${score}点<span style="font-size:20px;">（${score}%）</span><span style="font-size:13px; color:#888;"> ／100点満点</span></div>
+            <div style="text-align:center; margin-top:6px;">⭕${nO}問　🔺${nT}問（おしい）　❌${nX}問</div>
             <div style="text-align:center; margin-top:6px; font-size:14px;">${dmHtml}</div>
             <div style="text-align:center; margin-top:8px; font-size:14px; color:#555;">🏅 スタンプ ${ekStats.stamps}個　🔥 連続合格 ${ekStats.streak}（最高 ${ekStats.bestStreak}）　自己ベスト ${ekStats.best[grade]}点</div>
             ${ekStats.best[grade] === score && ekStats.totalTests > 1 ? '<div style="text-align:center; margin-top:4px; font-size:14px; color:#e67e22; font-weight:bold;">✨ 自己ベスト更新！</div>' : ''}
             ${ekHasWriting ? '<div style="text-align:center; margin-top:8px; font-size:14px; color:#e67e22; font-weight:bold;">✍️ ライティング（大問4・5）は自動採点されません。書いた英文はスクショして なお に送ってね！</div>' : ''}
             <div style="text-align:center; margin-top:8px;"><button class="btn" style="background:#3498db; color:white;" onclick="switchView('stats')">📈 成長グラフを見る</button></div>`;
 
-        saveScore('英語', score, `英検テスト ${grade} (${score}点${pass ? '・合格' : ''})`);
+        saveScore('英語', score, `英検テスト ${grade} (${score}点${pass ? '・合格' : ''})`, '', score);
         newWrongs.forEach(w => { if(!wrongNotes.some(x => x.q === w.q)) wrongNotes.unshift(w); });
         if(wrongNotes.length > 100) wrongNotes.length = 100;
         saveWrongNotes();
@@ -1999,7 +2000,7 @@
     const qRowHtml = (i, q) => `
             <div class="q-row ${q.type === 'text' ? 'grid-1' : ''}">
                 <label style="cursor:pointer;"><input type="checkbox" class="study-check no-print" style="transform:scale(1.3); margin-right:5px;"> (${i})</label>
-                <div class="q-text">${q.q} <span class="q-ans-show">正解：${q.a}</span></div>
+                <div class="q-text">${q.q} <span class="q-ans-show">正解：${q.a}${q.work ? `<br><span style="font-weight:normal; color:#c0392b; font-size:14px;">〔途中式〕 ${q.work}</span>` : ''}</span></div>
                 ${q.type === 'text' ? '<div class="text-space"></div>' : '<div style="height:3em; border-bottom:1px dashed #ccc;"></div>'}
             </div>
         `;
@@ -2028,6 +2029,7 @@
             document.getElementById('study-controls').style.display = 'block';
             document.getElementById('test-controls').style.display = 'none';
             document.getElementById('eiken-controls').style.display = 'none';
+            document.getElementById('ek-result-banner').style.display = 'none';
             switchView('run');
             return;
         }
@@ -2078,6 +2080,7 @@
         document.getElementById('study-controls').style.display = 'block';
         document.getElementById('test-controls').style.display = 'none';
         document.getElementById('eiken-controls').style.display = 'none';
+        document.getElementById('ek-result-banner').style.display = 'none';
         switchView('run');
     }
 
@@ -2112,11 +2115,13 @@
         }
         let chk = document.querySelectorAll('.study-check:checked').length;
         if(chk > 0) {
-            saveScore(pStudy.subj, chk * 1, `勉強: ${pStudy.unit}`); // 1問1点
+            let total = pStudy.count || chk;
+            let pct = Math.round(chk / total * 100); // 100点満点の点数（例: 10問中2問=20点）
+            saveScore(pStudy.subj, chk * 1, `勉強: ${pStudy.unit} (${chk}/${total}問)`, '', pct);
             motiAddDone(chk);
             celebrate(chk >= 20 ? 'big' : '');
             let praise = chk >= 30 ? 'すごい集中力！天才かも✨' : chk >= 15 ? 'その調子！よくがんばった🔥' : 'ナイス！1歩前進だね🌱';
-            alert(`🎉 ${chk}問クリア！ +${chk}点ゲット！\n${praise}`);
+            alert(`🎉 ${total}問中${chk}問クリア！ 今回の点数: ${pct}点（100点満点）\n${praise}`);
         }
         switchView('study');
     }
@@ -2181,7 +2186,7 @@
             for(let i=0; i<sectionCount; i++) {
                 let diff = rampDiff(qIndex, totalQ, pTest.level); // レベルの幅の中で後半の大問ほど難しく
                 let q = genUnique(pTest.subj, pTest.unit, isWordSection, diff, seenTest);
-                testQuestionsData.push({ id: qIndex, daimon: daimon, q: q.q, a: q.a, type: q.type });
+                testQuestionsData.push({ id: qIndex, daimon: daimon, q: q.q, a: q.a, type: q.type, work: q.work });
                 
                 let wrapClass = q.type === 'text' ? 'grid-1' : '';
                 html += `
@@ -2203,6 +2208,7 @@
         document.getElementById('study-controls').style.display = 'none';
         document.getElementById('test-controls').style.display = 'block';
         document.getElementById('eiken-controls').style.display = 'none';
+        document.getElementById('ek-result-banner').style.display = 'none';
         switchView('run');
     }
 
@@ -2229,14 +2235,14 @@
             let isCorrect = (ua !== '' && (ua === ca || ua === ca.replace(/^x=/, '') || 'x=' + ua === ca));
             
             if(isCorrect) correct++;
-            else newWrongs.push({ q: q.q, a: q.a, type: q.type, subj: pTest.subj, unit: pTest.unit });
+            else newWrongs.push({ q: q.q, a: q.a, type: q.type, subj: pTest.subj, unit: pTest.unit, work: q.work });
 
             if(!daimonStats[q.daimon]) daimonStats[q.daimon] = { total: 0, ok: 0 };
             daimonStats[q.daimon].total++;
             if(isCorrect) daimonStats[q.daimon].ok++;
 
             let mark = isCorrect ? '⭕️' : '❌';
-            detailsHtml += `<div style="margin-bottom:5px;">${q.daimon}-${q.id} ${mark} (あなたの答え: ${userAns || '無回答'}) 正解: ${q.a}</div>`;
+            detailsHtml += `<div style="margin-bottom:5px;">${q.daimon}-${q.id} ${mark} (あなたの答え: ${userAns || '無回答'}) 正解: ${q.a}${q.work ? `<br><span style="color:#c0392b; font-size:13px;">　〔途中式〕 ${q.work}</span>` : ''}</div>`;
         });
 
         // 間違えた問題を保存（同じ問題文はためない・最大100問）
@@ -2248,10 +2254,10 @@
 
         // 成績保存 (1問2点)
         let earnedPoints = correct * 2;
-        saveScore(pTest.subj, earnedPoints, `テスト: ${pTest.unit} (${totalPct}%)`, detailsHtml);
+        saveScore(pTest.subj, earnedPoints, `テスト: ${pTest.unit} (${totalPct}%)`, detailsHtml, totalPct);
 
         // 結果画面の構築
-        document.getElementById('res-total-score').innerText = `${correct} / ${testQuestionsData.length} 問正解`;
+        document.getElementById('res-total-score').innerHTML = `${testQuestionsData.length}問中 ${correct}問正解<br><span style="font-size:26px;">${earnedPoints}点（${totalPct}%）</span>`;
         document.getElementById('res-avg').innerText = totalPct;
 
         let secHtml = '';
@@ -2304,12 +2310,32 @@
         });
         return text;
     }
+    // どの環境でも動くコピー（clipboard APIが無い/失敗する環境では旧方式にフォールバック）
+    function copyTextRobust(text, doneMsg) {
+        const fallback = () => {
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed'; ta.style.left = '-9999px'; ta.style.top = '0';
+                document.body.appendChild(ta);
+                ta.focus(); ta.select(); ta.setSelectionRange(0, text.length);
+                const ok = document.execCommand('copy');
+                document.body.removeChild(ta);
+                alert(ok ? doneMsg : 'コピーできませんでした。この端末では手動でコピーしてください。');
+            } catch(e) {
+                alert('コピーできませんでした。この端末では手動でコピーしてください。');
+            }
+        };
+        if(navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => alert(doneMsg)).catch(fallback);
+        } else {
+            fallback();
+        }
+    }
     function shareProblems() {
         if(!runShareData.items.length) { alert('共有できる問題がありません。'); return; }
         let withAns = confirm('答えも含めて共有しますか？\n（OK＝答え付き ／ キャンセル＝問題のみ）');
-        navigator.clipboard.writeText(buildShareText(withAns))
-            .then(() => alert('問題をコピーしました！LINE等に貼り付けて共有できます。'))
-            .catch(() => alert('コピーに失敗しました。もう一度お試しください。'));
+        copyTextRobust(buildShareText(withAns), '問題をコピーしました！LINE等に貼り付けて共有できます。');
     }
 
     function shareResult() {
@@ -2317,21 +2343,23 @@
         if(document.getElementById('share-details').checked) {
             text += `\n[詳細]\n` + document.getElementById('res-details').innerText;
         }
-        navigator.clipboard.writeText(text).then(() => alert("クリップボードにコピーしました！LINE等に貼り付けて共有できます。"));
+        copyTextRobust(text, 'クリップボードにコピーしました！LINE等に貼り付けて共有できます。');
     }
 
     // ===== データ保存・成績処理 =====
-    function saveScore(subjObj, points, title, details = '') {
+    function saveScore(subjObj, points, title, details = '', pct = null) {
         let key = 'soc';
         if(subjObj==='数学') key='math'; if(subjObj==='英語') key='eng';
         if(subjObj==='国語') key='jpn'; if(subjObj==='理科') key='sci';
-        
+
         userData.totalScores[key] += points;
         userData.history.unshift({
             id: Date.now(),
             date: new Date().getTime(),
+            subj: subjObj, // 教科名（今日の内訳グラフ用。既存データにこの項目が無くても動く）
             title: title,
             score: points,
+            pct: pct,      // その回の点数（100点満点）。折れ線グラフ用。無ければscoreで代用
             details: details
         });
         // 履歴上限
@@ -2352,6 +2380,7 @@
         let d = new Date(); d.setHours(0,0,0,0); return d.getTime();
     }
 
+
     function setStatPeriod(period) {
         document.getElementById('btn-stat-today').className = period==='today'?'btn btn-active':'btn btn-inactive';
         document.getElementById('btn-stat-week').className = period==='week'?'btn btn-active':'btn btn-inactive';
@@ -2361,22 +2390,23 @@
     let rChart;
     function renderStats(period) {
         let startTs = period === 'today' ? getTodayStart() : getWeekStart();
-        
+
         let periodScore = 0;
         let histHtml = '';
-        
+
         userData.history.forEach(h => {
             if(h.date >= startTs) {
                 periodScore += h.score;
             }
-            // 履歴リスト (常に最新表示)
             let dStr = new Date(h.date).toLocaleString('ja-JP', {month:'numeric', day:'numeric', hour:'numeric', minute:'numeric'});
-            histHtml += `<div class="history-item"><strong>${dStr}</strong> - ${h.title} <span style="color:#e74c3c; font-weight:bold;">(+${h.score}点)</span></div>`;
+            // 点数(pct)がある記録は100点満点で表示（例: 10問中2問正解=20点）。無い古い記録は従来の+点表示
+            histHtml += `<div class="history-item"><strong>${dStr}</strong> - ${h.title} <span style="color:#e74c3c; font-weight:bold;">${h.pct != null ? `(${h.pct}点)` : `(+${h.score}点)`}</span></div>`;
         });
-        
+
         document.getElementById('stat-score-display').innerText = `${periodScore} 点`;
         document.getElementById('stat-history-list').innerHTML = histHtml || '<p>履歴がありません。</p>';
 
+        if(typeof Chart === 'undefined') return; // オフライン等でグラフ部品が無い場合は数字だけ表示
         if(rChart) rChart.destroy();
         rChart = new Chart(document.getElementById('radarChart'), {
             type: 'radar',
@@ -2416,6 +2446,7 @@
             <div style="text-align:center; margin-top:8px; font-size:14px;">自己ベスト： ${bestHtml}　<span style="color:#888;">（累計 ${ekStats.totalCorrect}⭕ / ${ekStats.totalQ}問）</span></div>`;
 
         // スコア推移の折れ線（合格ラインより上は緑点）
+        if(typeof Chart === 'undefined') { canvas.style.display = 'none'; return; } // オフライン等では数字サマリだけ表示
         let recent = ekStats.history.slice(-20);
         let labels = recent.map((h, i) => (i + 1) + '回目');
         let scores = recent.map(h => h.score);
