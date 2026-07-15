@@ -73,6 +73,18 @@
         .hyakumasu tr:first-child th:first-child { background: var(--head-color); color: #fff; } /* 左上の「×」 */
         .hyakumasu td.hm-answer { color: #e74c3c; } /* 答えを表示したときの色 */
 
+        /* ===== 👤 ユーザー（PINログイン） ===== */
+        #login-overlay { position: fixed; inset: 0; background: var(--bg-color); z-index: 5000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        #login-overlay.on { display: flex; }
+        .login-card { background: var(--box-bg); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.18); padding: 26px 22px; width: 100%; max-width: 380px; text-align: center; }
+        .login-card h2 { margin: 0 0 14px; }
+        .login-user-btn { display: block; width: 100%; margin: 8px 0; padding: 13px; font-size: 17px; font-weight: bold; border: 2px solid var(--border-color); border-radius: 10px; background: var(--bg-color); color: var(--text-color); cursor: pointer; }
+        .login-user-btn.sel { border-color: var(--main-color); background: var(--main-color); color: #fff; }
+        #login-pin, .setup-input { width: 100%; box-sizing: border-box; padding: 12px; font-size: 20px; text-align: center; letter-spacing: 6px; border: 2px solid var(--border-color); border-radius: 10px; margin-top: 10px; background: var(--bg-color); color: var(--text-color); }
+        .setup-input { letter-spacing: normal; font-size: 16px; text-align: left; }
+        #login-err { color: #e74c3c; font-weight: bold; min-height: 22px; margin-top: 8px; }
+        #user-chip { background: #8e44ad; color: #fff; font-size: 12px; }
+
         /* ===== 🔥 モチベUP ===== */
         /* 応援バナー */
         .moti-banner { background: linear-gradient(100deg, #ff8a00, #e91e63 55%, #7b2ff7); color: #fff; border-radius: 14px; padding: 14px 18px; margin-bottom: 16px; box-shadow: 0 6px 18px rgba(233,30,99,.28); display: flex; align-items: center; gap: 12px; }
@@ -142,11 +154,22 @@
 <!-- 🎉 紙吹雪レイヤー -->
 <div id="confetti-layer" class="no-print"></div>
 
+<!-- 👤 ログイン（PINだけで人を判定：ユーザー選択なし） -->
+<div id="login-overlay" class="no-print">
+    <div class="login-card">
+        <h2>🔒 PINを入力してね</h2>
+        <input id="login-pin" type="password" inputmode="numeric" maxlength="4" placeholder="PIN（4桁）">
+        <div id="login-err"></div>
+        <button class="btn btn-action" style="width:100%;" onclick="tryLogin()">🔓 はじめる</button>
+    </div>
+</div>
+
 <header>
     <button class="menu-btn" onclick="toggleMenu()">≡</button>
     <div class="logo-btn" onclick="switchView('study')">📚 問題メーカー</div>
     <div id="timer-box" class="no-print"><span>⏰</span><span id="timer-text">50:00</span></div>
     <div style="margin-left:auto; display:flex; gap:10px;">
+        <button class="btn no-print" id="user-chip" onclick="logoutUser()">👤 --</button>
         <button class="btn no-print" style="background:#2980b9; color:white; font-size:12px;" onclick="toggleDeviceMode()">💻 PC/📱スマホ切替</button>
         <button class="btn no-print" style="background:#34495e; color:white; font-size:12px;" onclick="toggleDarkMode()">🌙 色</button>
     </div>
@@ -383,7 +406,7 @@
     // 間違い直し用（成績データ appData とは別のキーに保存）
     let wrongNotes = JSON.parse(localStorage.getItem('wrongNotes') || '[]');
     let reviewList = [];
-    function saveWrongNotes() { localStorage.setItem('wrongNotes', JSON.stringify(wrongNotes)); }
+    function saveWrongNotes() { localStorage.setItem(ukey('wrongNotes'), JSON.stringify(wrongNotes)); }
 
     // 問題の共有用（いま画面に出ている問題セット）
     let runShareData = { title: '', items: [] };
@@ -394,6 +417,68 @@
         history: [] // { id, timestamp, type, title, score, details }
     };
 
+    // ===== 👤 ユーザー（PINだけで判定：3258=なお / 8569=りらん）。記録はユーザーごとのキーに分けて保存 =====
+    const APP_USERS = [
+        { id:'u1', name:'なお',  pin:'2085949129' },  // PINのハッシュ値
+        { id:'u2', name:'りらん', pin:'2086130119' }
+    ];
+    let currentUserId = null;
+    const ukey = k => currentUserId ? currentUserId + ':' + k : k; // ユーザー別の保存キー
+    function pinHash(s) { let h = 5381; for(const c of String(s)) h = ((h * 33) ^ c.charCodeAt(0)) >>> 0; return String(h); }
+
+    // ログインしたユーザーの記録を読み込む
+    function loadUserState() {
+        userData = JSON.parse(localStorage.getItem(ukey('appData')) || 'null') || { totalScores: { math:0, eng:0, jpn:0, sci:0, soc:0 }, history: [] };
+        wrongNotes = JSON.parse(localStorage.getItem(ukey('wrongNotes')) || '[]');
+        ekStats = JSON.parse(localStorage.getItem(ukey('ekStats')) || 'null') || { history:[], best:{}, totalTests:0, totalQ:0, totalCorrect:0, stamps:0, streak:0, bestStreak:0 };
+        ekSeen = JSON.parse(localStorage.getItem(ukey('ekSeenReading')) || '[]');
+        motiDaily = JSON.parse(localStorage.getItem(ukey('motiDaily')) || 'null') || { date: motiToday(), count: 0, best: 0 };
+        if(motiDaily.date !== motiToday()) motiDaily = { date: motiToday(), count: 0, best: motiDaily.best || 0 };
+    }
+    // いままでの記録（ユーザー機能を付ける前のデータ）を なお に引きつぐ（1回だけ・上書きしない）
+    function migrateLegacyTo(uid) {
+        if(localStorage.getItem(uid + ':appData') != null) return; // すでに引き継ぎ済みなら何もしない
+        ['appData','wrongNotes','ekStats','ekSeenReading','motiDaily'].forEach(k => {
+            const v = localStorage.getItem(k);
+            if(v != null) { localStorage.setItem(uid + ':' + k, v); localStorage.removeItem(k); }
+        });
+    }
+    function initUserSystem() {
+        migrateLegacyTo('u1'); // 昔の記録は なお のものとして引きつぐ
+        localStorage.removeItem('appUsers'); localStorage.removeItem('lastUser'); // 旧ユーザー選択方式の名残りを掃除
+        document.getElementById('login-pin').addEventListener('keydown', e => { if(e.key === 'Enter') tryLogin(); });
+        showLogin();
+    }
+    // ログイン画面（PIN入力だけ）
+    function showLogin() {
+        document.getElementById('login-pin').value = '';
+        document.getElementById('login-err').innerText = '';
+        document.getElementById('login-overlay').classList.add('on');
+        setTimeout(() => document.getElementById('login-pin').focus(), 50);
+    }
+    function tryLogin() {
+        const err = document.getElementById('login-err');
+        const pin = document.getElementById('login-pin').value.trim();
+        const u = APP_USERS.find(x => x.pin === pinHash(pin)); // PINで人を判定
+        if(!u) { err.innerText = 'PINがちがうよ🔒'; document.getElementById('login-pin').value = ''; return; }
+        // ログイン成功
+        currentUserId = u.id;
+        stopEikenTimer(); ekGraded = false; ekQData = []; testQuestionsData = []; reviewList = [];
+        runShareData = { title:'', items:[] }; usedMathT = {}; studyAnswersVisible = false;
+        loadUserState();
+        document.getElementById('user-chip').innerText = '👤 ' + u.name;
+        document.getElementById('login-overlay').classList.remove('on');
+        showMotivation();
+        switchView('study');
+    }
+    // ヘッダーの👤ボタン＝ユーザー切り替え
+    function logoutUser() {
+        if(currentUserId && !confirm('ユーザーを切り替えますか？\n（解いている途中の問題は消えます。記録した分は保存済み）')) return;
+        stopEikenTimer();
+        currentUserId = null;
+        showLogin();
+    }
+
     window.onload = () => {
         if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
         if(localStorage.getItem('desktopMode') === 'true') document.body.classList.add('desktop-mode');
@@ -401,6 +486,7 @@
         initTestMenu();
         generateHyakumasu();
         showMotivation();
+        initUserSystem();
     };
 
     // ===== 🔥 モチベUP：応援メッセージ＆紙吹雪 =====
@@ -425,7 +511,7 @@
         if(motiDaily.date !== motiToday()) motiDaily = { date: motiToday(), count: 0, best: motiDaily.best || 0 };
         motiDaily.count += n;
         motiDaily.best = Math.max(motiDaily.best || 0, motiDaily.count);
-        localStorage.setItem('motiDaily', JSON.stringify(motiDaily));
+        localStorage.setItem(ukey('motiDaily'), JSON.stringify(motiDaily));
         showMotivation();
     }
     function showMotivation() {
@@ -1676,7 +1762,7 @@
     let ekStats = JSON.parse(localStorage.getItem('ekStats') || 'null') || {
         history: [], best: {}, totalTests: 0, totalQ: 0, totalCorrect: 0, stamps: 0, streak: 0, bestStreak: 0
     };
-    function saveEkStats() { localStorage.setItem('ekStats', JSON.stringify(ekStats)); }
+    function saveEkStats() { localStorage.setItem(ukey('ekStats'), JSON.stringify(ekStats)); }
     // 合格ライン（%）
     const EK_PASS = { '英検5級': 60, '英検4級': 60, '英検3級': 65 };
 
@@ -1686,7 +1772,7 @@
     function ekSeenAdd(sig) {
         ekSeen.push(sig);
         if(ekSeen.length > 500) ekSeen = ekSeen.slice(-350); // たまりすぎたら古いのを捨てて循環
-        localStorage.setItem('ekSeenReading', JSON.stringify(ekSeen));
+        localStorage.setItem(ukey('ekSeenReading'), JSON.stringify(ekSeen));
     }
     // 読解を「まだ出していない内容」で生成（署名sigで判定）
     function genReadingUnique(fn) {
@@ -2365,7 +2451,7 @@
         // 履歴上限
         if(userData.history.length > 50) userData.history.pop();
         
-        localStorage.setItem('appData', JSON.stringify(userData));
+        localStorage.setItem(ukey('appData'), JSON.stringify(userData));
     }
 
     function getWeekStart() {
