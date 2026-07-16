@@ -45,6 +45,13 @@
         .q-input { width: 100%; max-width: 300px; padding: 8px; font-size: 16px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-color); color: var(--text-color); }
         .q-ans-show { color: #e74c3c; font-weight: bold; margin-left: 10px; display: none; }
         .q-ans-show.show { display: inline; }
+
+        /* 分数（縦組み：上に分子・下に分母）。分数の線が「=」と同じ高さに来るように中央そろえ */
+        .frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 3px; line-height: 1.15; font-size: 0.92em; position: relative; top: -0.08em; }
+        .frac .fr-n { display: block; padding: 0 3px 1px; border-bottom: 1.5px solid currentColor; }
+        .frac .fr-d { display: block; padding: 1px 3px 0; }
+        .frac .fr-txt { display: none; } /* 共有テキスト用（画面には出さない） */
+        @media print { .frac .fr-n { border-bottom: 1.5px solid #000; } }
         
         /* 3列配置 (計算など) */
         .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
@@ -60,6 +67,20 @@
         #timer-box.timer-warn { background: #e67e22; }                      /* 残り5分 */
         #timer-box.timer-danger { background: #c0392b; animation: tblink 1s steps(2, start) infinite; } /* 残り1分・点滅 */
         @keyframes tblink { 50% { opacity: 0.4; } }
+        /* 英検 4択（クリックで選ぶマーク式） */
+        .ek-opts { margin: 6px 0 2px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 6px; }
+        .ek-opt { text-align: left; padding: 9px 12px; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-color); cursor: pointer; font-size: 15px; font-weight: normal; transition: all .15s; }
+        .ek-opt:hover { border-color: var(--main-color); }
+        .ek-opt .n { display: inline-block; width: 22px; font-weight: bold; color: var(--main-color); }
+        .ek-opt.sel { border-color: var(--main-color); background: var(--main-color); color: #fff; }
+        .ek-opt.sel .n { color: #fff; }
+        .ek-opt.opt-correct { border-color: #27ae60; background: #eafaf1; color: #1e8449; font-weight: bold; }
+        .ek-opt.opt-correct .n { color: #1e8449; }
+        .ek-opt.opt-wrong { border-color: #e74c3c; background: #fdedec; color: #c0392b; }
+        .ek-opt.opt-wrong .n { color: #c0392b; }
+        .ek-opt:disabled { cursor: default; }
+        body.dark-mode .ek-opt.opt-correct { background: #14311f; }
+        body.dark-mode .ek-opt.opt-wrong { background: #3a1a17; }
         /* 英検 採点表示 */
         .ek-ans-top { margin-bottom: 4px; }
         .ek-ans-bottom { margin-top: 4px; font-size: 14px; }
@@ -232,10 +253,10 @@
         </div>
         <div class="section">
             <h3>📚 教科を選ぶ</h3>
-            <button class="btn btn-active" onclick="setTestParam('subj', '数学', this)">数学 (約50問)</button>
-            <button class="btn btn-inactive" onclick="setTestParam('subj', '英語', this)">英語 (約35問)</button>
-            <button class="btn btn-inactive" onclick="setTestParam('subj', '国語', this)">国語 (約20問)</button>
-            <button class="btn btn-inactive" onclick="setTestParam('subj', '理科', this)">理科 (約30問)</button>
+            <button class="btn btn-active" onclick="setTestParam('subj', '数学', this)">数学 (約65問)</button>
+            <button class="btn btn-inactive" onclick="setTestParam('subj', '英語', this)">英語 (約45問)</button>
+            <button class="btn btn-inactive" onclick="setTestParam('subj', '国語', this)">国語 (約30問)</button>
+            <button class="btn btn-inactive" onclick="setTestParam('subj', '理科', this)">理科 (約40問)</button>
         </div>
         <div class="section">
             <h3>🎫 英検（本番形式・記述式・100点・時間制限あり）</h3>
@@ -669,6 +690,10 @@
         if(b !== 0) s += (a !== 0 ? (b > 0 ? `+${b}` : `${b}`) : `${b}`);
         return s;
     }
+    // 分数を「なにぶんのなに」の形（縦組み）で表示するHTML。fr-txtは共有テキスト用に「/」を残す
+    const frac = (n, d) => `<span class="frac"><span class="fr-n">${n}</span><span class="fr-txt">/</span><span class="fr-d">${d}</span></span>`;
+    // 答え文字列（"x/3L" のような素のテキスト）の分数部分だけを縦組みにして表示用HTMLにする
+    const fracA = (s) => String(s).replace(/([0-9]+|x)\/([0-9]+|x)/g, (_, n, d) => frac(n, d));
     // 同じ問題が出ないように再生成（seenは問題文の集合）
     function genUnique(subj, level, isWord, diff, seen) {
         let q, tries = 0;
@@ -912,13 +937,13 @@
         }
         if(diff === 4) { let a=randNum(4,9), c=randNum(2,3), x=randNum(2,10), b=randNum(2,15); let d=(a-c)*x+b; return {q:`方程式を解きなさい: ${a}x + ${b} = ${c}x + ${d}`, a:`x=${x}`, work:`${a}x + ${b} = ${c}x + ${d}<br>${a}x - ${c}x = ${d} - ${b}<br>${a-c}x = ${d-b}<br>x = ${d-b} ÷ ${a-c} = ${x}`, type:'calc'}; }
         if(Math.random() < 0.5) { let a=randNum(2,6), x=randNum(2,10), b=randNum(1,8); return {q:`方程式を解きなさい: ${a}(x + ${b}) = ${a*(x+b)}`, a:`x=${x}`, work:`${a}(x + ${b}) = ${a*(x+b)}<br>${a}x + ${a*b} = ${a*(x+b)}<br>${a}x = ${a*(x+b)} - ${a*b} = ${a*x}<br>x = ${a*x} ÷ ${a} = ${x}`, type:'calc'}; }
-        let a=randNum(2,6), b=randNum(2,9); return {q:`方程式を解きなさい: x/${a} = ${b}`, a:`x=${a*b}`, work:`x ÷ ${a} = ${b}<br>x = ${b} × ${a}<br>x = ${a*b}`, type:'calc'};
+        let a=randNum(2,6), b=randNum(2,9); return {q:`方程式を解きなさい: ${frac('x', a)} = ${b}`, a:`x=${a*b}`, work:`x ÷ ${a} = ${b}<br>x = ${b} × ${a}<br>x = ${a*b}`, type:'calc'};
     }
     function mHirei(diff) {
         if(diff <= 2) { let a=randNum(2,9), x=randNum(2,9); return {q:`yはxに比例し、y = ${a}x です。x = ${x} のときのyの値は？`, a:`${a*x}`, work:`y = ${a}x に x = ${x} を代入<br>y = ${a} × ${x} = ${a*x}`, type:'calc'}; }
         if(diff === 3) { let a=randNum(2,9), x=randNum(2,9); return {q:`yはxに比例します。x = ${x} のとき y = ${a*x} です。比例定数aは？`, a:`${a}`, work:`y = ax より a = y ÷ x<br>a = ${a*x} ÷ ${x} = ${a}`, type:'calc'}; }
         let A=randObj([12,18,24,36,48]); let divs=[]; for(let d=2; d<=A; d++) if(A%d===0) divs.push(d); let x=randObj(divs);
-        if(diff === 4) return {q:`yはxに反比例し、y = ${A}/x です。x = ${x} のときのyは？`, a:`${A/x}`, work:`y = ${A}/x に x = ${x} を代入<br>y = ${A} ÷ ${x} = ${A/x}`, type:'calc'};
+        if(diff === 4) return {q:`yはxに反比例し、y = ${frac(A, 'x')} です。x = ${x} のときのyは？`, a:`${A/x}`, work:`y = ${frac(A, 'x')} に x = ${x} を代入<br>y = ${A} ÷ ${x} = ${A/x}`, type:'calc'};
         return {q:`yはxに反比例します。x = ${x} のとき y = ${A/x} です。比例定数aは？`, a:`${A}`, work:`反比例は a = x × y<br>a = ${x} × ${A/x} = ${A}`, type:'calc'};
     }
     function mZukei(diff) {
@@ -956,7 +981,7 @@
             (d) => { let a=randNum(80,200); return {q:`1冊${a}円のノートをx冊買ったときの代金を、xを使った式で表しなさい。`, a:`${a}x円`, work:`（1冊の値段）×（冊数）= ${a} × x = ${a}x（円）`}; },
             (d) => { let a=randNum(90,160); return {q:`1000円を出して、1本${a}円のジュースをx本買いました。おつりを、xを使った式で表しなさい。`, a:`1000-${a}x円`, work:`（出したお金）−（代金）= 1000 − ${a}×x = 1000 − ${a}x（円）`}; },
             (d) => { let v=randNum(30,80); return {q:`時速${v}kmのバスがx時間走ったときに進む道のりを、xを使った式で表しなさい。`, a:`${v}xkm`, work:`（速さ）×（時間）= ${v} × x = ${v}x（km）`}; },
-            (d) => { let n=randNum(3,8); return {q:`xLのジュースを${n}人で等しく分けます。1人分の量を、xを使った式で表しなさい。`, a:`x/${n}L`, work:`（全体の量）÷（人数）= x ÷ ${n} = x/${n}（L）`}; },
+            (d) => { let n=randNum(3,8); return {q:`xLのジュースを${n}人で等しく分けます。1人分の量を、xを使った式で表しなさい。`, a:`x/${n}L`, work:`（全体の量）÷（人数）= x ÷ ${n} = ${frac('x', n)}（L）`}; },
             (d) => { return {q:`1辺の長さがxcmの正三角形があります。まわりの長さを、xを使った式で表しなさい。`, a:`3xcm`, work:`正三角形は3辺すべて同じ長さ<br>x × 3 = 3x（cm）`}; }
         ],
         houteishiki: [
@@ -980,7 +1005,7 @@
             (d) => { let w=randNum(6,20)+d, h=randNum(5,15)+d; return {q:`たて${h}m、よこ${w}mの長方形の花だんをつくります。花だんの面積は何m²ですか？`, a:`${w*h}m²`, work:`たて × よこ = ${h} × ${w} = ${w*h}（m²）`}; },
             (d) => { let b=randNum(6,16), h=randNum(4,12); if((b*h)%2) b++; return {q:`底辺${b}m、高さ${h}mの三角形の形をした土地があります。この土地の面積は何m²ですか？`, a:`${b*h/2}m²`, work:`底辺 × 高さ ÷ 2 = ${b} × ${h} ÷ 2 = ${b*h/2}（m²）`}; },
             (d) => { let r=randNum(3,10); return {q:`半径${r}mの円形の池があります。池のまわりの長さは何mですか？（πを使って表しなさい）`, a:`${2*r}πm`, work:`円周 = 半径 × 2 × π = ${r} × 2 × π = ${2*r}π（m）`}; },
-            (d) => { let c=randObj([{a:90,rs:[4,6,8,10]},{a:180,rs:[4,6,8]},{a:120,rs:[3,6,9]},{a:60,rs:[6,12]}]), r=randObj(c.rs); return {q:`半径${r}cm、中心角${c.a}°のおうぎ形の面積は何cm²ですか？（πを使って表しなさい）`, a:`${r*r*c.a/360}πcm²`, work:`半径 × 半径 × π × (中心角/360)<br>= ${r} × ${r} × π × ${c.a}/360 = ${r*r*c.a/360}π（cm²）`}; },
+            (d) => { let c=randObj([{a:90,rs:[4,6,8,10]},{a:180,rs:[4,6,8]},{a:120,rs:[3,6,9]},{a:60,rs:[6,12]}]), r=randObj(c.rs); return {q:`半径${r}cm、中心角${c.a}°のおうぎ形の面積は何cm²ですか？（πを使って表しなさい）`, a:`${r*r*c.a/360}πcm²`, work:`半径 × 半径 × π × ${frac('中心角', 360)}<br>= ${r} × ${r} × π × ${frac(c.a, 360)} = ${r*r*c.a/360}π（cm²）`}; },
             (d) => { let r=randNum(2,6), h=randNum(4,12); return {q:`底面の半径${r}cm、高さ${h}cmの円柱の体積は何cm³ですか？（πを使って表しなさい）`, a:`${r*r*h}πcm³`, work:`底面積 × 高さ = (${r} × ${r} × π) × ${h} = ${r*r*h}π（cm³）`}; },
             (d) => { let a=10*randNum(2,5), b=10*randNum(2,6), c=10*randNum(2,4); return {q:`たて${a}cm、よこ${b}cm、深さ${c}cmの直方体の水そうを満水にします。水は何L入りますか？（1L＝1000cm³）`, a:`${a*b*c/1000}L`, work:`体積 = ${a} × ${b} × ${c} = ${a*b*c}（cm³）<br>${a*b*c} ÷ 1000 = ${a*b*c/1000}（L）`}; },
             (d) => { let s=randNum(3,9); return {q:`1辺${s}cmの立方体の表面積は何cm²ですか？`, a:`${6*s*s}cm²`, work:`正方形の面 ${s}×${s}=${s*s} が6面<br>${s*s} × 6 = ${6*s*s}（cm²）`}; }
@@ -1035,7 +1060,7 @@
         ];
         let x=randObj(subs), p=randObj(x.preds);
         if(diff >= 4 && x.s !== "I") return {q:`次の文を疑問文にすると、文頭に来る語は？  ${x.s} ${x.b} ${p}`, a:(x.b.charAt(0).toUpperCase()+x.b.slice(1)), type:'calc'};
-        return {q:`( )に入るbe動詞（am / is / are）を書きなさい：${x.s} (   ) ${p}`, a:x.b, type:'calc'};
+        return {q:`( )に入るbe動詞（am / is / are）を書きなさい：${x.s} (   ) ${p}`, a:x.b, choices:['am','is','are','be'], type:'calc'};
     }
     function engVerb(diff) {
         // 動詞ごとに意味が通る目的語だけを組み合わせる
@@ -1056,16 +1081,17 @@
         let useThird = Math.random() < 0.5;
         let s = useThird ? randObj(["He","She","Tom","My father","Mr. Sato"]) : randObj(["I","You","We","They","Ken and Mika"]);
         if(diff >= 4) return {q:`次の文を疑問文にすると、文頭に来る語（Do / Does）は？  ${s} ${useThird?v.t:v.b} ${o}`, a:(useThird?"Does":"Do"), type:'calc'};
-        return {q:`( )に動詞「${v.b}」を正しい形にして入れなさい：${s} (   ) ${o}`, a:(useThird?v.t:v.b), type:'calc'};
+        let ov; do { ov = randObj(verbs); } while(ov.b === v.b); // 4択用の別の動詞
+        return {q:`( )に動詞「${v.b}」を正しい形にして入れなさい：${s} (   ) ${o}`, a:(useThird?v.t:v.b), choices:[v.b, v.t, useThird?ov.t:ov.b, useThird?ov.b:ov.t].sort(()=>Math.random()-0.5), type:'calc'};
     }
     // 文法問題は「単語リスト × 出題形式」の組み合わせで毎回ちがう問題を作る
     function engGrammar(diff) {
         let gens = [
-            () => { let w=randObj([{s:"box",p:"boxes"},{s:"city",p:"cities"},{s:"child",p:"children"},{s:"man",p:"men"},{s:"woman",p:"women"},{s:"country",p:"countries"},{s:"dish",p:"dishes"},{s:"leaf",p:"leaves"},{s:"foot",p:"feet"},{s:"tooth",p:"teeth"},{s:"bus",p:"buses"},{s:"watch",p:"watches"},{s:"baby",p:"babies"},{s:"knife",p:"knives"},{s:"class",p:"classes"}]); return {q:`複数形にしなさい：${w.s}`, a:w.p}; },
-            () => { let pr=randObj([{j:"彼を",e:"him"},{j:"彼女を",e:"her"},{j:"私たちを",e:"us"},{j:"彼らを",e:"them"},{j:"私のもの",e:"mine"},{j:"あなたのもの",e:"yours"},{j:"彼のもの",e:"his"},{j:"彼女のもの",e:"hers"},{j:"私たちのもの",e:"ours"},{j:"私を",e:"me"}]); return {q:`次の日本語を表す代名詞（1語）を英語で書きなさい：「${pr.j}」`, a:pr.e}; },
-            () => { let p=randObj([{s:"I get up (   ) seven.",a:"at"},{s:"The book is (   ) the desk.",a:"on"},{s:"We play tennis (   ) Sunday.",a:"on"},{s:"I live (   ) Tokyo.",a:"in"},{s:"School starts (   ) April.",a:"in"},{s:"Look (   ) this picture.",a:"at"},{s:"My birthday is (   ) May.",a:"in"}]); return {q:`( )に in / on / at のうち適切なものを：${p.s}`, a:p.a}; },
-            () => { let w=randObj(["apple","egg","orange","old book","English teacher","umbrella","animal","new bike","interesting story","dog","pen"]); return {q:`( )に a / an のどちらが入りますか：I have (   ) ${w}.`, a:(/^[aeiou]/i.test(w)?"an":"a")}; },
-            () => { let p=randObj([{s:"(   ) are my friends.（this / these）",a:"these"},{s:"(   ) is my bag.（this / these）",a:"this"},{s:"(   ) are old temples.（that / those）",a:"those"},{s:"(   ) is our school.（that / those）",a:"that"}]); return {q:`( )に入る語を書きなさい：${p.s}`, a:p.a}; }
+            () => { const list=[{s:"box",p:"boxes"},{s:"city",p:"cities"},{s:"child",p:"children"},{s:"man",p:"men"},{s:"woman",p:"women"},{s:"country",p:"countries"},{s:"dish",p:"dishes"},{s:"leaf",p:"leaves"},{s:"foot",p:"feet"},{s:"tooth",p:"teeth"},{s:"bus",p:"buses"},{s:"watch",p:"watches"},{s:"baby",p:"babies"},{s:"knife",p:"knives"},{s:"class",p:"classes"}]; let w=randObj(list); return {q:`複数形にしなさい：${w.s}`, a:w.p, choices: mk4(w.p, list.map(x=>x.p))}; },
+            () => { const list=[{j:"彼を",e:"him"},{j:"彼女を",e:"her"},{j:"私たちを",e:"us"},{j:"彼らを",e:"them"},{j:"私のもの",e:"mine"},{j:"あなたのもの",e:"yours"},{j:"彼のもの",e:"his"},{j:"彼女のもの",e:"hers"},{j:"私たちのもの",e:"ours"},{j:"私を",e:"me"}]; let pr=randObj(list); return {q:`次の日本語を表す代名詞（1語）を英語で書きなさい：「${pr.j}」`, a:pr.e, choices: mk4(pr.e, list.map(x=>x.e))}; },
+            () => { let p=randObj([{s:"I get up (   ) seven.",a:"at"},{s:"The book is (   ) the desk.",a:"on"},{s:"We play tennis (   ) Sunday.",a:"on"},{s:"I live (   ) Tokyo.",a:"in"},{s:"School starts (   ) April.",a:"in"},{s:"Look (   ) this picture.",a:"at"},{s:"My birthday is (   ) May.",a:"in"}]); return {q:`( )に in / on / at のうち適切なものを：${p.s}`, a:p.a, choices:['in','on','at','to']}; },
+            () => { let w=randObj(["apple","egg","orange","old book","English teacher","umbrella","animal","new bike","interesting story","dog","pen"]); return {q:`( )に a / an のどちらが入りますか：I have (   ) ${w}.`, a:(/^[aeiou]/i.test(w)?"an":"a"), choices:['a','an','the','some']}; },
+            () => { let p=randObj([{s:"(   ) are my friends.（this / these）",a:"these"},{s:"(   ) is my bag.（this / these）",a:"this"},{s:"(   ) are old temples.（that / those）",a:"those"},{s:"(   ) is our school.（that / those）",a:"that"}]); return {q:`( )に入る語を書きなさい：${p.s}`, a:p.a, choices:['this','these','that','those']}; }
         ];
         let hardGens = [
             () => { let v=randObj([{b:"go",p:"went"},{b:"come",p:"came"},{b:"see",p:"saw"},{b:"have",p:"had"},{b:"make",p:"made"},{b:"get",p:"got"},{b:"take",p:"took"},{b:"study",p:"studied"},{b:"stop",p:"stopped"},{b:"run",p:"ran"},{b:"write",p:"wrote"},{b:"buy",p:"bought"},{b:"eat",p:"ate"},{b:"speak",p:"spoke"}]); return {q:`過去形にしなさい：${v.b}`, a:v.p}; },
@@ -1212,12 +1238,166 @@
     // 英検テストの文で使う登場人物・時間（毎回変えて同じ文が続かないように）
     const EK_SUBJ = ["I", "We", "They", "He", "She", "Tom", "Ken", "Emma", "Lucy", "Nancy", "Yuki", "My brother", "My sister"];
     const EK_TIME = ["yesterday", "last week", "last night", "two days ago", "last Sunday", "this morning", "last month"];
+    // 4択を作る：正解＋同じ種類のまちがい3つをシャッフル（5級大問1用）
+    function mk4(correct, candidates) {
+        const others = [...new Set(candidates)].filter(c => c !== correct).sort(() => Math.random() - 0.5).slice(0, 3);
+        return [correct, ...others].sort(() => Math.random() - 0.5);
+    }
 
-    // --- 5級 短文の語い（文脈穴埋め・日本語ヒントで答えを一つに確定） ---
+    // ============ 5級（本番形式：日本語ヒントなし・文脈だけで4択から選ぶ） ============
+    // 各問に専用のまちがい選択肢(w)を持たせ、文脈で答えが1つに決まるようにしている
+    const E5_VOCAB = [
+        // --- 動詞 ---
+        {s:"A: What do you do after dinner?<br>B: I ( &nbsp; ) my homework in my room.", a:"do", w:["eat","open","sing"]},
+        {s:"I ( &nbsp; ) my bike to school every day.", a:"ride", w:["drink","wash","sing"]},
+        {s:"A: Please ( &nbsp; ) the window. It's hot in here.<br>B: OK, Mom.", a:"open", w:["read","drink","run"]},
+        {s:"I ( &nbsp; ) to music before I go to bed.", a:"listen", w:["look","write","cook"]},
+        {s:"We ( &nbsp; ) a snowman in the yard every winter.", a:"make", w:["drink","read","sing"]},
+        {s:"I ( &nbsp; ) my teeth after every meal.", a:"brush", w:["wear","cook","catch"]},
+        {s:"A: Can you ( &nbsp; ) this word?<br>B: Yes. It says \"apple\".", a:"read", w:["drink","wash","jump"]},
+        {s:"My father ( &nbsp; ) his car every Sunday.", a:"washes", w:["drinks","reads","sings"]},
+        {s:"A: What time do you ( &nbsp; ) up?<br>B: At six thirty.", a:"get", w:["eat","read","sing"]},
+        {s:"I ( &nbsp; ) a letter to my grandmother last week.", a:"sent", w:["ate","ran","slept"]},
+        {s:"A: Let's ( &nbsp; ) tennis in the park.<br>B: That's a good idea.", a:"play", w:["drink","wash","close"]},
+        {s:"Ken can ( &nbsp; ) very fast. He is on the swimming team.", a:"swim", w:["cook","write","open"]},
+        {s:"A: I'm thirsty.<br>B: Here. Please ( &nbsp; ) this water.", a:"drink", w:["read","wear","close"]},
+        {s:"My sister ( &nbsp; ) dinner for us every Friday.", a:"cooks", w:["reads","opens","sings"]},
+        {s:"It's cold today. ( &nbsp; ) your coat before you go out.", a:"Wear", w:["Drink","Read","Open"]},
+        // --- 名詞 ---
+        {s:"I keep my money in my ( &nbsp; ).", a:"wallet", w:["kitchen","summer","music"]},
+        {s:"We swim in the ( &nbsp; ) every summer.", a:"sea", w:["desk","pen","cap"]},
+        {s:"A: Where are my shoes?<br>B: They're by the ( &nbsp; ).", a:"door", w:["milk","song","month"]},
+        {s:"My mother cooks dinner in the ( &nbsp; ).", a:"kitchen", w:["bird","pencil","winter"]},
+        {s:"A: How many ( &nbsp; ) do you have?<br>B: I have two cats.", a:"pets", w:["songs","colors","weeks"]},
+        {s:"It's raining. Don't forget your ( &nbsp; ).", a:"umbrella", w:["dinner","teacher","holiday"]},
+        {s:"December is the last ( &nbsp; ) of the year.", a:"month", w:["hour","color","desk"]},
+        {s:"We watched an exciting soccer ( &nbsp; ) on TV last night.", a:"game", w:["door","milk","chair"]},
+        {s:"A: Whose ( &nbsp; ) is this?<br>B: It's Ken's. He plays it very well.", a:"guitar", w:["breakfast","holiday","corner"]},
+        {s:"Many birds are singing in the ( &nbsp; ) near my house.", a:"trees", w:["cups","weeks","songs"]},
+        {s:"A: What's your favorite ( &nbsp; )?<br>B: I like science the best.", a:"subject", w:["window","pocket","monkey"]},
+        {s:"I borrow books from the ( &nbsp; ) every weekend.", a:"library", w:["breakfast","weather","rabbit"]},
+        {s:"A: You look sleepy.<br>B: Yes. I went to ( &nbsp; ) very late last night.", a:"bed", w:["cup","tree","hat"]},
+        {s:"We see many animals at the ( &nbsp; ).", a:"zoo", w:["pen","milk","cap"]},
+        {s:"A: Is your father a doctor?<br>B: No, he's a ( &nbsp; ). He teaches math.", a:"teacher", w:["window","summer","pencil"]},
+        // --- 形容詞・副詞 ---
+        {s:"A: This bag is too ( &nbsp; ). I can't carry it.<br>B: Let me help you.", a:"heavy", w:["sweet","noisy","early"]},
+        {s:"Elephants are very ( &nbsp; ) animals.", a:"big", w:["sweet","noisy","late"]},
+        {s:"A: Let's have lunch now.<br>B: Yes, I'm very ( &nbsp; ).", a:"hungry", w:["long","noisy","fast"]},
+        {s:"Snow is white and ( &nbsp; ).", a:"cold", w:["sweet","loud","tall"]},
+        {s:"A cheetah can run very ( &nbsp; ).", a:"fast", w:["sweet","heavy","quiet"]},
+        {s:"This cake is very ( &nbsp; ). I love it.", a:"sweet", w:["angry","tall","busy"]},
+        {s:"Please be ( &nbsp; ). Your brother is sleeping.", a:"quiet", w:["sweet","heavy","hungry"]},
+        {s:"My grandfather is eighty years ( &nbsp; ), but he is very active.", a:"old", w:["tall","fast","kind"]},
+        {s:"A: You look ( &nbsp; ) today.<br>B: Yes, I have a lot of homework.", a:"busy", w:["sweet","cold","long"]},
+        {s:"A: How ( &nbsp; ) is that tower?<br>B: It's 300 meters.", a:"tall", w:["cold","young","busy"]},
+        {s:"I get up ( &nbsp; ) every morning and run in the park.", a:"early", w:["sweet","heavy","noisy"]}
+    ];
+    function e5Vocab() {
+        const p = randObj(E5_VOCAB);
+        return { q:`( )に入れるのに最も適切なものを1〜4から選びなさい。<br>${p.s}`, a:p.a, choices:[p.a, ...p.w].sort(() => Math.random() - 0.5), key:'V5|' + p.a + p.s.slice(0, 20) };
+    }
+    // 5級 文法（be動詞・三単現・代名詞・前置詞・冠詞・複数形・疑問詞・助動詞）
+    const E5_GRAM = [
+        {s:"My mother ( &nbsp; ) a music teacher.", a:"is", w:["am","are","be"]},
+        {s:"Tom and I ( &nbsp; ) good friends.", a:"are", w:["am","is","be"]},
+        {s:"I ( &nbsp; ) from Japan. Nice to meet you.", a:"am", w:["is","are","be"]},
+        {s:"These books ( &nbsp; ) very interesting.", a:"are", w:["am","is","be"]},
+        {s:"She ( &nbsp; ) English every day.", a:"studies", w:["study","studying","to study"]},
+        {s:"My brother ( &nbsp; ) to school by bus.", a:"goes", w:["go","going","gone"]},
+        {s:"I ( &nbsp; ) TV with my family after dinner.", a:"watch", w:["watches","watching","to watch"]},
+        {s:"Ken ( &nbsp; ) two dogs and a cat.", a:"has", w:["have","having","to have"]},
+        {s:"This is Tom. I know ( &nbsp; ) very well.", a:"him", w:["he","his","they"]},
+        {s:"A: Is this your pen?<br>B: Yes, it's ( &nbsp; ).", a:"mine", w:["my","me","I"]},
+        {s:"Ms. Green is our teacher. We like ( &nbsp; ) class.", a:"her", w:["she","hers","they"]},
+        {s:"I get up ( &nbsp; ) six thirty every morning.", a:"at", w:["in","on","to"]},
+        {s:"My birthday is ( &nbsp; ) May.", a:"in", w:["at","on","to"]},
+        {s:"We have a party ( &nbsp; ) Sunday.", a:"on", w:["in","at","to"]},
+        {s:"The cat is sleeping ( &nbsp; ) the table.", a:"under", w:["of","to","from"]},
+        {s:"I have ( &nbsp; ) apple in my bag.", a:"an", w:["a","the","some"]},
+        {s:"( &nbsp; ) are my friends, Ken and Mika.", a:"These", w:["This","That","It"]},
+        {s:"I have three ( &nbsp; ) in my pencil case.", a:"pencils", w:["pencil","pencilies","pencilen"]},
+        {s:"There are many ( &nbsp; ) in this park.", a:"children", w:["child","childs","childes"]},
+        {s:"I brush my ( &nbsp; ) every night.", a:"teeth", w:["tooths","toothes","tooth"]},
+        {s:"A: ( &nbsp; ) is your birthday?<br>B: It's July 3rd.", a:"When", w:["Who","Where","What"]},
+        {s:"A: ( &nbsp; ) do you go to school?<br>B: By bike.", a:"How", w:["When","Who","Where"]},
+        {s:"A: ( &nbsp; ) bag is this?<br>B: It's Nancy's.", a:"Whose", w:["Who","What","Where"]},
+        {s:"A: ( &nbsp; ) is that tall boy?<br>B: He's my brother.", a:"Who", w:["What","Where","When"]},
+        {s:"A: ( &nbsp; ) do you live?<br>B: I live in Osaka.", a:"Where", w:["Who","When","Whose"]},
+        {s:"A: ( &nbsp; ) many pens do you have?<br>B: I have five.", a:"How", w:["What","Who","Whose"]},
+        {s:"I ( &nbsp; ) swim very fast. I practice every day.", a:"can", w:["am","do","is"]},
+        {s:"( &nbsp; ) run in the classroom. It's dangerous.", a:"Don't", w:["Doesn't","Isn't","Not"]},
+        {s:"A: Do you like music?<br>B: Yes, I ( &nbsp; ).", a:"do", w:["am","is","does"]},
+        {s:"A: Does Ken play soccer?<br>B: Yes, he ( &nbsp; ).", a:"does", w:["do","is","can"]},
+        {s:"A: Are you a student?<br>B: Yes, I ( &nbsp; ).", a:"am", w:["do","is","are"]},
+        {s:"Look ( &nbsp; ) that beautiful bird!", a:"at", w:["in","on","of"]}
+    ];
+    function e5Gram() {
+        const p = randObj(E5_GRAM);
+        return { q:`( )に入れるのに最も適切なものを1〜4から選びなさい。<br>${p.s}`, a:p.a, choices:[p.a, ...p.w].sort(() => Math.random() - 0.5), key:'G5|' + p.s.slice(0, 20) };
+    }
+    // 5級 大問2：会話の( )に入る「応答の文」を4択で選ぶ（本番形式）
+    const E5_TALK = [
+        {l:["<b>Boy:</b> I'm going to the library now.", "<b>Girl:</b> ( &nbsp; ) I want to borrow a book, too."], a:"Can I go with you?", w:["You're welcome.","It's very old.","See you tomorrow."]},
+        {l:["<b>Girl:</b> Do you like curry?", "<b>Boy:</b> ( &nbsp; ) I eat it every week."], a:"Yes, I love it.", w:["No, I'm not.","It's Monday.","Here you are."]},
+        {l:["<b>Teacher:</b> Does your brother play the piano, Emma?", "<b>Girl:</b> Yes. ( &nbsp; )"], a:"He practices every day.", w:["I'm so hungry.","It's under the desk.","She is my aunt."]},
+        {l:["<b>Man:</b> Excuse me. Where is the station?", "<b>Woman:</b> ( &nbsp; ) It's next to the bank."], a:"Go down this street.", w:["I'm fine, thank you.","It's ten o'clock.","Yes, I can."]},
+        {l:["<b>Mother:</b> Dinner is ready!", "<b>Boy:</b> ( &nbsp; ) I'm coming."], a:"OK, Mom.", w:["Nice to meet you.","It's my bike.","No, I don't."]},
+        {l:["<b>Girl 1:</b> Are you free this Saturday?", "<b>Girl 2:</b> ( &nbsp; ) I have a piano lesson."], a:"Sorry, I'm busy.", w:["You're welcome.","It's very hot.","Yes, he is."]},
+        {l:["<b>Boy:</b> Happy birthday, Nancy! This is for you.", "<b>Girl:</b> ( &nbsp; )"], a:"Thank you so much.", w:["I'm sorry.","See you later.","No, I'm not."]},
+        {l:["<b>Girl:</b> How is the weather in Tokyo?", "<b>Boy:</b> ( &nbsp; ) I can't go out today."], a:"It's rainy.", w:["I'm twelve.","He's my father.","Yes, please."]},
+        {l:["<b>Man:</b> Would you like some tea?", "<b>Woman:</b> ( &nbsp; ) I'm thirsty."], a:"Yes, please.", w:["No, he doesn't.","It's Tuesday.","I'm sorry."]},
+        {l:["<b>Boy:</b> I can't find my cap.", "<b>Mother:</b> ( &nbsp; ) I saw it there this morning."], a:"Look on your bed.", w:["Nice to meet you.","I'm fine.","Yes, I do."]},
+        {l:["<b>Girl:</b> Let's go to the park after school.", "<b>Boy:</b> ( &nbsp; ) I'll bring my ball."], a:"Sounds good.", w:["You're welcome.","It's my sister's.","No, it isn't."]},
+        {l:["<b>Teacher:</b> Whose notebook is this?", "<b>Boy:</b> ( &nbsp; ) Thank you, Ms. Lee."], a:"It's mine.", w:["I'm hungry.","It's snowy.","Yes, I can."]},
+        {l:["<b>Woman:</b> Are you from Canada?", "<b>Man:</b> ( &nbsp; ) I'm from Australia."], a:"No, I'm not.", w:["Yes, it does.","No, I can't.","Yes, she is."]},
+        {l:["<b>Girl:</b> Thank you for helping me.", "<b>Boy:</b> ( &nbsp; )"], a:"You're welcome.", w:["I'm sorry.","Good night.","Here you are."]},
+        {l:["<b>Boy 1:</b> I have a soccer game tomorrow.", "<b>Boy 2:</b> ( &nbsp; ) I hope you win."], a:"Good luck!", w:["That's all.","No, thank you.","It's over there."]},
+        {l:["<b>Mother:</b> What are you doing, Ken?", "<b>Boy:</b> ( &nbsp; ) It's difficult."], a:"I'm doing my math homework.", w:["I'm ten years old.","Yes, I like it.","It's on the table."]}
+    ];
+    function e5Talk() {
+        const p = randObj(E5_TALK);
+        return { q:`会話について、( )に入れるのに最も適切なものを1〜4から選びなさい。<br>${p.l.join('<br>')}`, a:p.a, choices:[p.a, ...p.w].sort(() => Math.random() - 0.5), key:'T5|' + p.a };
+    }
+    // 5級 大問3：①〜④を並べかえて、1番目と3番目にくる語の組み合わせを4択で選ぶ（本番形式）
+    const NUM4 = ['①', '②', '③', '④'];
+    const E5_ORDER = [
+        {jp:"あなたの誕生日はいつですか。", parts:["is","when","birthday","your"], order:[1,0,3,2], post:"?"},
+        {jp:"これはあなたのかばんですか。", parts:["this","is","bag","your"], order:[1,0,3,2], post:"?"},
+        {jp:"私は毎朝6時に起きます。", parts:["up","get","at","six"], pre:"I", order:[1,0,2,3], post:"every morning."},
+        {jp:"彼はサッカーが好きですか。", parts:["like","he","soccer","does"], order:[3,1,0,2], post:"?"},
+        {jp:"私の兄は上手にギターを弾きます。", parts:["my","the","plays","brother"], order:[0,3,2,1], post:"guitar well."},
+        {jp:"私は放課後、友達とテニスをします。", parts:["tennis","play","my","with"], pre:"I", order:[1,0,3,2], post:"friends after school."},
+        {jp:"あなたは何時に寝ますか。", parts:["do","time","you","what"], order:[3,1,0,2], post:"go to bed?"},
+        {jp:"この本はとてもおもしろいです。", parts:["very","this","is","book"], order:[1,3,2,0], post:"interesting."},
+        {jp:"私の母は毎日夕食を作ります。", parts:["cooks","mother","dinner","my"], order:[3,1,0,2], post:"every day."},
+        {jp:"あなたは犬を何匹飼っていますか。", parts:["many","do","how","dogs"], order:[2,0,3,1], post:"you have?"},
+        {jp:"私たちは音楽室で歌を歌います。", parts:["songs","sing","the","in"], pre:"We", order:[1,0,3,2], post:"music room."},
+        {jp:"あのおもしろい映画をいっしょに見ましょう。", parts:["watch","that","movie","interesting"], pre:"Let's", order:[0,1,3,2], post:"together."},
+        {jp:"私の父は病院で働いています。", parts:["works","father","a","at"], pre:"My", order:[1,0,3,2], post:"hospital."},
+        {jp:"あなたはどこでサッカーをしますか。", parts:["do","play","where","you"], order:[2,0,3,1], post:"soccer?"},
+        {jp:"その白い犬は私のものです。", parts:["dog","white","is","that"], order:[3,1,0,2], post:"mine."},
+        {jp:"私は毎晩英語を勉強します。", parts:["every","English","I","study"], order:[2,3,1,0], post:"night."}
+    ];
+    function e5Order() {
+        const p = randObj(E5_ORDER);
+        const ans = `${NUM4[p.order[0]]}－${NUM4[p.order[2]]}`;
+        // ダミー：正解と違う番号ペアから3つ
+        const all = [];
+        for(let i = 0; i < 4; i++) for(let j = 0; j < 4; j++) if(i !== j) all.push(`${NUM4[i]}－${NUM4[j]}`);
+        const disp = p.parts.map((w, i) => `${NUM4[i]} ${w}`).join('　');
+        const line = `${p.pre ? p.pre + ' ' : ''}［ &nbsp;&nbsp; ］［ &nbsp;&nbsp; ］［ &nbsp;&nbsp; ］［ &nbsp;&nbsp; ］${p.post ? ' ' + p.post : ''}`;
+        return {
+            q: `日本語の意味を表すように①〜④を並べかえたとき、<b>1番目</b>と<b>3番目</b>にくるものの組み合わせを1〜4から選びなさい。<br>「${p.jp}」<br><span style="color:#888;">［ ${disp} ］</span><br>${line}`,
+            a: ans, choices: mk4(ans, all), key: 'O5|' + p.jp
+        };
+    }
+
+    // --- 5級 短文の語い（旧・記述式。勉強モードで使用） ---
     //  ※過去問と場面・単語が重ならない完全オリジナル文
     function e5Blank() {
-        const gens = [
-            () => { const p = randObj([
+        // 動詞・名詞・形容詞のプール。4択のまちがい選択肢は同じプールから選ぶ（同じ品詞でそれっぽく）
+        const pools = [
+            [ // 動詞
                 {s:"I ( &nbsp; ) my bike to the park every Sunday.", h:"（乗る）", a:"ride"},
                 {s:"I ( &nbsp; ) to music before I go to bed.", h:"（聞く）", a:"listen"},
                 {s:"We ( &nbsp; ) a snowman in the yard every winter.", h:"（作る）", a:"make"},
@@ -1230,8 +1410,8 @@
                 {s:"I ( &nbsp; ) a birthday card to my grandmother.", h:"（送る）", a:"send"},
                 {s:"Please ( &nbsp; ) the door when you leave.", h:"（閉める）", a:"close"},
                 {s:"We ( &nbsp; ) hello to our teacher every morning.", h:"（言う）", a:"say"}
-            ]); return {q:`( )に入る語を書きなさい。${p.h}<br>${p.s}`, a:p.a}; },
-            () => { const p = randObj([
+            ],
+            [ // 名詞
                 {s:"I keep my coins in my ( &nbsp; ).", h:"（さいふ）", a:"wallet"},
                 {s:"We swim in the ( &nbsp; ) in summer.", h:"（海）", a:"sea"},
                 {s:"The ( &nbsp; ) shines brightly in the daytime.", h:"（太陽）", a:"sun"},
@@ -1244,8 +1424,8 @@
                 {s:"We watched a soccer ( &nbsp; ) on TV last night.", h:"（試合）", a:"game"},
                 {s:"There are many books in my ( &nbsp; ).", h:"（部屋）", a:"room"},
                 {s:"I write a letter with a ( &nbsp; ).", h:"（ペン）", a:"pen"}
-            ]); return {q:`( )に入る語を書きなさい。${p.h}<br>${p.s}`, a:p.a}; },
-            () => { const p = randObj([
+            ],
+            [ // 形容詞・副詞
                 {s:"A mouse is a very ( &nbsp; ) animal.", h:"（小さい）", a:"small"},
                 {s:"This box is ( &nbsp; ). I can't carry it.", h:"（重い）", a:"heavy"},
                 {s:"Snow is white and ( &nbsp; ).", h:"（冷たい）", a:"cold"},
@@ -1255,9 +1435,11 @@
                 {s:"This cake is very ( &nbsp; ). I love it.", h:"（あまい）", a:"sweet"},
                 {s:"A giraffe has a very ( &nbsp; ) neck.", h:"（長い）", a:"long"},
                 {s:"The classroom is very ( &nbsp; ) today. Everyone is talking.", h:"（うるさい）", a:"noisy"}
-            ]); return {q:`( )に入る語を書きなさい。${p.h}<br>${p.s}`, a:p.a}; }
+            ]
         ];
-        return randObj(gens)();
+        const pool = randObj(pools);
+        const p = randObj(pool);
+        return { q:`( )に入る語を書きなさい。${p.h}<br>${p.s}`, a:p.a, choices: mk4(p.a, pool.map(x => x.a)) };
     }
     // 5級 会話・疑問詞
     function e5Wh() {
@@ -1278,7 +1460,7 @@
             {s:"A: ( &nbsp; ) do you get up?  B: At six thirty.", a:"When"},
             {s:"A: ( &nbsp; ) color do you like?  B: I like green.", a:"What"}
         ]);
-        return {q:`会話が成り立つように( )に入る疑問詞を書きなさい。<br>${p.s}`, a:p.a};
+        return {q:`会話が成り立つように( )に入る疑問詞を書きなさい。<br>${p.s}`, a:p.a, choices: mk4(p.a, ['When','Who','Where','What','How','Whose','Why'])};
     }
     function e5Conv() {
         const p = randObj([
@@ -1725,9 +1907,9 @@
     // 級ごとの大問構成（配点の合計は必ず100点）
     const eikenConfig = {
         '英検5級': { minutes: 50, blocks: [
-            { type:'q', title:'大問1　短文の語い・文法（( )に入る語を書く）', count:18, points:60, gen: () => randObj([e5Blank, e5Blank, () => engBe(2), () => engVerb(2), () => engGrammar(2), e5Wh])() },
-            { type:'q', title:'大問2　会話文の応答（( )に入る語を書く）', count:6, points:20, gen: e5Conv },
-            { type:'q', title:'大問3　語順（日本語に合う英文を書く）', count:6, points:20, gen: () => orderQ('5') }
+            { type:'q', title:'大問1　短文の語い・文法（1〜4から選ぶ）', count:18, points:60, gen: () => randObj([e5Vocab, e5Vocab, e5Gram])() },
+            { type:'q', title:'大問2　会話文の応答（1〜4から選ぶ）', count:6, points:20, gen: e5Talk },
+            { type:'q', title:'大問3　語句の並べかえ（1〜4から選ぶ）', count:6, points:20, gen: e5Order }
         ]},
         '英検4級': { minutes: 65, blocks: [
             { type:'q', title:'大問1　短文の語い・文法', count:15, points:40, gen: () => randObj([e4Blank, e4Blank, e4Past, e4Grammar])() },
@@ -1782,13 +1964,25 @@
         return d;
     }
 
-    // 採点対象の1問の行HTML
-    function ekQuestionRow(idx, qtext, pts) {
+    // 選んだ答え（4択問題用）: { 問題番号: 選んだ選択肢の文字列 }
+    let ekSel = {};
+    function ekPick(idx, i, val) {
+        if(ekGraded) return; // 採点後は変更できない
+        ekSel[idx] = val;
+        document.querySelectorAll(`#ek-row-${idx} .ek-opt`).forEach((b, k) => b.classList.toggle('sel', k === i));
+    }
+    // 採点対象の1問の行HTML（choicesがあれば4択ボタン、無ければ入力欄）
+    function ekQuestionRow(idx, qtext, pts, choices) {
+        const body = (choices && choices.length)
+            ? `<div class="ek-opts">${choices.map((c, i) =>
+                `<button type="button" class="ek-opt" onclick="ekPick(${idx}, ${i}, this.dataset.v)" data-v="${String(c).replace(/"/g, '&quot;')}"><span class="n">${i + 1}</span>${c}</button>`
+              ).join('')}</div>`
+            : `<input type="text" class="q-input no-print" id="ek-ans-${idx}" placeholder="答えを入力" autocomplete="off" autocapitalize="off" spellcheck="false">`;
         return `
             <div class="q-row grid-1" id="ek-row-${idx}">
                 <div class="ek-ans-top no-print" id="ek-top-${idx}" style="display:none;"></div>
                 <div class="q-text"><span id="ek-mark-${idx}">(${idx})</span> ${qtext} <span style="font-size:12px; color:#888;">[${pts}点]</span></div>
-                <input type="text" class="q-input no-print" id="ek-ans-${idx}" placeholder="答えを入力" autocomplete="off" autocapitalize="off" spellcheck="false">
+                ${body}
                 <div class="ek-ans-bottom" id="ek-bot-${idx}" style="display:none;"></div>
             </div>`;
     }
@@ -1796,7 +1990,7 @@
 
     function startEikenTest() {
         currentRunMode = 'eiken';
-        ekGraded = false; ekHasWriting = false;
+        ekGraded = false; ekHasWriting = false; ekSel = {};
         const grade = pTest.subj;
         const cfg = eikenConfig[grade];
         document.getElementById('print-title').innerText = `${grade} テスト（100点満点）`;
@@ -1816,8 +2010,8 @@
                     // 語順は並び替え表示が毎回違うので、安定キー(元の英文)で重複判定する
                     do { q = block.gen(); tries++; } while(seen.has(q.key || q.q) && tries < 60);
                     seen.add(q.key || q.q);
-                    ekQData.push({ id: idx, daimon: dn, q: q.q, a: q.a, points: pts[i], read: false, order: !!q.order, alts: q.alts });
-                    html += ekQuestionRow(idx, q.q, pts[i]); idx++;
+                    ekQData.push({ id: idx, daimon: dn, q: q.q, a: q.a, points: pts[i], read: false, order: !!q.order, alts: q.alts, choices: q.choices });
+                    html += ekQuestionRow(idx, q.q, pts[i], q.choices); idx++;
                 }
             } else if(block.type === 'reading') {
                 daimonNo++; const dn = daimonNo;
@@ -1919,7 +2113,18 @@
             let inp = document.getElementById(`ek-ans-${q.id}`);
             let user = inp ? inp.value.trim() : '';
             let mk;
-            if(q.alts && q.alts.length) {
+            // 4択（マーク式）は選んだものが正解と同じかどうかだけ（△なし）
+            if(q.choices && q.choices.length) {
+                user = ekSel[q.id] || '';
+                mk = (user !== '' && user === q.a) ? '○' : '✕';
+                // 選択肢に正解・不正解の色をつけて、操作できないようにする
+                document.querySelectorAll(`#ek-row-${q.id} .ek-opt`).forEach(b => {
+                    b.disabled = true;
+                    b.classList.remove('sel');
+                    if(b.dataset.v === q.a) b.classList.add('opt-correct');
+                    else if(b.dataset.v === user) b.classList.add('opt-wrong');
+                });
+            } else if(q.alts && q.alts.length) {
                 // 同義語はどれでも正解（○＞△＞✕ の順で一番良い判定を採用）
                 const rank = { '○':2, '△':1, '✕':0 };
                 mk = q.alts.map(a => ekJudge(user, a)).reduce((b, m) => rank[m] > rank[b] ? m : b, '✕');
@@ -2086,7 +2291,7 @@
     const qRowHtml = (i, q) => `
             <div class="q-row ${q.type === 'text' ? 'grid-1' : ''}">
                 <label style="cursor:pointer;"><input type="checkbox" class="study-check no-print" style="transform:scale(1.3); margin-right:5px;"> (${i})</label>
-                <div class="q-text">${q.q} <span class="q-ans-show">正解：${q.a}${q.work ? `<br><span style="font-weight:normal; color:#c0392b; font-size:14px;">〔途中式〕 ${q.work}</span>` : ''}</span></div>
+                <div class="q-text">${q.q} <span class="q-ans-show">正解：${fracA(q.a)}${q.work ? `<br><span style="font-weight:normal; color:#c0392b; font-size:14px;">〔途中式〕 ${q.work}</span>` : ''}</span></div>
                 ${q.type === 'text' ? '<div class="text-space"></div>' : '<div style="height:3em; border-bottom:1px dashed #ccc;"></div>'}
             </div>
         `;
@@ -2244,10 +2449,10 @@
         document.getElementById('run-title').innerText = `📝 ${title} - 範囲: ${pTest.unit}（レベル${pTest.level}）`;
         
         let totalQ = 0;
-        if(pTest.subj === '数学') totalQ = randNum(45, 55); // 約50
-        else if(pTest.subj === '英語') totalQ = randNum(30, 40); // 約35
-        else if(pTest.subj === '理科') totalQ = randNum(25, 35); // 約30
-        else if(pTest.subj === '国語') totalQ = randNum(15, 25); // 約20
+        if(pTest.subj === '数学') totalQ = randNum(60, 70); // 約65
+        else if(pTest.subj === '英語') totalQ = randNum(40, 50); // 約45
+        else if(pTest.subj === '理科') totalQ = randNum(35, 45); // 約40
+        else if(pTest.subj === '国語') totalQ = randNum(25, 35); // 約30
 
         testQuestionsData = [];
         let seenTest = new Set(); // 同じ問題（文章問題含む）を出さない
@@ -2307,13 +2512,17 @@
         let newWrongs = []; // 間違えた問題を「間違い直し」用にためる
 
         // 表記ゆれを吸収してから完全一致で採点（全角→半角、空白除去、単位の省略を許容）
-        const normAns = (s) => String(s || '')
-            .replace(/[！-～]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
-            .replace(/[−ーｰ–]/g, '-')
-            .replace(/\s+/g, '')
-            .toLowerCase()
-            .replace(/(g\/cm3|g\/cm³|cm²|cm³|cm2|cm3|m²|m³|m2|m3|km|cm|mm|kg|g|l|℃|度|円|点|人|個|本|枚|冊|分|回転|年前|年後|時間|秒後|秒|%)$/, '')
-            .replace(/\.0+$/, ''); // 「3.0」と「3」を同じ答えとして扱う
+        const normAns = (s) => {
+            let t = String(s || '')
+                .replace(/[！-～]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
+                .replace(/[−ーｰ–]/g, '-')
+                .replace(/\s+/g, '')
+                .toLowerCase();
+            // 単位を消すのは、消しても中身が残るときだけ（答えが「分」「本」のように単位そのものの語だと空になってしまう）
+            const noUnit = t.replace(/(g\/cm3|g\/cm³|cm²|cm³|cm2|cm3|m²|m³|m2|m3|km|cm|mm|kg|g|l|℃|度|円|点|人|個|本|枚|冊|分|回転|年前|年後|時間|秒後|秒|%)$/, '');
+            if(noUnit !== '') t = noUnit;
+            return t.replace(/\.0+$/, ''); // 「3.0」と「3」を同じ答えとして扱う
+        };
 
         testQuestionsData.forEach(q => {
             let userAns = document.getElementById(`t-ans-${q.id}`).value.trim();
@@ -2328,7 +2537,7 @@
             if(isCorrect) daimonStats[q.daimon].ok++;
 
             let mark = isCorrect ? '⭕️' : '❌';
-            detailsHtml += `<div style="margin-bottom:5px;">${q.daimon}-${q.id} ${mark} (あなたの答え: ${userAns || '無回答'}) 正解: ${q.a}${q.work ? `<br><span style="color:#c0392b; font-size:13px;">　〔途中式〕 ${q.work}</span>` : ''}</div>`;
+            detailsHtml += `<div style="margin-bottom:5px;">${q.daimon}-${q.id} ${mark} (あなたの答え: ${userAns ? fracA(userAns) : '無回答'}) 正解: ${fracA(q.a)}${q.work ? `<br><span style="color:#c0392b; font-size:13px;">　〔途中式〕 ${q.work}</span>` : ''}</div>`;
         });
 
         // 間違えた問題を保存（同じ問題文はためない・最大100問）
