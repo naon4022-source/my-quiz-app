@@ -97,6 +97,19 @@
         /* ===== 👤 ユーザー（PINログイン） ===== */
         #login-overlay { position: fixed; inset: 0; background: var(--bg-color); z-index: 5000; display: none; align-items: center; justify-content: center; padding: 20px; }
         #login-overlay.on { display: flex; }
+
+        /* 単元の説明（❓ボタンとオーバーレイ）。オーバーレイ表示中も問題画面のDOMは触らない＝戻れば同じ問題 */
+        #unit-help-btn { float: right; font-size: 24px; background: none; border: none; cursor: pointer; opacity: .35; padding: 2px 10px; line-height: 1; transition: opacity .2s; }
+        #unit-help-btn:hover { opacity: 1; }
+        #unit-help-overlay { display: none; position: fixed; inset: 0; background: var(--bg-color); z-index: 4000; overflow-y: auto; padding: 16px; }
+        #unit-help-overlay.on { display: block; }
+        .uh-box { max-width: 700px; margin: 0 auto 14px; background: var(--box-bg); border-radius: 12px; padding: 16px 18px; box-shadow: 0 2px 8px var(--box-shadow); }
+        .uh-box h3 { margin: 0 0 8px; color: var(--head-color); border-left: 5px solid var(--main-color); padding-left: 10px; }
+        .uh-box table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+        .uh-box th, .uh-box td { border: 1px solid var(--border-color); padding: 6px 10px; text-align: left; font-size: 15px; }
+        .uh-box th { background: rgba(127,140,155,.15); }
+        .uh-ex { background: rgba(46,204,113,.12); border-radius: 8px; padding: 8px 12px; margin: 6px 0; font-size: 15px; }
+        .uh-back { display: block; max-width: 700px; margin: 0 auto 14px; width: 100%; }
         .login-card { background: var(--box-bg); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.18); padding: 26px 22px; width: 100%; max-width: 380px; text-align: center; }
         .login-card h2 { margin: 0 0 14px; }
         .login-user-btn { display: block; width: 100%; margin: 8px 0; padding: 13px; font-size: 17px; font-weight: bold; border: 2px solid var(--border-color); border-radius: 10px; background: var(--bg-color); color: var(--text-color); cursor: pointer; }
@@ -176,6 +189,12 @@
 <div id="confetti-layer" class="no-print"></div>
 
 <!-- 👤 ログイン（PINだけで人を判定：ユーザー選択なし） -->
+<div id="unit-help-overlay" class="no-print">
+    <button class="btn uh-back" style="background:#34495e; color:white;" onclick="closeUnitHelp()">← 問題にもどる（同じ問題のつづきができるよ）</button>
+    <div id="unit-help-content"></div>
+    <button class="btn uh-back" style="background:#34495e; color:white;" onclick="closeUnitHelp()">← 問題にもどる</button>
+</div>
+
 <div id="login-overlay" class="no-print">
     <div class="login-card">
         <h2>🔒 PINを入力してね</h2>
@@ -282,6 +301,7 @@
             <div style="text-align:right; font-size:16px; margin-top:10px;">名前：＿＿＿＿＿＿＿＿＿＿＿＿</div>
         </div>
         
+        <button id="unit-help-btn" class="no-print" style="display:none;" title="この単元の説明を見る" onclick="openUnitHelp()">❓</button>
         <h2 id="run-title" class="no-print" style="border-left: 5px solid var(--main-color); padding-left: 10px;"></h2>
         <div id="run-cheer" class="no-print" style="display:none; background:var(--bg-color); border-left:4px solid #2ecc71; border-radius:8px; padding:8px 12px; margin-bottom:12px; font-weight:bold; color:#27ae60;"></div>
 
@@ -2472,6 +2492,86 @@
     // レベルの幅[lo,hi]の中で、ページ後半ほど難しくする
     const rampDiff = (i, count, level) => { let [lo, hi] = LEVEL_RANGE[level] || [2,3]; return Math.min(hi, lo + Math.floor((i-1) / count * (hi - lo + 1))); };
 
+    // ===== 単元の説明（過去形・疑問詞）。オーバーレイなので問題画面はそのまま残る =====
+    const UNIT_HELP = {
+        past: `
+            <div class="uh-box"><h3>📖 過去形ってなに？</h3>
+                <p>「〜した」と<b>終わったこと</b>を言うときの動詞の形だよ。yesterday（昨日）・last week（先週）・〜 ago（〜前）みたいな言葉といっしょに使うことが多いよ。</p>
+                <div class="uh-ex">I <b>played</b> tennis <u>yesterday</u>.（私は昨日テニスをした）</div></div>
+            <div class="uh-box"><h3>✏️ 規則動詞：うしろに ed をつける</h3>
+                <table><tr><th>ルール</th><th>例</th></tr>
+                <tr><td>ふつうは <b>+ed</b></td><td>play → play<b>ed</b>／watch → watch<b>ed</b></td></tr>
+                <tr><td>e で終わる → <b>+d</b> だけ</td><td>use → use<b>d</b>／live → live<b>d</b></td></tr>
+                <tr><td>子音字＋y → <b>y を i にかえて ed</b></td><td>study → stud<b>ied</b></td></tr>
+                <tr><td>短く読む音＋子音字 → <b>字を重ねて ed</b></td><td>stop → sto<b>pped</b></td></tr></table></div>
+            <div class="uh-box"><h3>⭐ 不規則動詞：形がガラッと変わる（覚えよう！）</h3>
+                <table><tr><th>原形</th><th>過去形</th><th>原形</th><th>過去形</th></tr>
+                <tr><td>go（行く）</td><td><b>went</b></td><td>come（来る）</td><td><b>came</b></td></tr>
+                <tr><td>see（見る）</td><td><b>saw</b></td><td>have（持つ）</td><td><b>had</b></td></tr>
+                <tr><td>make（作る）</td><td><b>made</b></td><td>get（手に入れる）</td><td><b>got</b></td></tr>
+                <tr><td>take（取る）</td><td><b>took</b></td><td>buy（買う）</td><td><b>bought</b></td></tr>
+                <tr><td>eat（食べる）</td><td><b>ate</b></td><td>drink（飲む）</td><td><b>drank</b></td></tr>
+                <tr><td>write（書く）</td><td><b>wrote</b></td><td>run（走る）</td><td><b>ran</b></td></tr>
+                <tr><td>swim（泳ぐ）</td><td><b>swam</b></td><td>speak（話す）</td><td><b>spoke</b></td></tr>
+                <tr><td>sing（歌う）</td><td><b>sang</b></td><td>meet（会う）</td><td><b>met</b></td></tr>
+                <tr><td>give（あげる）</td><td><b>gave</b></td><td>find（見つける）</td><td><b>found</b></td></tr>
+                <tr><td>teach（教える）</td><td><b>taught</b></td><td>think（思う）</td><td><b>thought</b></td></tr>
+                <tr><td>bring（持ってくる）</td><td><b>brought</b></td><td>sit（すわる）</td><td><b>sat</b></td></tr>
+                <tr><td>sleep（ねむる）</td><td><b>slept</b></td><td>leave（出発する）</td><td><b>left</b></td></tr>
+                <tr><td>tell（伝える）</td><td><b>told</b></td><td>say（言う）</td><td><b>said</b></td></tr>
+                <tr><td>hear（聞こえる）</td><td><b>heard</b></td><td>read（読む）</td><td><b>read</b>（形が同じ！）</td></tr></table></div>
+            <div class="uh-box"><h3>🔵 be動詞の過去形</h3>
+                <p>am・is → <b>was</b>　／　are → <b>were</b></p>
+                <div class="uh-ex">I <b>was</b> busy yesterday.（私は昨日いそがしかった）<br>They <b>were</b> in the park then.（彼らはそのとき公園にいた）</div></div>
+            <div class="uh-box"><h3>❌ 否定文と ❓ 疑問文（ここがテストに出る！）</h3>
+                <p>否定文は <b>didn't（did not）＋動詞の原形</b>。疑問文は <b>Did ＋主語＋動詞の原形</b>。<span style="color:#e74c3c; font-weight:bold;">did を使ったら動詞は原形にもどす</span>のがポイント！</p>
+                <div class="uh-ex">I <b>didn't watch</b> TV last night.（× didn't watched）<br><b>Did</b> you <b>play</b> tennis yesterday? — Yes, I <b>did</b>. ／ No, I <b>didn't</b>.</div></div>`,
+        wh: `
+            <div class="uh-box"><h3>📖 疑問詞ってなに？</h3>
+                <p>「何」「だれ」「どこ」みたいに、<b>くわしくたずねる言葉</b>だよ。文の<b>いちばん前</b>に置いて、「疑問詞 ＋ do you 〜?」「疑問詞 ＋ is 〜?」の形で使うよ。</p>
+                <div class="uh-ex"><b>What</b> do you like?（あなたは<u>何</u>が好き？）</div></div>
+            <div class="uh-box"><h3>⭐ 基本の疑問詞</h3>
+                <table><tr><th>疑問詞</th><th>意味</th><th>例文と答え方</th></tr>
+                <tr><td><b>What</b></td><td>何</td><td>What is this? — It's a pen.</td></tr>
+                <tr><td><b>Who</b></td><td>だれ</td><td>Who is that boy? — He is my brother.</td></tr>
+                <tr><td><b>Where</b></td><td>どこ</td><td>Where do you live? — I live in Osaka.</td></tr>
+                <tr><td><b>When</b></td><td>いつ</td><td>When is your birthday? — It's May 5th.</td></tr>
+                <tr><td><b>Why</b></td><td>なぜ</td><td>Why do you like summer? — <b>Because</b> I can swim.（答えは Because 〜）</td></tr>
+                <tr><td><b>Which</b></td><td>どちら</td><td>Which do you like, tea or coffee? — I like tea.</td></tr>
+                <tr><td><b>Whose</b></td><td>だれの</td><td>Whose bag is this? — It's Ken's.</td></tr>
+                <tr><td><b>How</b></td><td>どうやって</td><td>How do you come to school? — By bike.</td></tr></table></div>
+            <div class="uh-box"><h3>✌️ 2語セットの疑問詞（セットで覚えよう！）</h3>
+                <table><tr><th>2語セット</th><th>意味</th><th>例文と答え方</th></tr>
+                <tr><td><b>What time</b></td><td>何時</td><td>What time do you get up? — At six.</td></tr>
+                <tr><td><b>How many</b></td><td>いくつ（数）</td><td>How many pens do you have? — I have three.</td></tr>
+                <tr><td><b>How old</b></td><td>何歳</td><td>How old is your brother? — He is ten years old.</td></tr>
+                <tr><td><b>How much</b></td><td>いくら（値段）</td><td>How much is this cap? — It's 500 yen.</td></tr></table></div>
+            <div class="uh-box"><h3>💡 見分けるコツ</h3>
+                <p><b>答えの文</b>を見れば、どの疑問詞かわかるよ！</p>
+                <table><tr><th>答えの文が…</th><th>疑問詞は</th></tr>
+                <tr><td>場所（in 〜, near 〜）</td><td>Where</td></tr>
+                <tr><td>日にち・「〜のあと」</td><td>When</td></tr>
+                <tr><td>人（my brother など）</td><td>Who</td></tr>
+                <tr><td>By 〜（乗り物）</td><td>How</td></tr>
+                <tr><td>At ＋時刻</td><td>What time</td></tr>
+                <tr><td>Because 〜</td><td>Why</td></tr>
+                <tr><td>〜's（だれだれの）</td><td>Whose</td></tr></table></div>`
+    };
+    function unitHelpKey() {
+        const u = String(pStudy.unit || '');
+        if(pStudy.subj !== '英語') return null;
+        return u.includes('過去') ? 'past' : u.includes('疑問') ? 'wh' : null;
+    }
+    function openUnitHelp() {
+        const key = unitHelpKey();
+        if(!key) return;
+        document.getElementById('unit-help-content').innerHTML = UNIT_HELP[key];
+        const ov = document.getElementById('unit-help-overlay');
+        ov.classList.add('on'); ov.scrollTop = 0;
+    }
+    function closeUnitHelp() { document.getElementById('unit-help-overlay').classList.remove('on'); }
+    function setUnitHelpBtn(show) { document.getElementById('unit-help-btn').style.display = show ? '' : 'none'; }
+
     function startStudy() {
         currentRunMode = 'study';
         studyAnswersVisible = false; // 前回の「答えを見る」状態をリセット
@@ -2494,10 +2594,12 @@
             document.getElementById('test-controls').style.display = 'none';
             document.getElementById('eiken-controls').style.display = 'none';
             document.getElementById('ek-result-banner').style.display = 'none';
+            closeUnitHelp(); setUnitHelpBtn(false); // フラッシュカードには説明ボタンなし
             switchView('run');
             return;
         }
 
+        closeUnitHelp(); setUnitHelpBtn(!!unitHelpKey()); // 過去形・疑問詞のときだけ❓を出す
         document.getElementById('print-title').innerText = `勉強プリント: ${pStudy.subj} (${pStudy.unit}) レベル${pStudy.level}`;
         document.getElementById('run-title').innerText = `📖 ${pStudy.subj} - ${pStudy.unit} (${pStudy.count}問・レベル${pStudy.level})`;
 
@@ -2598,6 +2700,7 @@
     }
     function startReview() {
         if(wrongNotes.length === 0) return;
+        closeUnitHelp(); setUnitHelpBtn(false);
         currentRunMode = 'review';
         studyAnswersVisible = false;
         reviewList = wrongNotes.slice(0, 45); // 一度に最大45問ずつ
@@ -2615,6 +2718,7 @@
 
     // ===== 📝 テストモード実行 =====
     function startTest() {
+        closeUnitHelp(); setUnitHelpBtn(false); // テスト中は説明を見られないようにする
         if(String(pTest.subj).startsWith('英検')) { startEikenTest(); return; }
         currentRunMode = 'test';
         let title = `${pTest.grade} ${pTest.subj} テスト`;
