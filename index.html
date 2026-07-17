@@ -404,7 +404,7 @@
 <script>
     // ===== シラバス・範囲設定 =====
     const studySyllabus = {
-        "中一": { "数学": ["正負の数", "文字式", "方程式", "変化と対応", "平面空間図形", "データの活用"], "英語": ["be動詞", "一般動詞", "文法"], "国語": ["文法", "漢字", "物語文"], "理科": ["植物と動物", "大地の変動", "物質と光音力", "計算と割合"] },
+        "中一": { "数学": ["正負の数", "文字式", "方程式", "変化と対応", "平面空間図形", "データの活用"], "英語": ["be動詞", "一般動詞", "過去形", "疑問詞", "文法"], "国語": ["文法", "漢字", "物語文"], "理科": ["植物と動物", "大地の変動", "物質と光音力", "計算と割合"] },
         "検定": { "数学": ["数検5級"], "英語": ["英検5級", "英検4級", "英検3級", "単語5級", "単語4級", "単語3級"], "国語": ["漢検5級", "漢検4級"], "理科": ["理検5級"] }
     };
     const testSyllabus = {
@@ -1100,6 +1100,176 @@
         ];
         let pool = diff >= 4 ? gens.concat(hardGens) : gens;
         return {...randObj(pool)(), type:'calc'};
+    }
+    // ===== 過去形（勉強単元）。動詞ごとに意味が通る目的語だけを組み合わせ、主語×時の表現で毎回ちがう文を作る =====
+    function engPast(diff) {
+        const regs = [ // 規則動詞
+            {b:"play",p:"played",objs:["tennis","soccer","the guitar","video games"]},
+            {b:"watch",p:"watched",objs:["TV","a soccer game","a movie"]},
+            {b:"visit",p:"visited",objs:["Kyoto","my grandmother","the museum"]},
+            {b:"help",p:"helped",objs:["my mother","Tom","my friends"]},
+            {b:"clean",p:"cleaned",objs:["my room","the classroom","the kitchen"]},
+            {b:"cook",p:"cooked",objs:["dinner","curry","breakfast"]},
+            {b:"listen",p:"listened",objs:["to music","to the radio"]},
+            {b:"walk",p:"walked",objs:["to school","in the park","with my dog"]},
+            {b:"study",p:"studied",objs:["English","math","science"]},
+            {b:"use",p:"used",objs:["this computer","a dictionary"]},
+            {b:"stay",p:"stayed",objs:["home","at a hotel","in Osaka"]},
+            {b:"enjoy",p:"enjoyed",objs:["the party","the game","the trip"]},
+            {b:"live",p:"lived",objs:["in Tokyo","near the park"]},
+            {b:"want",p:"wanted",objs:["a new bike","some water"]},
+            {b:"wash",p:"washed",objs:["the dishes","the car"]},
+            {b:"open",p:"opened",objs:["the window","the door","the box"]},
+            {b:"close",p:"closed",objs:["the door","the window"]},
+            {b:"call",p:"called",objs:["my friend","my grandmother"]},
+            {b:"practice",p:"practiced",objs:["the piano","soccer","English"]},
+            {b:"stop",p:"stopped",objs:["the car","near the station"]}
+        ];
+        const irrs = [ // 不規則動詞
+            {b:"go",p:"went",objs:["to Kyoto","to the park","to bed early","shopping"]},
+            {b:"come",p:"came",objs:["to my house","home late","to school early"]},
+            {b:"see",p:"saw",objs:["a beautiful bird","the movie","my teacher at the station"]},
+            {b:"have",p:"had",objs:["a good time","lunch with Tom","a cold"]},
+            {b:"make",p:"made",objs:["a cake","dinner","a paper plane"]},
+            {b:"get",p:"got",objs:["a letter","a new bike","up at six"]},
+            {b:"take",p:"took",objs:["many pictures","a bath","the bus"]},
+            {b:"buy",p:"bought",objs:["a new cap","some eggs","a present"]},
+            {b:"eat",p:"ate",objs:["breakfast at seven","curry and rice","two apples"]},
+            {b:"drink",p:"drank",objs:["some milk","cold water"]},
+            {b:"write",p:"wrote",objs:["a letter","my name","a report"]},
+            {b:"run",p:"ran",objs:["in the park","to the station"]},
+            {b:"swim",p:"swam",objs:["in the sea","in the river"]},
+            {b:"speak",p:"spoke",objs:["English","to the teacher"]},
+            {b:"sing",p:"sang",objs:["a song","an English song"]},
+            {b:"meet",p:"met",objs:["my friend","Ken at the library"]},
+            {b:"give",p:"gave",objs:["him a present","her some flowers"]},
+            {b:"find",p:"found",objs:["my key","a good book"]},
+            {b:"teach",p:"taught",objs:["English","math"]},
+            {b:"think",p:"thought",objs:["about the problem","about it"]},
+            {b:"bring",p:"brought",objs:["my lunch","an umbrella"]},
+            {b:"sit",p:"sat",objs:["on the chair","by the window"]},
+            {b:"sleep",p:"slept",objs:["well","for eight hours"]},
+            {b:"leave",p:"left",objs:["home at eight","school early"]},
+            {b:"tell",p:"told",objs:["him the story","us the news"]},
+            {b:"say",p:"said",objs:["goodbye","hello to everyone"]},
+            {b:"hear",p:"heard",objs:["the news","a strange sound"]},
+            {b:"read",p:"read",objs:["an interesting book","the newspaper"]}
+        ];
+        const subs = ["I","He","She","We","They","Tom","Emi","My father","My mother","My sister","Ken and I"];
+        const times = ["yesterday","last night","last Sunday","last week","last month","two days ago","three days ago","this morning","last summer","after school yesterday"];
+        const qSubs = ["you","he","she","they","Tom","your brother","your mother"];
+        const wasWere = [
+            {s:"I",b:"was"},{s:"He",b:"was"},{s:"She",b:"was"},{s:"It",b:"was"},{s:"Tom",b:"was"},{s:"My father",b:"was"},{s:"The movie",b:"was"},{s:"The test",b:"was"},
+            {s:"We",b:"were"},{s:"They",b:"were"},{s:"You",b:"were"},{s:"Ken and Emi",b:"were"},{s:"My parents",b:"were"}
+        ];
+        const predsS = ["busy yesterday","very tired last night","in the library then","at home yesterday morning","sick last week","happy at that time","hungry then"];
+        const predsP = ["busy yesterday","very tired last night","in the park then","at school at that time","good friends","in the same class last year","hungry then"];
+        const fillQ = (v) => `( )に動詞「${v.b}」を過去形にして入れなさい：${randObj(subs)} (   ) ${randObj(v.objs)} ${randObj(times)}.`;
+        // レベルで出題形式を変える（低: 規則動詞の変換 → 高: 不規則・was/were・否定/疑問・原形もどし）
+        const forms = [];
+        if(diff <= 2) {
+            forms.push(() => { const v=randObj(regs); return {q:`過去形にしなさい：${v.b}`, a:v.p}; });
+            forms.push(() => { const v=randObj(regs); return {q:fillQ(v), a:v.p}; });
+        }
+        if(diff >= 2) forms.push(() => { const v=randObj(irrs); return {q:`過去形にしなさい：${v.b}（不規則動詞）`, a:v.p}; });
+        if(diff >= 3) {
+            forms.push(() => { const v=randObj(irrs); return {q:fillQ(v), a:v.p}; });
+            forms.push(() => { const x=randObj(wasWere); return {q:`( )に was / were のどちらかを入れなさい：${x.s} (   ) ${randObj(x.b==='was'?predsS:predsP)}.`, a:x.b}; });
+        }
+        if(diff >= 4) {
+            forms.push(() => { const v=randObj(regs.concat(irrs)); return {q:`( )に入る1語を書きなさい（過去の否定文）：${randObj(subs)} (   ) not ${v.b} ${randObj(v.objs)} ${randObj(times)}.`, a:"did"}; });
+            forms.push(() => { const v=randObj(regs.concat(irrs)); return {q:`( )に入る1語を書きなさい（過去の疑問文の文頭）：(   ) ${randObj(qSubs)} ${v.b} ${randObj(v.objs)} ${randObj(times)}?`, a:"Did"}; });
+        }
+        if(diff >= 5) {
+            forms.push(() => { const v=randObj(regs.concat(irrs)); return {q:`( )に入る動詞の形を書きなさい：${randObj(subs)} didn't (   ) ${randObj(v.objs)} ${randObj(times)}.（${v.b} を使う）`, a:v.b}; });
+            forms.push(() => { let v; do { v=randObj(irrs); } while(v.b===v.p); return {q:`「${v.p}」は動詞の過去形です。原形（もとの形）を書きなさい。`, a:v.b}; });
+        }
+        return {...randObj(forms)(), type:'calc'};
+    }
+    // ===== 疑問詞（勉強単元）。答えの文から疑問詞が1つに決まる組み合わせだけを出す =====
+    function engWh(diff) {
+        const names = ["Ken","Emi","Tom","Yuki","Aya","Riku","Mika","Shota"];
+        const forms = [];
+        if(diff <= 2) {
+            forms.push(() => { const m=randObj([{j:"いつ",e:"When"},{j:"どこで（どこに）",e:"Where"},{j:"だれ",e:"Who"},{j:"何",e:"What"},{j:"なぜ",e:"Why"},{j:"どちら",e:"Which"},{j:"だれの",e:"Whose"},{j:"どうやって（どのように）",e:"How"}]); return {q:`「${m.j}」を表す疑問詞を英語で書きなさい。`, a:m.e}; });
+            forms.push(() => { const t=randObj([{i:"a pen",j:"ペン"},{i:"an apple",j:"りんご"},{i:"a dictionary",j:"辞書"},{i:"an eraser",j:"消しゴム"},{i:"a racket",j:"ラケット"},{i:"a camera",j:"カメラ"},{i:"an umbrella",j:"かさ"},{i:"a watch",j:"うで時計"},{i:"a postcard",j:"はがき"},{i:"a key",j:"かぎ"},{i:"a calendar",j:"カレンダー"},{i:"a map",j:"地図"},{i:"a coin",j:"コイン"},{i:"a ticket",j:"チケット"}]); return {q:`( )に入る疑問詞を書きなさい：(   ) is this? — It's ${t.i}.（${t.j}です）`, a:"What"}; });
+            forms.push(() => { const t=randObj([{i:"a hospital",j:"病院"},{i:"a library",j:"図書館"},{i:"a museum",j:"博物館"},{i:"a station",j:"駅"},{i:"a temple",j:"寺"},{i:"a post office",j:"郵便局"},{i:"a flower shop",j:"花屋"},{i:"a junior high school",j:"中学校"}]); return {q:`( )に入る疑問詞を書きなさい：(   ) is that building? — It's ${t.i}.（${t.j}です）`, a:"What"}; });
+            forms.push(() => { const d=randObj(["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]); return {q:`( )に入る疑問詞を書きなさい：(   ) day is it today? — It's ${d}.`, a:"What"}; });
+            forms.push(() => { const it=randObj(["bag","cap","pen","notebook","dictionary","racket","key","phone"]), pl=randObj(["on the desk","under the chair","in your bag","by the door","on your bed","on the sofa"]); return {q:`( )に入る疑問詞を書きなさい：(   ) is my ${it}? — It's ${pl}.`, a:"Where"}; });
+            forms.push(() => { const act=randObj(["plays the piano","cooks dinner","gets up first","walks the dog","waters the flowers","uses this computer"]), f=randObj(["sister","brother","father","mother","grandmother"]); return {q:`( )に入る疑問詞を書きなさい：(   ) ${act} in your family? — My ${f} does.`, a:"Who"}; });
+            forms.push(() => { const act=randObj(["play tennis","watch TV","study English","read comic books","clean your room","practice the piano","go shopping","play video games"]), t=randObj(["After dinner","On Sundays","Before breakfast","After school","On Saturday mornings"]); return {q:`( )に入る疑問詞を書きなさい：(   ) do you ${act}? — ${t}.`, a:"When"}; });
+        }
+        forms.push(() => { const c=randObj([
+            {cat:"sport",items:["tennis","soccer","baseball","basketball","swimming","volleyball","table tennis"]},
+            {cat:"color",items:["blue","red","green","yellow","white","purple","light blue"]},
+            {cat:"subject",items:["math","English","science","music","P.E.","Japanese","social studies"]},
+            {cat:"food",items:["curry","sushi","pizza","ramen","omelets","fried chicken","sandwiches"]},
+            {cat:"animal",items:["dogs","cats","pandas","rabbits","birds","koalas","dolphins"]},
+            {cat:"fruit",items:["apples","oranges","bananas","grapes","peaches","melons"]},
+            {cat:"season",items:["spring","summer","fall","winter"]},
+            {cat:"drink",items:["orange juice","milk","green tea","cocoa"]}
+        ]); return Math.random()<0.5
+            ? {q:`( )に入る疑問詞を書きなさい：(   ) ${c.cat} do you like? — I like ${randObj(c.items)}.`, a:"What"}
+            : {q:`( )に入る疑問詞を書きなさい：(   ) is your favorite ${c.cat}? — My favorite ${c.cat} is ${randObj(c.items)}.`, a:"What"}; });
+        forms.push(() => { const x=randObj([
+            {p:"boy",g:"He",rels:["brother","friend","classmate","cousin"]},
+            {p:"tall boy",g:"He",rels:["brother","friend","classmate"]},
+            {p:"girl",g:"She",rels:["sister","friend","classmate","cousin"]},
+            {p:"tall girl",g:"She",rels:["sister","friend","classmate"]},
+            {p:"woman",g:"She",rels:["mother","aunt","English teacher","music teacher"]},
+            {p:"man",g:"He",rels:["father","uncle","math teacher","P.E. teacher"]}
+        ]); return {q:`( )に入る疑問詞を書きなさい：(   ) is that ${x.p}? — ${x.g} is my ${randObj(x.rels)}.`, a:"Who"}; });
+        forms.push(() => { const nm=randObj(names), g=["Emi","Yuki","Aya","Mika"].includes(nm)?"She":"He", rel=randObj(["classmate","friend","cousin","teammate"]); return {q:`( )に入る疑問詞を書きなさい：(   ) is ${nm}? — ${g} is my ${rel}.`, a:"Who"}; });
+        forms.push(() => { const p=randObj(["in Osaka","in Tokyo","in Sapporo","in Nagoya","near the station","in this town","near the big park","near my school","in Midori Town","near the river"]); return {q:`( )に入る疑問詞を書きなさい：(   ) do you live? — I live ${p}.`, a:"Where"}; });
+        forms.push(() => { const e=randObj([
+            {ev:"your birthday",d:["May 5th","April 2nd","December 25th","March 3rd","July 7th","January 11th","August 30th","February 14th"]},
+            {ev:"the school festival",d:["October 10th","September 20th","November 3rd","October 25th"]},
+            {ev:"the next game",d:["June 1st","this Saturday","next Sunday","July 20th"]},
+            {ev:"the concert",d:["August 8th","this Friday","next Saturday","December 5th"]},
+            {ev:"the English test",d:["next Monday","May 30th","this Thursday","June 15th"]},
+            {ev:"sports day",d:["September 15th","October 5th","next Saturday"]}
+        ]); return {q:`( )に入る疑問詞を書きなさい：(   ) is ${e.ev}? — It's ${randObj(e.d)}.`, a:"When"}; });
+        if(diff >= 3) {
+            forms.push(() => { const a=randObj([
+                {act:"play tennis",r:"I play it in the park"},
+                {act:"study after dinner",r:"I study in my room"},
+                {act:"practice soccer",r:"We practice in the schoolyard"},
+                {act:"read books",r:"I read them in the library"},
+                {act:"eat lunch",r:"I eat it in the classroom"},
+                {act:"play video games",r:"I play them in the living room"},
+                {act:"do your homework",r:"I do it in the school library"},
+                {act:"practice the piano",r:"I practice at home"}
+            ]); return {q:`( )に入る疑問詞を書きなさい：(   ) do you ${a.act}? — ${a.r}.`, a:"Where"}; });
+            forms.push(() => { const g=randObj(["come to school","go to the station","go to the library","go to the museum","come to this park","go to the sea"]), v=randObj(["bike","bus","train","car"]); return {q:`( )に入る疑問詞を書きなさい：(   ) do you ${g}? — By ${v}.`, a:"How"}; });
+            forms.push(() => { const d=randObj([
+                {a:"get up",t:["six","six thirty","seven","six forty-five"]},
+                {a:"go to bed",t:["nine","ten","ten thirty","nine thirty"]},
+                {a:"eat breakfast",t:["seven","seven fifteen","six fifty"]},
+                {a:"leave home",t:["eight","seven forty","eight ten"]},
+                {a:"eat dinner",t:["six thirty","seven","seven thirty"]},
+                {a:"take a bath",t:["eight","nine","eight thirty"]}
+            ]); return {q:`( )に入る2語を書きなさい：(   ) (   ) do you ${d.a}? — At ${randObj(d.t)}.`, a:"What time"}; });
+            forms.push(() => { const it=randObj(["bag","pen","notebook","cap","racket","umbrella","bike","dictionary","pencil case","ball"]); return {q:`( )に入る疑問詞を書きなさい：(   ) ${it} is this? — It's ${randObj(names)}'s.`, a:"Whose"}; });
+        }
+        if(diff >= 4) {
+            forms.push(() => { const pl=randObj(["pens","books","cats","brothers and sisters","caps","CDs","T-shirts","rackets","comic books","stamps"]), n=randObj(["two","three","four","five","six","seven","eight","ten"]); return {q:`( )に入る2語を書きなさい：(   ) (   ) ${pl} do you have? — I have ${n}.`, a:"How many"}; });
+            forms.push(() => { const r=randObj([{rel:"brother",g:"He"},{rel:"sister",g:"She"},{rel:"father",g:"He"},{rel:"mother",g:"She"},{rel:"grandmother",g:"She"},{rel:"grandfather",g:"He"},{rel:"cousin",g:"He"},{rel:"aunt",g:"She"}]), n=randObj(["ten","twelve","fifteen","eighteen","forty","forty-five","seventy","seventy-two"]); return {q:`( )に入る2語を書きなさい：(   ) (   ) is your ${r.rel}? — ${r.g} is ${n} years old.`, a:"How old"}; });
+            forms.push(() => { const pr=randObj([["tea","coffee","tea"],["cake","ice cream","cake"],["dogs","cats","dogs"],["summer","winter","summer"],["math","English","math"],["soccer","baseball","soccer"],["rice","bread","rice"],["red","blue","blue"]]); return {q:`( )に入る疑問詞を書きなさい：(   ) do you like, ${pr[0]} or ${pr[1]}? — I like ${pr[2]}.`, a:"Which"}; });
+        }
+        if(diff >= 5) {
+            forms.push(() => { const it=randObj(["cap","bag","watch","T-shirt","notebook","pencil case","cup","calendar"]), p=randObj(["500","800","1,000","1,200","1,500","2,000","2,500","300"]); return {q:`( )に入る2語を書きなさい：(   ) (   ) is this ${it}? — It's ${p} yen.`, a:"How much"}; });
+            forms.push(() => { const s=randObj([
+                {th:"summer",r:"I can swim in the sea"},
+                {th:"winter",r:"I like snow"},
+                {th:"music class",r:"I like singing"},
+                {th:"this book",r:"the story is exciting"},
+                {th:"P.E.",r:"I like running"},
+                {th:"cats",r:"they are cute"},
+                {th:"Sundays",r:"I can play with my friends"},
+                {th:"this town",r:"the people are kind"}
+            ]); return {q:`( )に入る疑問詞を書きなさい：(   ) do you like ${s.th}? — Because ${s.r}.`, a:"Why"}; });
+        }
+        return {...randObj(forms)(), type:'calc'};
     }
     // ===== 英検 級別問題（本番の出題形式に寄せた穴埋め・会話表現） =====
     function eiken5Q(diff) {
@@ -2215,7 +2385,10 @@
             if(Math.random() < 0.5) return {q:`次の日本語を英語（スペル）で書きなさい：「${w.j}」`, a:w.e, type:'text'};
             return {q:`次の英単語の意味を日本語で書きなさい：${w.e}`, a:w.j, type:'text'};
         };
-        if(isWord || unit.includes('単語')) return wordQ();
+        if(unit.includes('単語')) return wordQ();
+        if(unit.includes('過去')) return engPast(diff);  // 過去形・疑問詞は単元の問題だけを出す（単語問題を混ぜない）
+        if(unit.includes('疑問')) return engWh(diff);
+        if(isWord) return wordQ();
         if(unit.includes('be')) return engBe(diff);
         if(unit.includes('一般')) return engVerb(diff);
         if(unit.includes('5級')) return Math.random() < 0.3 ? wordQ() : eiken5Q(diff);
