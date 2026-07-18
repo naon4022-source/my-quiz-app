@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" id="viewport-meta" content="width=device-width, initial-scale=1.0">
-    <title>📚 AI問題メーカー & テスト</title>
+    <title>🌱 のびログ</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* ====== ベースデザイン ====== */
@@ -110,6 +110,22 @@
         .uh-box th { background: rgba(127,140,155,.15); }
         .uh-ex { background: rgba(46,204,113,.12); border-radius: 8px; padding: 8px 12px; margin: 6px 0; font-size: 15px; }
         .uh-back { display: block; max-width: 700px; margin: 0 auto 14px; width: 100%; }
+
+        /* ===== のびログ（学校のテスト＆花） ===== */
+        .nyoki { animation: nyoki .5s cubic-bezier(.2,1.5,.4,1); transform-origin: center bottom; }
+        @keyframes nyoki { 0% { transform: scaleY(0); opacity: 0; } 60% { transform: scaleY(1.08); opacity: 1; } 100% { transform: scaleY(1); opacity: 1; } }
+        .st-input { width: 100%; padding: 6px; font-size: 15px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-color); color: var(--text-color); text-align: center; }
+        .st-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); gap: 8px; margin: 8px 0; }
+        .st-cell { text-align: center; font-size: 13px; font-weight: bold; }
+        .st-total { text-align: center; font-size: 20px; font-weight: bold; color: #e67e22; margin: 6px 0; }
+        .st-entry { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border-bottom: 1px dashed var(--border-color); font-size: 14px; }
+        #st-detail { border-left: 5px solid #e67e22; background: var(--bg-color); border-radius: 8px; padding: 10px 14px; margin: 10px 0; }
+        .flower-garden { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; justify-content: center; padding: 10px 0 4px; }
+        .planter { text-align: center; }
+        .planter .fl { font-size: 44px; line-height: 1.1; }
+        .planter .pot { width: 52px; height: 26px; background: #b5651d; clip-path: polygon(6% 0, 94% 0, 80% 100%, 20% 100%); margin: 2px auto 0; border-radius: 0 0 4px 4px; }
+        .planter .pot.now { background: #8d6e63; }
+        .planter .plabel { font-size: 11px; color: #888; margin-top: 3px; }
         .login-card { background: var(--box-bg); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.18); padding: 26px 22px; width: 100%; max-width: 380px; text-align: center; }
         .login-card h2 { margin: 0 0 14px; }
         .login-user-btn { display: block; width: 100%; margin: 8px 0; padding: 13px; font-size: 17px; font-weight: bold; border: 2px solid var(--border-color); border-radius: 10px; background: var(--bg-color); color: var(--text-color); cursor: pointer; }
@@ -206,7 +222,7 @@
 
 <header>
     <button class="menu-btn" onclick="toggleMenu()">≡</button>
-    <div class="logo-btn" onclick="switchView('study')">📚 問題メーカー</div>
+    <div class="logo-btn" onclick="switchView('study')">🌱 のびログ</div>
     <div id="timer-box" class="no-print"><span>⏰</span><span id="timer-text">50:00</span></div>
     <div style="margin-left:auto; display:flex; gap:10px;">
         <button class="btn no-print" id="user-chip" onclick="logoutUser()">👤 --</button>
@@ -417,6 +433,34 @@
             <h3>🕒 最近の履歴</h3>
             <div id="stat-history-list" style="max-height:300px; overflow-y:auto;"></div>
         </div>
+
+        <!-- 🏫 学校のテスト（手入力・なお/りらん競争） -->
+        <div class="section no-print" id="school-tests-section">
+            <h3>🏫 学校のテスト（2人で競争！）</h3>
+            <div style="text-align:center; margin-bottom:8px;">
+                <button class="btn btn-active" disabled style="opacity:1;">中1</button>
+                <button class="btn btn-inactive" disabled style="opacity:.4; cursor:not-allowed;">中2</button>
+                <button class="btn btn-inactive" disabled style="opacity:.4; cursor:not-allowed;">中3</button>
+            </div>
+            <div style="text-align:center; margin-bottom:8px;">
+                <button class="btn btn-active" id="st-tab-kakunin" onclick="stSwitchType('kakunin', this)">📝 確認テスト</button>
+                <button class="btn btn-inactive" id="st-tab-jitsugi" onclick="stSwitchType('jitsugi', this)">🎨 実技テスト</button>
+            </div>
+            <div id="st-body">
+                <div style="position:relative; height:220px;"><canvas id="st-chart"></canvas></div>
+                <div id="st-chart-note" style="text-align:center; color:#888; font-size:12px; margin-top:4px;">点をタップするとくわしく見れるよ（相手の点は合計だけ）</div>
+                <div id="st-detail" style="display:none;"></div>
+                <div id="st-form"></div>
+                <div id="st-list" style="margin-top:8px;"></div>
+            </div>
+        </div>
+
+        <!-- 🌱 のびログの花（毎日の積み上げで育つ） -->
+        <div class="section no-print" id="flower-section">
+            <h3>🌷 のびログの花 <button id="flower-help-btn" style="float:right; font-size:20px; background:none; border:none; cursor:pointer; opacity:.35; padding:2px 8px;" onclick="openFlowerHelp()" title="花の育て方">❓</button></h3>
+            <div id="flower-garden" class="flower-garden"></div>
+            <div id="flower-msg" style="text-align:center; font-size:14px; color:#888; margin-top:4px;"></div>
+        </div>
     </div>
 
 </div>
@@ -467,13 +511,18 @@
     const ukey = k => currentUserId ? currentUserId + ':' + k : k; // ユーザー別の保存キー
     function pinHash(s) { let h = 5381; for(const c of String(s)) h = ((h * 33) ^ c.charCodeAt(0)) >>> 0; return String(h); }
 
+    // 壊れたJSONでもアプリが起動できなくならないようにする安全なパース
+    function jparse(key, fallback) {
+        try { const v = JSON.parse(localStorage.getItem(key) || 'null'); return v === null ? fallback : v; }
+        catch(e) { return fallback; }
+    }
     // ログインしたユーザーの記録を読み込む
     function loadUserState() {
-        userData = JSON.parse(localStorage.getItem(ukey('appData')) || 'null') || { totalScores: { math:0, eng:0, jpn:0, sci:0, soc:0 }, history: [] };
-        wrongNotes = JSON.parse(localStorage.getItem(ukey('wrongNotes')) || '[]');
-        ekStats = JSON.parse(localStorage.getItem(ukey('ekStats')) || 'null') || { history:[], best:{}, totalTests:0, totalQ:0, totalCorrect:0, stamps:0, streak:0, bestStreak:0 };
-        ekSeen = JSON.parse(localStorage.getItem(ukey('ekSeenReading')) || '[]');
-        motiDaily = JSON.parse(localStorage.getItem(ukey('motiDaily')) || 'null') || { date: motiToday(), count: 0, best: 0 };
+        userData = jparse(ukey('appData'), { totalScores: { math:0, eng:0, jpn:0, sci:0, soc:0 }, history: [] });
+        wrongNotes = jparse(ukey('wrongNotes'), []);
+        ekStats = jparse(ukey('ekStats'), { history:[], best:{}, totalTests:0, totalQ:0, totalCorrect:0, stamps:0, streak:0, bestStreak:0 });
+        ekSeen = jparse(ukey('ekSeenReading'), []);
+        motiDaily = jparse(ukey('motiDaily'), { date: motiToday(), count: 0, best: 0 });
         if(motiDaily.date !== motiToday()) motiDaily = { date: motiToday(), count: 0, best: motiDaily.best || 0 };
     }
     // いままでの記録（ユーザー機能を付ける前のデータ）を なお に引きつぐ（1回だけ・上書きしない）
@@ -604,7 +653,7 @@
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById(`view-${id}`).classList.add('active');
         document.getElementById('sidebar').classList.remove('open');
-        if(id === 'stats') { renderStats('today'); ekRenderGrowth(); }
+        if(id === 'stats') { renderStats('today'); ekRenderGrowth(); renderSchoolTests(false); renderFlower(); }
         if(id === 'review') renderReview();
         if(id === 'study') rotateMotivation(); // 勉強画面に来るたび新しい応援メッセージ
         if(id === 'run') showRunCheer();
@@ -714,6 +763,8 @@
     const frac = (n, d) => `<span class="frac"><span class="fr-n">${n}</span><span class="fr-txt">/</span><span class="fr-d">${d}</span></span>`;
     // 答え文字列（"x/3L" のような素のテキスト）の分数部分だけを縦組みにして表示用HTMLにする
     const fracA = (s) => String(s).replace(/([0-9]+|x)\/([0-9]+|x)/g, (_, n, d) => frac(n, d));
+    // ユーザーが入力した文字を画面に出すときのHTMLエスケープ（"<"などで表示が壊れる・タグが動くのを防ぐ）
+    const esc = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     // 同じ問題が出ないように再生成（seenは問題文の集合）
     function genUnique(subj, level, isWord, diff, seen) {
         let q, tries = 0;
@@ -2337,7 +2388,7 @@
             let top = document.getElementById(`ek-top-${q.id}`);
             if(top) { top.style.display = 'block'; top.innerHTML = `<span style="color:#e74c3c; font-weight:bold;">➡ 正解：${ansLabel}</span>`; }
             let bot = document.getElementById(`ek-bot-${q.id}`);
-            if(bot) { bot.style.display = 'block'; bot.innerHTML = `<span style="color:#e74c3c; font-weight:bold;">正解：${ansLabel}</span>　<span style="color:#888;">あなたの答え：${user || '（無回答）'} → ${got}/${q.points}点</span>`; }
+            if(bot) { bot.style.display = 'block'; bot.innerHTML = `<span style="color:#e74c3c; font-weight:bold;">正解：${ansLabel}</span>　<span style="color:#888;">あなたの答え：${user ? esc(user) : '（無回答）'} → ${got}/${q.points}点</span>`; }
             if(inp) { inp.disabled = true; inp.style.borderColor = color; inp.style.borderWidth = '2px'; }
             if(mk !== '○') newWrongs.push({ q: q.q, a: q.a, type: 'text', subj: '英語', unit: pTest.subj });
         });
@@ -2360,7 +2411,7 @@
         saveEkStats();
 
         // 🎉 ごほうび演出（合格 or 自己ベスト更新で紙吹雪）
-        motiAddDone(ekQData.length);
+        motiAddDone(ekQData.length); flowerAddActivity();
         const isBest = ekStats.best[grade] === score && ekStats.totalTests > 1;
         if(pass || isBest) celebrate('big');
         const cheer = pass ? (score >= 90 ? '天才！パーフェクトに近いよ🏆' : 'やったね、合格ライン突破！🎉') : (score >= passLine - 10 ? 'おしい！あと一歩、いける！🔥' : 'ここからが伸びどき。次で自己ベストねらおう💪');
@@ -2566,6 +2617,9 @@
         const key = unitHelpKey();
         if(!key) return;
         document.getElementById('unit-help-content').innerHTML = UNIT_HELP[key];
+        const btns = document.querySelectorAll('#unit-help-overlay .uh-back'); // 花の説明と共用なのでラベルを戻す
+        if(btns[0]) btns[0].innerText = '← 問題にもどる（同じ問題のつづきができるよ）';
+        if(btns[1]) btns[1].innerText = '← 問題にもどる';
         const ov = document.getElementById('unit-help-overlay');
         ov.classList.add('on'); ov.scrollTop = 0;
     }
@@ -2672,7 +2726,7 @@
                 Object.keys(bySubj).forEach(s => saveScore(s, bySubj[s], `間違い直し: ${s} (${bySubj[s]}問)`));
                 wrongNotes = wrongNotes.filter(w => !cleared.includes(w));
                 saveWrongNotes();
-                motiAddDone(cleared.length);
+                motiAddDone(cleared.length); flowerAddActivity(); // 間違い直しも「勉強1回」として花が育つ
                 celebrate(cleared.length >= 10 ? 'big' : '');
                 alert(`🎉 ${cleared.length}問クリア！ +${cleared.length}点ゲット！\n苦手をやっつけたキミ、最高だ！💪`);
             }
@@ -2684,7 +2738,7 @@
             let total = pStudy.count || chk;
             let pct = Math.round(chk / total * 100); // 100点満点の点数（例: 10問中2問=20点）
             saveScore(pStudy.subj, chk * 1, `勉強: ${pStudy.unit} (${chk}/${total}問)`, '', pct);
-            motiAddDone(chk);
+            motiAddDone(chk); flowerAddActivity();
             celebrate(chk >= 20 ? 'big' : '');
             let praise = chk >= 30 ? 'すごい集中力！天才かも✨' : chk >= 15 ? 'その調子！よくがんばった🔥' : 'ナイス！1歩前進だね🌱';
             alert(`🎉 ${total}問中${chk}問クリア！ 今回の点数: ${pct}点（100点満点）\n${praise}`);
@@ -2814,7 +2868,7 @@
             if(isCorrect) daimonStats[q.daimon].ok++;
 
             let mark = isCorrect ? '⭕️' : '❌';
-            detailsHtml += `<div style="margin-bottom:5px;">${q.daimon}-${q.id} ${mark} (あなたの答え: ${userAns ? fracA(userAns) : '無回答'}) 正解: ${fracA(q.a)}${q.work ? `<br><span style="color:#c0392b; font-size:13px;">　〔途中式〕 ${q.work}</span>` : ''}</div>`;
+            detailsHtml += `<div style="margin-bottom:5px;">${q.daimon}-${q.id} ${mark} (あなたの答え: ${userAns ? fracA(esc(userAns)) : '無回答'}) 正解: ${fracA(q.a)}${q.work ? `<br><span style="color:#c0392b; font-size:13px;">　〔途中式〕 ${q.work}</span>` : ''}</div>`;
         });
 
         // 間違えた問題を保存（同じ問題文はためない・最大100問）
@@ -2858,7 +2912,7 @@
 
         switchView('test-result');
 
-        motiAddDone(testQuestionsData.length);
+        motiAddDone(testQuestionsData.length); flowerAddActivity();
         // 🎉 高得点は紙吹雪でお祝い
         if(totalPct >= 80) celebrate('big');
         else if(totalPct >= 60) celebrate('');
@@ -3035,6 +3089,186 @@
                 plugins: { legend: { display: false } },
                 scales: { y: { beginAtZero: true, max: 100 } } }
         });
+    }
+
+    // ===== 🏫 学校のテスト（手入力）。appDataとは別キー schoolTests に保存・2人で競争 =====
+    let stType = 'kakunin';
+    let stChart = null;
+    const ST_SUBJ = { kakunin: ['国語','数学','英語','理科','社会'], jitsugi: ['音楽','美術','保健体育','技術家庭'] };
+    const ST_MAX = { kakunin: 500, jitsugi: 400 };
+    const ST_EMPTY = () => ({ g1: { kakunin: [], jitsugi: [] } });
+    function stLoad(uid) {
+        try { const d = JSON.parse(localStorage.getItem((uid || currentUserId) + ':schoolTests')); if(d && d.g1) return d; } catch(e) {}
+        return ST_EMPTY();
+    }
+    function stSave(d) { localStorage.setItem(currentUserId + ':schoolTests', JSON.stringify(d)); }
+    function stOtherUser() { return APP_USERS.find(u => u.id !== currentUserId); }
+    function stMe() { return APP_USERS.find(u => u.id === currentUserId); }
+    function stSwitchType(t, btn) {
+        stType = t;
+        document.getElementById('st-tab-kakunin').className = 'btn ' + (t === 'kakunin' ? 'btn-active' : 'btn-inactive');
+        document.getElementById('st-tab-jitsugi').className = 'btn ' + (t === 'jitsugi' ? 'btn-active' : 'btn-inactive');
+        renderSchoolTests(true); // タブを押したらニョキっと出す
+    }
+    function stUpdateTotal() {
+        let total = 0, all = true;
+        ST_SUBJ[stType].forEach((s, i) => { const v = parseInt(document.getElementById('st-in-' + i)?.value, 10); if(isNaN(v)) all = false; else total += v; });
+        const el = document.getElementById('st-form-total');
+        if(el) el.innerText = `合計: ${total}点 / ${ST_MAX[stType]}点${all ? '' : '（入力中…）'}`;
+    }
+    function stAddTest() {
+        const name = document.getElementById('st-in-name').value.trim();
+        if(!name) { alert('テストの名前を入れてね（例：1学期中間）'); return; }
+        const scores = [];
+        for(let i = 0; i < ST_SUBJ[stType].length; i++) {
+            const v = parseInt(document.getElementById('st-in-' + i).value, 10);
+            if(isNaN(v) || v < 0 || v > 100) { alert(`「${ST_SUBJ[stType][i]}」は 0〜100 の点数を入れてね`); return; }
+            scores.push(v);
+        }
+        const comment = document.getElementById('st-in-comment').value.trim();
+        const d = stLoad();
+        d.g1[stType].push({ name, s: scores, total: scores.reduce((a,b)=>a+b,0), c: comment, d: Date.now() });
+        stSave(d);
+        renderSchoolTests(true);
+        celebrate('');
+    }
+    function stDelete(i) {
+        if(!confirm('このテストの記録を消しますか？')) return;
+        const d = stLoad();
+        d.g1[stType].splice(i, 1);
+        stSave(d);
+        renderSchoolTests(false);
+    }
+    // グラフの点をタップ → 自分=コメント＋教科別＋合計 / 相手=合計だけ
+    function stShowPoint(dsIndex, idx) {
+        const mine = dsIndex === 0;
+        const list = mine ? stLoad().g1[stType] : stLoad(stOtherUser().id).g1[stType];
+        const t = list[idx];
+        if(!t) return;
+        const box = document.getElementById('st-detail');
+        if(mine) {
+            const rows = ST_SUBJ[stType].map((s, i) => `${s} ${t.s[i]}点`).join('　');
+            box.innerHTML = `<b>📌 ${esc(t.name)}</b>（${stMe().name}）<br>${rows}<br><span style="color:#e67e22; font-weight:bold;">合計 ${t.total}点 / ${ST_MAX[stType]}点</span>${t.c ? `<br>💬 ${esc(t.c)}` : ''}`;
+        } else {
+            box.innerHTML = `<b>📌 ${t.name ? esc(t.name) : 'テスト' + (idx+1)}</b>（${stOtherUser().name}）<br><span style="color:#888; font-weight:bold;">合計 ${t.total}点 / ${ST_MAX[stType]}点</span><br><span style="font-size:12px; color:#888;">相手の教科別の点数とコメントは見れないよ🤫</span>`;
+        }
+        box.style.display = 'block';
+        box.classList.remove('nyoki'); void box.offsetWidth; box.classList.add('nyoki');
+    }
+    function renderSchoolTests(anim) {
+        if(!currentUserId) return;
+        const mine = stLoad().g1[stType];
+        const theirs = stLoad(stOtherUser().id).g1[stType];
+        document.getElementById('st-detail').style.display = 'none';
+        // 入力フォーム
+        const subj = ST_SUBJ[stType];
+        let form = `<div style="border-top:1px dashed var(--border-color); padding-top:10px; margin-top:6px;">
+            <b>✏️ 点数を記録する（${stType === 'kakunin' ? '確認テスト・5教科' : '実技テスト・4教科'}）</b>
+            <div class="st-grid" style="margin-top:8px;"><div class="st-cell">テスト名<input class="st-input" id="st-in-name" placeholder="1学期中間" maxlength="24" style="margin-top:3px;"></div>`;
+        subj.forEach((s, i) => { form += `<div class="st-cell">${s}<input class="st-input" id="st-in-${i}" type="number" min="0" max="100" placeholder="点" style="margin-top:3px;" oninput="stUpdateTotal()"></div>`; });
+        form += `</div><div class="st-total" id="st-form-total">合計: 0点 / ${ST_MAX[stType]}点（入力中…）</div>
+            <input class="st-input" id="st-in-comment" placeholder="💬 自分のコメント（例：数学がんばった！）" maxlength="120" style="text-align:left; margin-bottom:8px;">
+            <button class="btn" style="background:#e67e22; color:white; width:100%;" onclick="stAddTest()">📥 記録する（合計は自動で計算）</button></div>`;
+        document.getElementById('st-form').innerHTML = form;
+        // 記録リスト
+        document.getElementById('st-list').innerHTML = mine.length
+            ? mine.map((t, i) => `<div class="st-entry"><span>📌 ${esc(t.name)}　<b style="color:#e67e22;">${t.total}点</b></span><button class="btn" style="background:#95a5a6; color:white; padding:3px 10px; font-size:12px;" onclick="stDelete(${i})">削除</button></div>`).join('')
+            : '<div style="text-align:center; color:#888; font-size:13px;">まだ記録がないよ。学校のテストが返ってきたら入れてみよう✏️</div>';
+        // 折れ線グラフ（自分=カラー / 相手=灰色）
+        const canvas = document.getElementById('st-chart');
+        if(typeof Chart === 'undefined') { canvas.style.display = 'none'; } else {
+            canvas.style.display = '';
+            const n = Math.max(mine.length, theirs.length, 1);
+            const labels = Array.from({length: n}, (_, i) => (mine[i] && mine[i].name) || (theirs[i] && theirs[i].name) || `テスト${i+1}`);
+            if(stChart) stChart.destroy();
+            stChart = new Chart(canvas, {
+                type: 'line',
+                data: { labels, datasets: [
+                    { label: stMe().name, data: mine.map(t => t.total), borderColor: '#e67e22', backgroundColor: 'rgba(230,126,34,0.15)', pointBackgroundColor: '#e67e22', pointRadius: 6, tension: 0.25, spanGaps: true },
+                    { label: stOtherUser().name + '（相手）', data: theirs.map(t => t.total), borderColor: '#b0b6bd', backgroundColor: 'rgba(150,150,150,0.1)', pointBackgroundColor: '#b0b6bd', pointRadius: 5, tension: 0.25, spanGaps: true }
+                ]},
+                options: { responsive: true, maintainAspectRatio: false,
+                    onClick: (evt, els) => { if(els && els.length) stShowPoint(els[0].datasetIndex, els[0].index); },
+                    plugins: { legend: { display: true } },
+                    scales: { y: { beginAtZero: true, max: ST_MAX[stType] } } }
+            });
+        }
+        if(anim) { const b = document.getElementById('st-body'); b.classList.remove('nyoki'); void b.offsetWidth; b.classList.add('nyoki'); }
+    }
+
+    // ===== 🌷 のびログの花。1日に勉強かテストを2回で1段階成長・5段階で満開→隣のプランターへ =====
+    const FLOWER_SEASONS = [
+        { name: 'チューリップ', e: '🌷', months: [3,4,5] },
+        { name: 'ひまわり', e: '🌻', months: [6,7,8] },
+        { name: 'コスモス', e: '🌸', months: [9,10,11] },
+        { name: 'バラ', e: '🌹', months: [12,1,2] }
+    ];
+    function flowerSeason(d) { const m = (d || new Date()).getMonth() + 1; return FLOWER_SEASONS.find(s => s.months.includes(m)); }
+    const FLOWER_STAGES = ['🌰', '🌱', '☘️', '🌿', '🪴']; // 0たね〜4つぼみ（5で季節の花が満開）。1日1回分だけ上がる＝最短5日
+    const FL_EMPTY = () => ({ stage: 0, todayCount: 0, countDay: null, grantedDay: null, lastDay: null, planters: [] });
+    function flLoad() {
+        try { const f = JSON.parse(localStorage.getItem(currentUserId + ':flowerLog')); if(f && typeof f.stage === 'number') return f; } catch(e) {}
+        return FL_EMPTY();
+    }
+    function flSave(f) { localStorage.setItem(currentUserId + ':flowerLog', JSON.stringify(f)); }
+    function flDayNum(str) { const p = String(str).split('-').map(Number); return Math.floor(new Date(p[0], p[1]-1, p[2]).getTime() / 86400000); }
+    function flToday() { const n = new Date(); return `${n.getFullYear()}-${n.getMonth()+1}-${n.getDate()}`; }
+    // 2日連続でお休みしたら たね に戻る（1日だけなら平気）。満開になった花（プランター）はそのまま
+    function flCheckReset(f) {
+        if(f.lastDay && (flDayNum(flToday()) - flDayNum(f.lastDay)) >= 3) { f.stage = 0; f.grantedDay = null; }
+    }
+    function flowerAddActivity() {
+        if(!currentUserId) return;
+        const f = flLoad(), today = flToday();
+        flCheckReset(f);
+        if(f.countDay !== today) { f.countDay = today; f.todayCount = 0; }
+        f.todayCount++;
+        if(f.todayCount >= 2 && f.grantedDay !== today) {
+            f.grantedDay = today; // 1日に上がるのは1回分だけ（たね0→満開5で最短5日）
+            f.stage++;
+            if(f.stage >= 5) { // 満開！となりに完成プランターを置いて、また たね から
+                const se = flowerSeason();
+                f.planters.push({ e: se.e, name: se.name, d: today });
+                f.stage = 0;
+                celebrate('big');
+            }
+        }
+        f.lastDay = today;
+        flSave(f);
+    }
+    function renderFlower() {
+        if(!currentUserId) return;
+        const f = flLoad(), today = flToday();
+        flCheckReset(f); flSave(f);
+        const se = flowerSeason();
+        let html = '';
+        f.planters.forEach(p => { html += `<div class="planter"><div class="fl">${p.e}</div><div class="pot"></div><div class="plabel">${p.name}</div></div>`; });
+        html += `<div class="planter"><div class="fl nyoki">${FLOWER_STAGES[f.stage] || '🌰'}</div><div class="pot now"></div><div class="plabel">いま ${f.stage}/5 だんかい</div></div>`;
+        document.getElementById('flower-garden').innerHTML = html;
+        const cnt = (f.countDay === today) ? f.todayCount : 0;
+        const grown = f.grantedDay === today;
+        document.getElementById('flower-msg').innerText = grown
+            ? `今日のぶんは育ったよ！🌟 また明日も2回やって ${se.name}${se.e} を咲かせよう`
+            : `今日 あと${Math.max(0, 2 - cnt)}回 勉強かテストをすると1だんかい成長（いま ${cnt}/2回）・いまの季節の花は ${se.name}${se.e}`;
+    }
+    function openFlowerHelp() {
+        document.getElementById('unit-help-content').innerHTML = `
+            <div class="uh-box"><h3>🌷 のびログの花ってなに？</h3>
+                <p>毎日の勉強の積み上げで育つ、キミだけの花だよ。<b>1日に「勉強」か「テスト」を2回やると、花が1回分成長</b>するよ。<b>1日に上がるのは1回分まで</b>だから、満開までは<b>最短5日</b>！</p></div>
+            <div class="uh-box"><h3>🌱 育ち方（たね→満開の5だんかい）</h3>
+                <table><tr><th>だんかい</th><th>すがた</th></tr>
+                <tr><td>0（スタート）</td><td>🌰 たね</td></tr><tr><td>1</td><td>🌱 めが出た</td></tr><tr><td>2</td><td>☘️ わかば</td></tr><tr><td>3</td><td>🌿 ぐんぐん成長</td></tr><tr><td>4</td><td>🪴 つぼみ</td></tr><tr><td>5</td><td>満開！（季節の花が咲く）</td></tr></table>
+                <p>満開になると、その花はとなりのプランターにかざられて、また新しい たね からスタート！かざった花はずっと残るよ🏆</p></div>
+            <div class="uh-box"><h3>⚠️ お休みに注意</h3>
+                <p>1日お休みしても大丈夫。でも<b>2日連続でお休みすると、育てている花は たね に戻っちゃう</b>よ（かざった花はそのまま）。毎日コツコツがいちばん強い💪</p></div>
+            <div class="uh-box"><h3>🗓️ 季節の花</h3>
+                <table><tr><th>季節</th><th>花</th></tr>
+                <tr><td>春（3〜5月）</td><td>🌷 チューリップ</td></tr><tr><td>夏（6〜8月）</td><td>🌻 ひまわり</td></tr>
+                <tr><td>秋（9〜11月）</td><td>🌸 コスモス</td></tr><tr><td>冬（12〜2月）</td><td>🌹 バラ</td></tr></table></div>`;
+        const btns = document.querySelectorAll('#unit-help-overlay .uh-back');
+        btns.forEach(b => b.innerText = '← 成績にもどる');
+        const ov = document.getElementById('unit-help-overlay');
+        ov.classList.add('on'); ov.scrollTop = 0;
     }
 
     // ===== 🧮 百ます計算 =====
