@@ -126,6 +126,7 @@
         .planter .pot { width: 52px; height: 26px; background: #b5651d; clip-path: polygon(6% 0, 94% 0, 80% 100%, 20% 100%); margin: 2px auto 0; border-radius: 0 0 4px 4px; }
         .planter .pot.now { background: #8d6e63; }
         .planter .plabel { font-size: 11px; color: #888; margin-top: 3px; }
+
         .login-card { background: var(--box-bg); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.18); padding: 26px 22px; width: 100%; max-width: 380px; text-align: center; }
         .login-card h2 { margin: 0 0 14px; }
         .login-user-btn { display: block; width: 100%; margin: 8px 0; padding: 13px; font-size: 17px; font-weight: bold; border: 2px solid var(--border-color); border-radius: 10px; background: var(--bg-color); color: var(--text-color); cursor: pointer; }
@@ -442,10 +443,11 @@
                 <button class="btn btn-inactive" disabled style="opacity:.4; cursor:not-allowed;">中2</button>
                 <button class="btn btn-inactive" disabled style="opacity:.4; cursor:not-allowed;">中3</button>
             </div>
-            <div style="text-align:center; margin-bottom:8px;">
+            <div style="text-align:center; margin-bottom:4px;">
                 <button class="btn btn-active" id="st-tab-kakunin" onclick="stSwitchType('kakunin', this)">📝 確認テスト</button>
-                <button class="btn btn-inactive" id="st-tab-jitsugi" onclick="stSwitchType('jitsugi', this)">🎨 実技テスト</button>
+                <button class="btn btn-inactive" id="st-tab-jitsugi" onclick="stSwitchType('jitsugi', this)">🗾 実技テスト</button>
             </div>
+            <div style="text-align:center; font-size:12px; color:#888; margin-bottom:8px;">📝 確認テスト＝学校の先生が作るテスト　／　🗾 実技テスト＝県のテスト（どちらも5教科・500点満点）</div>
             <div id="st-body">
                 <div style="position:relative; height:220px;"><canvas id="st-chart"></canvas></div>
                 <div id="st-chart-note" style="text-align:center; color:#888; font-size:12px; margin-top:4px;">点をタップするとくわしく見れるよ（相手の点は合計だけ）</div>
@@ -461,6 +463,7 @@
             <div id="flower-garden" class="flower-garden"></div>
             <div id="flower-msg" style="text-align:center; font-size:14px; color:#888; margin-top:4px;"></div>
         </div>
+
     </div>
 
 </div>
@@ -536,6 +539,10 @@
     function initUserSystem() {
         migrateLegacyTo('u1'); // 昔の記録は なお のものとして引きつぐ
         localStorage.removeItem('appUsers'); localStorage.removeItem('lastUser'); // 旧ユーザー選択方式の名残りを掃除
+        localStorage.removeItem('u1:schoolTests'); localStorage.removeItem('u2:schoolTests'); // 旧・学校テスト(4教科構成)は作り直しのため全消し（2026-07-17ユーザー指示）
+        // 長期利用(3年)対策: ブラウザに「この保存データを自動で消さないで」とお願いする（対応ブラウザのみ・失敗しても無害）
+        try { if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch(e) {}
+        autoBackupInit(); // 🛟 全自動バックアップ開始（保存のたびに裏で二重保存・消えていたら自動復元）
         document.getElementById('login-pin').addEventListener('keydown', e => { if(e.key === 'Enter') tryLogin(); });
         showLogin();
     }
@@ -3091,17 +3098,20 @@
         });
     }
 
-    // ===== 🏫 学校のテスト（手入力）。appDataとは別キー schoolTests に保存・2人で競争 =====
+    // ===== 🏫 学校のテスト（手入力）。確認=学校の先生が作るテスト / 実技=県のテスト。どちらも5教科500点満点 =====
+    // 保存キーは schoolTests2（旧schoolTestsは4教科構成だったため作り直し。旧キーはinitUserSystemで削除）
     let stType = 'kakunin';
     let stChart = null;
-    const ST_SUBJ = { kakunin: ['国語','数学','英語','理科','社会'], jitsugi: ['音楽','美術','保健体育','技術家庭'] };
-    const ST_MAX = { kakunin: 500, jitsugi: 400 };
+    const ST_SUBJ5 = ['国語','数学','英語','理科','社会'];
+    const ST_SUBJ = { kakunin: ST_SUBJ5, jitsugi: ST_SUBJ5 };
+    const ST_MAX = { kakunin: 500, jitsugi: 500 };
+    const ST_LABEL = { kakunin: '確認テスト（学校の先生が作るテスト）', jitsugi: '実技テスト（県のテスト）' };
     const ST_EMPTY = () => ({ g1: { kakunin: [], jitsugi: [] } });
     function stLoad(uid) {
-        try { const d = JSON.parse(localStorage.getItem((uid || currentUserId) + ':schoolTests')); if(d && d.g1) return d; } catch(e) {}
+        try { const d = JSON.parse(localStorage.getItem((uid || currentUserId) + ':schoolTests2')); if(d && d.g1) return d; } catch(e) {}
         return ST_EMPTY();
     }
-    function stSave(d) { localStorage.setItem(currentUserId + ':schoolTests', JSON.stringify(d)); }
+    function stSave(d) { localStorage.setItem(currentUserId + ':schoolTests2', JSON.stringify(d)); }
     function stOtherUser() { return APP_USERS.find(u => u.id !== currentUserId); }
     function stMe() { return APP_USERS.find(u => u.id === currentUserId); }
     function stSwitchType(t, btn) {
@@ -3163,7 +3173,7 @@
         // 入力フォーム
         const subj = ST_SUBJ[stType];
         let form = `<div style="border-top:1px dashed var(--border-color); padding-top:10px; margin-top:6px;">
-            <b>✏️ 点数を記録する（${stType === 'kakunin' ? '確認テスト・5教科' : '実技テスト・4教科'}）</b>
+            <b>✏️ 点数を記録する（${ST_LABEL[stType]}・5教科）</b>
             <div class="st-grid" style="margin-top:8px;"><div class="st-cell">テスト名<input class="st-input" id="st-in-name" placeholder="1学期中間" maxlength="24" style="margin-top:3px;"></div>`;
         subj.forEach((s, i) => { form += `<div class="st-cell">${s}<input class="st-input" id="st-in-${i}" type="number" min="0" max="100" placeholder="点" style="margin-top:3px;" oninput="stUpdateTotal()"></div>`; });
         form += `</div><div class="st-total" id="st-form-total">合計: 0点 / ${ST_MAX[stType]}点（入力中…）</div>
@@ -3269,6 +3279,84 @@
         btns.forEach(b => b.innerText = '← 成績にもどる');
         const ov = document.getElementById('unit-help-overlay');
         ov.classList.add('on'); ov.scrollTop = 0;
+    }
+
+    // ===== 🛟 自動バックアップ（ボタン無し・全自動）。記録が変わるたびにIndexedDBへ裏で丸ごとコピーし、
+    //       起動時にlocalStorageが消えていたら自動で復元する。IndexedDBが使えない環境では何もしない（アプリは通常どおり動く） =====
+    let abTimer = null;
+    function abOpenDb() {
+        return new Promise((res, rej) => {
+            const rq = indexedDB.open('nobilog-backup', 1);
+            rq.onupgradeneeded = () => rq.result.createObjectStore('kv', { keyPath: 'id' });
+            rq.onsuccess = () => res(rq.result);
+            rq.onerror = () => rej(rq.error);
+        });
+    }
+    function abSnapshot() { // いまの全記録
+        const keys = {};
+        for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); keys[k] = localStorage.getItem(k); }
+        return { id: 'main', date: Date.now(), keys };
+    }
+    function abSaveNow() {
+        try {
+            const snap = abSnapshot();
+            if (!abHasUserData(snap.keys)) return; // 空の状態で上書きして良い方のバックアップを消さない
+            abOpenDb().then(db => {
+                const tx = db.transaction('kv', 'readwrite');
+                const store = tx.objectStore('kv');
+                const rq = store.get('main');
+                rq.onsuccess = () => {
+                    const old = rq.result;
+                    // 日付が変わっていたら、前日までの分を「prev」として1世代残す（万一の上書き事故からの二重保険）
+                    if (old && old.date && new Date(old.date).toDateString() !== new Date().toDateString() && abHasUserData(old.keys)) {
+                        store.put(Object.assign({}, old, { id: 'prev' }));
+                    }
+                    store.put(snap);
+                };
+                tx.oncomplete = () => db.close();
+                tx.onerror = () => db.close();
+            }).catch(() => {});
+        } catch(e) {}
+    }
+    function abSchedule() { clearTimeout(abTimer); abTimer = setTimeout(abSaveNow, 2000); }
+    function abLoad(id) {
+        return abOpenDb().then(db => new Promise((res) => {
+            const tx = db.transaction('kv', 'readonly');
+            const rq = tx.objectStore('kv').get(id || 'main');
+            rq.onsuccess = () => { res(rq.result || null); db.close(); };
+            rq.onerror = () => { res(null); db.close(); };
+        })).catch(() => null);
+    }
+    // 復元に使うバックアップを選ぶ: まず main、中身が無ければ前日世代の prev
+    async function abLoadBest() {
+        const main = await abLoad('main');
+        if (main && abHasUserData(main.keys)) return main;
+        const prev = await abLoad('prev');
+        if (prev && abHasUserData(prev.keys)) return prev;
+        return null;
+    }
+    const abHasUserData = (obj) => Object.keys(obj || {}).some(k => k.startsWith('u1:') || k.startsWith('u2:'));
+    function autoBackupInit() {
+        if (!window.indexedDB) return;
+        try { // どの保存関数から書かれても漏れなくミラーされるよう、保存そのものをフックする
+            const oSet = localStorage.setItem.bind(localStorage);
+            const oRem = localStorage.removeItem.bind(localStorage);
+            localStorage.setItem = function(k, v) { oSet(k, v); abSchedule(); };
+            localStorage.removeItem = function(k) { oRem(k); abSchedule(); };
+        } catch(e) {}
+        setInterval(abSaveNow, 5 * 60 * 1000);            // 保険の定期保存（5分ごと）
+        window.addEventListener('pagehide', abSaveNow);    // アプリを閉じる直前にも保存
+        // 記録が空（消えた・新しい端末など）なのに裏のバックアップが残っていたら、自動で元に戻す
+        if (!abHasUserData(abSnapshot().keys) && !sessionStorage.getItem('nobilogAbRestored')) {
+            abLoadBest().then(b => {
+                if (b && abHasUserData(b.keys)) {
+                    Object.entries(b.keys).forEach(([k, v]) => { if (typeof v === 'string') localStorage.setItem(k, v); });
+                    sessionStorage.setItem('nobilogAbRestored', '1'); // 復元の無限ループ防止
+                    alert('🛟 きろくが見つからなかったので、自動バックアップから元にもどしたよ！');
+                    location.reload();
+                }
+            });
+        }
     }
 
     // ===== 🧮 百ます計算 =====
