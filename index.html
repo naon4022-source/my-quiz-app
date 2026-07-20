@@ -444,15 +444,14 @@
                 <button class="btn btn-inactive" disabled style="opacity:.4; cursor:not-allowed;">中3</button>
             </div>
             <div style="text-align:center; margin-bottom:4px;">
-                <button class="btn btn-active" id="st-tab-kakunin" onclick="stSwitchType('kakunin', this)">📝 確認テスト</button>
-                <button class="btn btn-inactive" id="st-tab-jitsugi" onclick="stSwitchType('jitsugi', this)">🗾 実技テスト</button>
+                <button class="btn btn-active" id="st-tab-teiki" onclick="stSwitchType('teiki', this)">📝 定期テスト</button>
+                <button class="btn btn-inactive" id="st-tab-kakunin" onclick="stSwitchType('kakunin', this)">📋 確認テスト</button>
             </div>
-            <div style="text-align:center; font-size:12px; color:#888; margin-bottom:8px;">📝 確認テスト＝学校の先生が作るテスト　／　🗾 実技テスト＝県のテスト（どちらも5教科・500点満点）</div>
+            <div style="text-align:center; font-size:12px; color:#888; margin-bottom:8px;">5教科・500点満点。点数はクロードにつたえると反映されるよ（勝手に消えない）</div>
             <div id="st-body">
                 <div style="position:relative; height:220px;"><canvas id="st-chart"></canvas></div>
                 <div id="st-chart-note" style="text-align:center; color:#888; font-size:12px; margin-top:4px;">点をタップするとくわしく見れるよ（相手の点は合計だけ）</div>
                 <div id="st-detail" style="display:none;"></div>
-                <div id="st-form"></div>
                 <div id="st-list" style="margin-top:8px;"></div>
             </div>
         </div>
@@ -540,6 +539,7 @@
         migrateLegacyTo('u1'); // 昔の記録は なお のものとして引きつぐ
         localStorage.removeItem('appUsers'); localStorage.removeItem('lastUser'); // 旧ユーザー選択方式の名残りを掃除
         localStorage.removeItem('u1:schoolTests'); localStorage.removeItem('u2:schoolTests'); // 旧・学校テスト(4教科構成)は作り直しのため全消し（2026-07-17ユーザー指示）
+        localStorage.removeItem('u1:schoolTests2'); localStorage.removeItem('u2:schoolTests2'); // 旧・手入力方式の保存も不要（点数はST_DATAでファイルに焼き込み済み）
         // 長期利用(3年)対策: ブラウザに「この保存データを自動で消さないで」とお願いする（対応ブラウザのみ・失敗しても無害）
         try { if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch(e) {}
         autoBackupInit(); // 🛟 全自動バックアップ開始（保存のたびに裏で二重保存・消えていたら自動復元）
@@ -3098,109 +3098,73 @@
         });
     }
 
-    // ===== 🏫 学校のテスト（手入力）。確認=学校の先生が作るテスト / 実技=県のテスト。どちらも5教科500点満点 =====
-    // 保存キーは schoolTests2（旧schoolTestsは4教科構成だったため作り直し。旧キーはinitUserSystemで削除）
-    let stType = 'kakunin';
+    // ===== 🏫 学校のテスト（閲覧専用）。点数はクロード経由で下のST_DATAに書き込む（アプリ内からは入力・削除できない＝絶対に消えない） =====
+    // 点数の追記・編集のしかた: 各ユーザー・各タブの配列に { name:'第2回', s:{国語:0,数学:0,英語:0,理科:0,社会:0}, c:'コメント' } を足す/直すだけ（合計は自動計算）
+    let stType = 'teiki';
     let stChart = null;
     const ST_SUBJ5 = ['国語','数学','英語','理科','社会'];
-    const ST_SUBJ = { kakunin: ST_SUBJ5, jitsugi: ST_SUBJ5 };
-    const ST_MAX = { kakunin: 500, jitsugi: 500 };
-    const ST_LABEL = { kakunin: '確認テスト（学校の先生が作るテスト）', jitsugi: '実技テスト（県のテスト）' };
-    const ST_EMPTY = () => ({ g1: { kakunin: [], jitsugi: [] } });
-    function stLoad(uid) {
-        try { const d = JSON.parse(localStorage.getItem((uid || currentUserId) + ':schoolTests2')); if(d && d.g1) return d; } catch(e) {}
-        return ST_EMPTY();
-    }
-    function stSave(d) { localStorage.setItem(currentUserId + ':schoolTests2', JSON.stringify(d)); }
+    const ST_LABEL = { teiki: '定期テスト', kakunin: '確認テスト' };
+    const ST_DATA = {
+        u1: { // なお
+            teiki:   [ { name:'第1回', s:{国語:47, 数学:74, 英語:87, 理科:60, 社会:84}, c:'' } ],
+            kakunin: [ { name:'第1回', s:{国語:20, 数学:73, 英語:75, 理科:53, 社会:46}, c:'' } ]
+        },
+        u2: { // りらん
+            teiki:   [ { name:'第1回', s:{国語:90, 数学:66, 英語:84, 理科:74, 社会:54}, c:'' } ],
+            kakunin: [ { name:'第1回', s:{国語:44, 数学:73, 英語:61, 理科:23, 社会:34}, c:'' } ]
+        }
+    };
+    const stTotal = (t) => ST_SUBJ5.reduce((sum, s) => sum + (Number(t.s[s]) || 0), 0);
+    const stList = (uid, type) => (ST_DATA[uid] && ST_DATA[uid][type]) || [];
     function stOtherUser() { return APP_USERS.find(u => u.id !== currentUserId); }
     function stMe() { return APP_USERS.find(u => u.id === currentUserId); }
     function stSwitchType(t, btn) {
         stType = t;
+        document.getElementById('st-tab-teiki').className = 'btn ' + (t === 'teiki' ? 'btn-active' : 'btn-inactive');
         document.getElementById('st-tab-kakunin').className = 'btn ' + (t === 'kakunin' ? 'btn-active' : 'btn-inactive');
-        document.getElementById('st-tab-jitsugi').className = 'btn ' + (t === 'jitsugi' ? 'btn-active' : 'btn-inactive');
         renderSchoolTests(true); // タブを押したらニョキっと出す
-    }
-    function stUpdateTotal() {
-        let total = 0, all = true;
-        ST_SUBJ[stType].forEach((s, i) => { const v = parseInt(document.getElementById('st-in-' + i)?.value, 10); if(isNaN(v)) all = false; else total += v; });
-        const el = document.getElementById('st-form-total');
-        if(el) el.innerText = `合計: ${total}点 / ${ST_MAX[stType]}点${all ? '' : '（入力中…）'}`;
-    }
-    function stAddTest() {
-        const name = document.getElementById('st-in-name').value.trim();
-        if(!name) { alert('テストの名前を入れてね（例：1学期中間）'); return; }
-        const scores = [];
-        for(let i = 0; i < ST_SUBJ[stType].length; i++) {
-            const v = parseInt(document.getElementById('st-in-' + i).value, 10);
-            if(isNaN(v) || v < 0 || v > 100) { alert(`「${ST_SUBJ[stType][i]}」は 0〜100 の点数を入れてね`); return; }
-            scores.push(v);
-        }
-        const comment = document.getElementById('st-in-comment').value.trim();
-        const d = stLoad();
-        d.g1[stType].push({ name, s: scores, total: scores.reduce((a,b)=>a+b,0), c: comment, d: Date.now() });
-        stSave(d);
-        renderSchoolTests(true);
-        celebrate('');
-    }
-    function stDelete(i) {
-        if(!confirm('このテストの記録を消しますか？')) return;
-        const d = stLoad();
-        d.g1[stType].splice(i, 1);
-        stSave(d);
-        renderSchoolTests(false);
     }
     // グラフの点をタップ → 自分=コメント＋教科別＋合計 / 相手=合計だけ
     function stShowPoint(dsIndex, idx) {
         const mine = dsIndex === 0;
-        const list = mine ? stLoad().g1[stType] : stLoad(stOtherUser().id).g1[stType];
-        const t = list[idx];
+        const t = stList(mine ? currentUserId : stOtherUser().id, stType)[idx];
         if(!t) return;
         const box = document.getElementById('st-detail');
         if(mine) {
-            const rows = ST_SUBJ[stType].map((s, i) => `${s} ${t.s[i]}点`).join('　');
-            box.innerHTML = `<b>📌 ${esc(t.name)}</b>（${stMe().name}）<br>${rows}<br><span style="color:#e67e22; font-weight:bold;">合計 ${t.total}点 / ${ST_MAX[stType]}点</span>${t.c ? `<br>💬 ${esc(t.c)}` : ''}`;
+            const rows = ST_SUBJ5.map(s => `${s} ${t.s[s]}点`).join('　');
+            box.innerHTML = `<b>📌 ${ST_LABEL[stType]} ${esc(t.name)}</b>（${stMe().name}）<br>${rows}<br><span style="color:#e67e22; font-weight:bold;">合計 ${stTotal(t)}点 / 500点</span>${t.c ? `<br>💬 ${esc(t.c)}` : ''}`;
         } else {
-            box.innerHTML = `<b>📌 ${t.name ? esc(t.name) : 'テスト' + (idx+1)}</b>（${stOtherUser().name}）<br><span style="color:#888; font-weight:bold;">合計 ${t.total}点 / ${ST_MAX[stType]}点</span><br><span style="font-size:12px; color:#888;">相手の教科別の点数とコメントは見れないよ🤫</span>`;
+            box.innerHTML = `<b>📌 ${ST_LABEL[stType]} ${esc(t.name)}</b>（${stOtherUser().name}）<br><span style="color:#888; font-weight:bold;">合計 ${stTotal(t)}点 / 500点</span><br><span style="font-size:12px; color:#888;">相手の教科別の点数とコメントは見れないよ🤫</span>`;
         }
         box.style.display = 'block';
         box.classList.remove('nyoki'); void box.offsetWidth; box.classList.add('nyoki');
     }
     function renderSchoolTests(anim) {
         if(!currentUserId) return;
-        const mine = stLoad().g1[stType];
-        const theirs = stLoad(stOtherUser().id).g1[stType];
+        const mine = stList(currentUserId, stType);
+        const theirs = stList(stOtherUser().id, stType);
         document.getElementById('st-detail').style.display = 'none';
-        // 入力フォーム
-        const subj = ST_SUBJ[stType];
-        let form = `<div style="border-top:1px dashed var(--border-color); padding-top:10px; margin-top:6px;">
-            <b>✏️ 点数を記録する（${ST_LABEL[stType]}・5教科）</b>
-            <div class="st-grid" style="margin-top:8px;"><div class="st-cell">テスト名<input class="st-input" id="st-in-name" placeholder="1学期中間" maxlength="24" style="margin-top:3px;"></div>`;
-        subj.forEach((s, i) => { form += `<div class="st-cell">${s}<input class="st-input" id="st-in-${i}" type="number" min="0" max="100" placeholder="点" style="margin-top:3px;" oninput="stUpdateTotal()"></div>`; });
-        form += `</div><div class="st-total" id="st-form-total">合計: 0点 / ${ST_MAX[stType]}点（入力中…）</div>
-            <input class="st-input" id="st-in-comment" placeholder="💬 自分のコメント（例：数学がんばった！）" maxlength="120" style="text-align:left; margin-bottom:8px;">
-            <button class="btn" style="background:#e67e22; color:white; width:100%;" onclick="stAddTest()">📥 記録する（合計は自動で計算）</button></div>`;
-        document.getElementById('st-form').innerHTML = form;
-        // 記録リスト
+        // 自分の記録リスト（閲覧専用・削除ボタン無し）
         document.getElementById('st-list').innerHTML = mine.length
-            ? mine.map((t, i) => `<div class="st-entry"><span>📌 ${esc(t.name)}　<b style="color:#e67e22;">${t.total}点</b></span><button class="btn" style="background:#95a5a6; color:white; padding:3px 10px; font-size:12px;" onclick="stDelete(${i})">削除</button></div>`).join('')
-            : '<div style="text-align:center; color:#888; font-size:13px;">まだ記録がないよ。学校のテストが返ってきたら入れてみよう✏️</div>';
+            ? mine.map(t => `<div class="st-entry"><span>📌 ${ST_LABEL[stType]} ${esc(t.name)}　<b style="color:#e67e22;">${stTotal(t)}点</b> / 500点</span></div>`).join('')
+            : '<div style="text-align:center; color:#888; font-size:13px;">まだ点数が入っていないよ。テストが返ってきたらクロードで点数をつたえてね✏️</div>';
         // 折れ線グラフ（自分=カラー / 相手=灰色）
         const canvas = document.getElementById('st-chart');
         if(typeof Chart === 'undefined') { canvas.style.display = 'none'; } else {
             canvas.style.display = '';
             const n = Math.max(mine.length, theirs.length, 1);
-            const labels = Array.from({length: n}, (_, i) => (mine[i] && mine[i].name) || (theirs[i] && theirs[i].name) || `テスト${i+1}`);
+            const labels = Array.from({length: n}, (_, i) => (mine[i] && mine[i].name) || (theirs[i] && theirs[i].name) || `第${i+1}回`);
             if(stChart) stChart.destroy();
             stChart = new Chart(canvas, {
                 type: 'line',
                 data: { labels, datasets: [
-                    { label: stMe().name, data: mine.map(t => t.total), borderColor: '#e67e22', backgroundColor: 'rgba(230,126,34,0.15)', pointBackgroundColor: '#e67e22', pointRadius: 6, tension: 0.25, spanGaps: true },
-                    { label: stOtherUser().name + '（相手）', data: theirs.map(t => t.total), borderColor: '#b0b6bd', backgroundColor: 'rgba(150,150,150,0.1)', pointBackgroundColor: '#b0b6bd', pointRadius: 5, tension: 0.25, spanGaps: true }
+                    { label: stMe().name, data: mine.map(stTotal), borderColor: '#e67e22', backgroundColor: 'rgba(230,126,34,0.15)', pointBackgroundColor: '#e67e22', pointRadius: 6, tension: 0.25, spanGaps: true },
+                    { label: stOtherUser().name + '（相手）', data: theirs.map(stTotal), borderColor: '#b0b6bd', backgroundColor: 'rgba(150,150,150,0.1)', pointBackgroundColor: '#b0b6bd', pointRadius: 5, tension: 0.25, spanGaps: true }
                 ]},
                 options: { responsive: true, maintainAspectRatio: false,
                     onClick: (evt, els) => { if(els && els.length) stShowPoint(els[0].datasetIndex, els[0].index); },
                     plugins: { legend: { display: true } },
-                    scales: { y: { beginAtZero: true, max: ST_MAX[stType] } } }
+                    scales: { y: { beginAtZero: true, max: 500 } } }
             });
         }
         if(anim) { const b = document.getElementById('st-body'); b.classList.remove('nyoki'); void b.offsetWidth; b.classList.add('nyoki'); }
@@ -3391,5 +3355,3 @@
 </script>
 </body>
 </html>
-
-
