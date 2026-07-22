@@ -164,6 +164,41 @@
         .hw-more { color: var(--main-color); cursor: pointer; font-weight: bold; margin-left: 4px; }
         .cal-empty { text-align: center; color: #888; font-size: 14px; padding: 10px; }
 
+        /* ===== 🎮 きろく・あそび ===== */
+        .g-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin: 10px 0; }
+        .g-tile { background: var(--box-bg); border-radius: 12px; box-shadow: 0 2px 6px var(--box-shadow); padding: 12px; text-align: center; }
+        .g-tile .g-big { font-size: 26px; font-weight: bold; color: var(--head-color); }
+        .g-tile .g-lbl { font-size: 12px; color: #888; margin-top: 2px; }
+        .g-bar { height: 14px; border-radius: 8px; background: var(--bg-color); overflow: hidden; margin-top: 6px; }
+        .g-bar > div { height: 100%; background: linear-gradient(90deg,#3498db,#9b59b6); transition: width .5s; }
+        .ring { --p: 0; width: 90px; height: 90px; border-radius: 50%; margin: 0 auto; background: conic-gradient(#27ae60 calc(var(--p)*1%), var(--bg-color) 0); display: flex; align-items: center; justify-content: center; }
+        .ring .ring-in { width: 70px; height: 70px; border-radius: 50%; background: var(--box-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; }
+        .badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px,1fr)); gap: 8px; }
+        .badge { text-align: center; padding: 8px 4px; border-radius: 10px; background: var(--bg-color); font-size: 11px; opacity: .35; filter: grayscale(1); }
+        .badge.got { opacity: 1; filter: none; background: rgba(155,89,182,.12); }
+        .badge .b-e { font-size: 26px; }
+        .heat { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 12px); gap: 3px; overflow-x: auto; padding: 4px 0; }
+        .heat .cell { width: 12px; height: 12px; border-radius: 3px; background: var(--bg-color); }
+        .heat .cell.l1 { background: #9be9a8; } .heat .cell.l2 { background: #40c463; } .heat .cell.l3 { background: #30a14e; } .heat .cell.l4 { background: #216e39; }
+        .g-rank { display: flex; justify-content: space-around; text-align: center; }
+        .g-rank .me { color: #e67e22; } .g-rank .rival { color: #888; }
+        .g-fortune { text-align: center; padding: 14px; border-radius: 12px; background: linear-gradient(135deg,#f6d365,#fda085); color: #5a3d00; }
+        .g-launch { display: grid; grid-template-columns: repeat(auto-fit,minmax(130px,1fr)); gap: 10px; }
+        .g-launch button { padding: 14px 8px; font-size: 15px; }
+        .g-modal { display: none; position: fixed; inset: 0; background: var(--bg-color); z-index: 4500; overflow-y: auto; padding: 16px; }
+        .g-modal.on { display: block; }
+        .g-modal .g-play { max-width: 640px; margin: 0 auto; text-align: center; }
+        .g-q { font-size: 40px; font-weight: bold; color: var(--head-color); margin: 18px 0; }
+        .g-input { font-size: 28px; text-align: center; width: 180px; padding: 8px; border: 2px solid var(--border-color); border-radius: 8px; background: var(--box-bg); color: var(--text-color); }
+        .g-timer { font-size: 30px; font-weight: bold; color: #e74c3c; }
+        .g-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 420px; margin: 14px auto; }
+        .g-choice button { padding: 16px; font-size: 18px; }
+        .g-fav { padding: 8px 0; border-bottom: 1px dashed var(--border-color); font-size: 14px; }
+        .g-toggle { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+        .g-switch { padding: 6px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; border: none; color: #fff; }
+        .g-switch.on { background: #27ae60; } .g-switch.off { background: #95a5a6; }
+        .g-phrase { font-size: 16px; line-height: 1.6; }
+
         .login-card { background: var(--box-bg); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.18); padding: 26px 22px; width: 100%; max-width: 380px; text-align: center; }
         .login-card h2 { margin: 0 0 14px; }
         .login-user-btn { display: block; width: 100%; margin: 8px 0; padding: 13px; font-size: 17px; font-weight: bold; border: 2px solid var(--border-color); border-radius: 10px; background: var(--bg-color); color: var(--text-color); cursor: pointer; }
@@ -276,6 +311,7 @@
     <div class="nav-item" onclick="switchView('review')">🔁 間違い直し</div>
     <div class="nav-item" onclick="switchView('hyakumasu')">🧮 百ます計算</div>
     <div class="nav-item" onclick="switchView('calendar')">🗓️ カレンダー（宿題）</div>
+    <div class="nav-item" onclick="switchView('game')">🎮 きろく・あそび</div>
     <div class="nav-item" onclick="switchView('stats')">📊 成績・グラフ</div>
 </div>
 
@@ -452,6 +488,16 @@
         <div id="cal-list"></div>
     </div>
 
+    <!-- ================= 🎮 きろく・あそび ================= -->
+    <div id="view-game" class="view">
+        <h1 class="no-print">🎮 きろく・あそび</h1>
+        <div id="game-body"></div>
+    </div>
+    <div id="game-modal" class="g-modal no-print">
+        <button class="btn uh-back" style="background:#34495e; color:white; max-width:640px; margin:0 auto 12px; display:block; width:100%;" onclick="gCloseModal()">← とじる</button>
+        <div id="game-play" class="g-play"></div>
+    </div>
+
     <!-- ================= 成績グラフ ================= -->
     <div id="view-stats" class="view">
         <h1>📊 成績・頑張りデータ</h1>
@@ -609,6 +655,7 @@
         stopEikenTimer(); ekGraded = false; ekQData = []; testQuestionsData = []; reviewList = [];
         runShareData = { title:'', items:[] }; usedMathT = {}; studyAnswersVisible = false;
         loadUserState();
+        applyAutoDark(); // 🌙 設定ONなら夜は自動ダーク
         document.getElementById('user-chip').innerText = '👤 ' + u.name;
         document.getElementById('login-overlay').classList.remove('on');
         showMotivation();
@@ -792,6 +839,366 @@
         box.innerHTML = html;
     }
 
+    // ========================= 🎮 きろく・あそび（ゲーミフィケーション＋ミニゲーム） =========================
+    function gsDefault() { return { coins:0, xp:0, streak:0, bestStreak:0, lastDay:null, totalQ:0, badges:[], goal:20, favs:[], actDates:{}, studySec:0, unitStats:{}, milestones:[], sfx:true, autoDark:false, best:{} }; }
+    function gameState() { try { return Object.assign(gsDefault(), JSON.parse(localStorage.getItem(ukey('gameState'))) || {}); } catch(e) { return gsDefault(); } }
+    function gsSave(g) { localStorage.setItem(ukey('gameState'), JSON.stringify(g)); }
+    function gLevel(xp) { let lv=1, need=50, acc=0; while(xp >= acc+need) { acc+=need; lv++; need=Math.round(need*1.25); } return { lv, cur:xp-acc, need }; }
+    // 勉強・テストのたびに呼ぶ（既存のmotiAddDoneと同じ場所にフック）
+    function gameOnActivity(count, opts) {
+        opts = opts || {};
+        if(!currentUserId || !count || count <= 0) return;
+        const g = gameState(), today = calToday();
+        if(g.lastDay !== today) { const gap = g.lastDay ? (calDayNum(today) - calDayNum(g.lastDay)) : 999; g.streak = gap === 1 ? (g.streak||0)+1 : 1; g.bestStreak = Math.max(g.bestStreak||0, g.streak); g.lastDay = today; }
+        g.actDates[today] = (g.actDates[today] || 0) + count;
+        g.coins = (g.coins||0) + count; g.xp = (g.xp||0) + count;
+        const before = g.totalQ || 0; g.totalQ = before + count;
+        if(opts.subj) { g.unitStats[opts.subj] = g.unitStats[opts.subj] || { q:0, correct:0 }; g.unitStats[opts.subj].q += count; g.unitStats[opts.subj].correct += (opts.correct||0); }
+        [100,500,1000,3000,5000].forEach(ms => { if(before < ms && g.totalQ >= ms && !(g.milestones||[]).includes(ms)) { g.milestones.push(ms); setTimeout(() => { celebrate('big'); alert(`🎊 るいけい ${ms}問 たっせい！ほんとうにえらい！`); }, 400); } });
+        const cut = calDayNum(today) - 400; Object.keys(g.actDates).forEach(k => { if(calDayNum(k) < cut) delete g.actDates[k]; });
+        gsSave(g);
+        awardBadges();
+    }
+    const BADGES = [
+        { id:'first', e:'🌱', n:'はじめの一歩', ok:g=>g.totalQ>=1 },
+        { id:'q100', e:'💯', n:'100問', ok:g=>g.totalQ>=100 },
+        { id:'q500', e:'📚', n:'500問', ok:g=>g.totalQ>=500 },
+        { id:'q1000', e:'🏔️', n:'1000問', ok:g=>g.totalQ>=1000 },
+        { id:'s3', e:'🔥', n:'3日れんぞく', ok:g=>g.bestStreak>=3 },
+        { id:'s7', e:'✨', n:'7日れんぞく', ok:g=>g.bestStreak>=7 },
+        { id:'s30', e:'🌟', n:'30日れんぞく', ok:g=>g.bestStreak>=30 },
+        { id:'c100', e:'🪙', n:'100コイン', ok:g=>g.coins>=100 },
+        { id:'lv10', e:'⭐', n:'レベル10', ok:g=>gLevel(g.xp).lv>=10 },
+        { id:'eiken', e:'🎫', n:'英検合格', ok:g=>{ try { return (ekStats.history||[]).some(h=>h.pass); } catch(e) { return false; } } },
+        { id:'flower', e:'🌷', n:'花を満開', ok:g=>{ try { return (flLoad().planters||[]).length>=1; } catch(e) { return false; } } },
+        { id:'all4', e:'🎨', n:'4教科制覇', ok:g=>['数学','国語','英語','理科'].every(s=>g.unitStats[s]) }
+    ];
+    function awardBadges() {
+        const g = gameState(); let got = [];
+        BADGES.forEach(b => { if(!g.badges.includes(b.id) && b.ok(g)) { g.badges.push(b.id); got.push(b); } });
+        if(got.length) { gsSave(g); playSfx('badge'); setTimeout(() => alert('🏅 あたらしいバッジ！\n' + got.map(b=>b.e+' '+b.n).join('\n')), 500); }
+    }
+    // ⏱️ 勉強時間を足す（タイマー・ポモドーロから）
+    function gAddStudySec(sec) { if(!currentUserId||!sec) return; const g=gameState(); g.studySec=(g.studySec||0)+sec; gsSave(g); }
+    // 🔊 効果音（Web Audioで生成。ONのときだけ鳴る）
+    let _ac = null;
+    function playSfx(type) {
+        try { const g = gameState(); if(!g.sfx) return;
+            _ac = _ac || new (window.AudioContext||window.webkitAudioContext)(); const ac=_ac, now=ac.currentTime;
+            const seq = type==='correct'?[523,659,784]: type==='wrong'?[349,262]: type==='badge'?[659,784,988,1319]: type==='finish'?[523,659,784,1047]: [600];
+            seq.forEach((f,i)=>{ const o=ac.createOscillator(), gain=ac.createGain(); o.type='sine'; o.frequency.value=f; const t=now+i*0.09;
+                gain.gain.setValueAtTime(0.0001,t); gain.gain.exponentialRampToValueAtTime(0.18,t+0.01); gain.gain.exponentialRampToValueAtTime(0.0001,t+0.16);
+                o.connect(gain); gain.connect(ac.destination); o.start(t); o.stop(t+0.17); });
+        } catch(e) {}
+    }
+    // 🌙 夜（19時〜翌6時）は自動でダークモード（設定ONのとき・起動時に判定）
+    function applyAutoDark() { const g=gameState(); if(!g.autoDark) return; const h=new Date().getHours(); const night=(h>=19||h<6); document.body.classList.toggle('dark-mode', night); }
+    // 🔮 おみくじ（1日1回引ける。24時をすぎると新しい日になってまた引ける）
+    const FORTUNES = [
+        { r:'大吉', e:'🎊', c:'#e74c3c', w:12, m:'伝説の日！満点をねらえるかも🏆 むずかしい問題に全力でいこう！' },
+        { r:'吉',   e:'😊', c:'#27ae60', w:20, m:'いい調子の日。コツコツやれば力がグッと伸びる📈' },
+        { r:'中吉', e:'🍀', c:'#2ecc71', w:20, m:'間違い直しがハマる日。苦手をやっつけよう！' },
+        { r:'小吉', e:'🌱', c:'#16a085', w:18, m:'たん語を1つおぼえるだけでラッキー。英語日和！' },
+        { r:'末吉', e:'✨', c:'#3498db', w:15, m:'5分だけでもOK。はじめれば勝ち。すこしずつ前へ！' },
+        { r:'凶',   e:'💧', c:'#7f8c8d', w:12, m:'ケアレスミスに注意の日。見直しをすれば大丈夫◎ あわてないで！' },
+        { r:'大凶', e:'☔', c:'#34495e', w:3,  m:'今日はムリせずマイペースで。でも…勉強すれば運は上むき！逆にチャンス🔥' }
+    ];
+    function drawFortuneIdx() { const total=FORTUNES.reduce((s,f)=>s+f.w,0); let r=Math.random()*total; for(let i=0;i<FORTUNES.length;i++){ r-=FORTUNES[i].w; if(r<0) return i; } return 0; }
+    function gDrawFortune() {
+        const g=gameState();
+        if(g.fortuneDate===calToday()) return; // 今日はもう引いた
+        const idx=drawFortuneIdx(); g.fortuneDate=calToday(); g.fortuneIdx=idx; gsSave(g);
+        const f=FORTUNES[idx];
+        playSfx(idx<=2?'finish':'wrong');
+        if(idx===0) celebrate('big');
+        renderGame();
+    }
+
+    // ---- きろく画面の描画 ----
+    function renderGame() {
+        if(!currentUserId) { document.getElementById('game-body').innerHTML=''; return; }
+        const g = gameState(), lv = gLevel(g.xp), rival = ST_DATA ? null : null;
+        const goalPct = Math.min(100, Math.round(((g.actDates[calToday()]||0) / (g.goal||20)) * 100));
+        const rivalG = gOtherState();
+        const drewToday = g.fortuneDate === calToday();
+        const fo = drewToday ? FORTUNES[g.fortuneIdx || 0] : null;
+        // 苦手ランキング
+        const weak = Object.entries(g.unitStats).map(([s,v])=>({ s, rate: v.q? Math.round(v.correct/v.q*100):0, q:v.q })).filter(x=>x.q>=1).sort((a,b)=>a.rate-b.rate);
+        // 今日のひとこと英語（速読文から日替わり）
+        const ph = READING_PASSAGES[(calDayNum(calToday())) % READING_PASSAGES.length];
+        let html = '';
+        // レベル・コイン・ストリーク・時間
+        html += `<div class="g-tiles">
+            <div class="g-tile"><div class="g-big">Lv.${lv.lv}</div><div class="g-lbl">レベル</div><div class="g-bar"><div style="width:${Math.round(lv.cur/lv.need*100)}%"></div></div><div class="g-lbl">つぎまで ${lv.need-lv.cur}</div></div>
+            <div class="g-tile"><div class="g-big">🪙 ${g.coins}</div><div class="g-lbl">コイン</div></div>
+            <div class="g-tile"><div class="g-big">🔥 ${g.streak}</div><div class="g-lbl">連続 (最高${g.bestStreak})</div></div>
+            <div class="g-tile"><div class="g-big">${Math.floor((g.studySec||0)/60)}分</div><div class="g-lbl">べんきょう時間</div></div>
+        </div>`;
+        // 今日の目標リング
+        html += `<div class="section"><h3>🎯 今日の目標</h3>
+            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:center;">
+              <div class="ring" style="--p:${goalPct}"><div class="ring-in"><div>${g.actDates[calToday()]||0}/${g.goal}</div><div style="font-size:11px;color:#888;">問</div></div></div>
+              <div>目標: <b>${g.goal}問</b>／日　<button class="btn" style="background:#3498db;color:#fff;padding:4px 10px;" onclick="gSetGoal()">かえる</button><br><span style="font-size:12px;color:#888;">${goalPct>=100?'🎉 今日の目標たっせい！':'あと'+Math.max(0,g.goal-(g.actDates[calToday()]||0))+'問！'}</span></div>
+            </div></div>`;
+        // おみくじ（1日1回・24時すぎたらまた引ける）
+        html += `<div class="section"><h3>🔮 今日のおみくじ</h3>`;
+        if(drewToday) {
+            html += `<div class="g-fortune nyoki" style="background:linear-gradient(135deg,${fo.c},${fo.c}bb);color:#fff;"><div style="font-size:40px;">${fo.e}</div><div style="font-size:32px;font-weight:bold;">${fo.r}</div><div>${esc(fo.m)}</div></div>
+                <div style="text-align:center;font-size:12px;color:#888;margin-top:6px;">また明日（24時すぎ）に引けるよ🌙</div>`;
+        } else {
+            html += `<div style="text-align:center;padding:10px;"><button class="btn" style="background:#9b59b6;color:#fff;font-size:18px;padding:14px 30px;" onclick="gDrawFortune()">🎋 今日のおみくじを引く</button></div>`;
+        }
+        html += `</div>`;
+        // バッジ
+        html += `<div class="section"><h3>🏅 バッジ (${g.badges.length}/${BADGES.length})</h3><div class="badges">`;
+        BADGES.forEach(b=>{ const got=g.badges.includes(b.id); html+=`<div class="badge ${got?'got':''}"><div class="b-e">${b.e}</div>${esc(b.n)}</div>`; });
+        html += `</div></div>`;
+        // 草グラフ（ヒートマップ・過去17週）
+        html += `<div class="section"><h3>📅 がんばりグラフ</h3><div class="heat">${heatCells(g.actDates)}</div><div style="font-size:11px;color:#888;text-align:right;">少ない → 多い</div></div>`;
+        // ランキング（なお vs りらん）
+        html += `<div class="section"><h3>🏆 2人のきろく</h3><div class="g-rank">
+            <div class="me"><div style="font-size:22px;font-weight:bold;">${esc(stMe().name)}</div>Lv.${lv.lv}<br>🪙${g.coins}<br>🔥${g.bestStreak}日</div>
+            <div class="rival"><div style="font-size:22px;font-weight:bold;">${esc(stOtherUser().name)}</div>Lv.${gLevel(rivalG.xp).lv}<br>🪙${rivalG.coins||0}<br>🔥${rivalG.bestStreak||0}日</div>
+        </div></div>`;
+        // 苦手ランキング
+        html += `<div class="section"><h3>📉 苦手ランキング（正答率が低い順）</h3>`;
+        html += weak.length ? weak.slice(0,5).map(w=>`<div class="g-fav">${esc(w.s)}　<b style="color:${w.rate<50?'#e74c3c':'#e67e22'}">${w.rate}%</b>　<span style="font-size:12px;color:#888;">(${w.q}問)</span></div>`).join('') : '<div style="color:#888;font-size:13px;">テストをうけると苦手が分かるよ</div>';
+        html += `</div>`;
+        // 今日のひとこと英語
+        html += `<div class="section"><h3>💬 今日のひとこと英語</h3><div class="g-phrase">${esc(ph.t)}</div><div style="font-size:12px;color:#888;margin-top:6px;">声に出して読んでみよう🔊</div></div>`;
+        // お気に入り
+        html += `<div class="section"><h3>⭐ お気に入りの問題 (${g.favs.length})</h3>`;
+        html += g.favs.length ? g.favs.slice(0,20).map((f,i)=>`<div class="g-fav">${esc(f.q)}<button class="btn" style="background:#95a5a6;color:#fff;padding:2px 8px;font-size:11px;float:right;" onclick="gUnfav(${i})">削除</button></div>`).join('') : '<div style="color:#888;font-size:13px;">問題の「⭐」を押すとここに保存されるよ</div>';
+        html += `</div>`;
+        // ミニゲーム
+        html += `<div class="section"><h3>🎲 ミニゲーム＆ツール</h3><div class="g-launch">
+            <button class="btn" style="background:#e74c3c;color:#fff;" onclick="gStopwatch()">⏱️ ストップウォッチ</button>
+            <button class="btn" style="background:#e67e22;color:#fff;" onclick="gPomodoro()">🍅 ポモドーロ</button>
+            <button class="btn" style="background:#9b59b6;color:#fff;" onclick="gFlashMath()">⚡ フラッシュ暗算</button>
+            <button class="btn" style="background:#16a085;color:#fff;" onclick="gTyping()">⌨️ 英単語タイピング</button>
+            <button class="btn" style="background:#2980b9;color:#fff;" onclick="gVocab()">📝 英単語4択</button>
+            <button class="btn" style="background:#c0392b;color:#fff;" onclick="gKuku()">🧮 九九タイムアタック</button>
+            <button class="btn" style="background:#d35400;color:#fff;" onclick="gReaction()">🎯 反射神経テスト</button>
+            <button class="btn" style="background:#8e44ad;color:#fff;" onclick="gMemory()">🧠 記憶ゲーム</button>
+            <button class="btn" style="background:#27ae60;color:#fff;" onclick="gAnagram()">🔤 英単語アナグラム</button>
+            <button class="btn" style="background:#2c3e50;color:#fff;" onclick="gMissing()">➗ 虫食い算</button>
+            <button class="btn" style="background:#c2185b;color:#fff;" onclick="gStopClock()">⏰ 10秒ぴったり</button>
+            <button class="btn" style="background:#f39c12;color:#fff;" onclick="gSlot()">🎰 コインスロット</button>
+        </div></div>`;
+        // 設定
+        html += `<div class="section"><h3>⚙️ せってい</h3>
+            <div class="g-toggle"><span>🔊 こうか音</span><button class="g-switch ${g.sfx?'on':'off'}" onclick="gToggle('sfx')">${g.sfx?'ON':'OFF'}</button></div>
+            <div class="g-toggle"><span>🌙 夜は自動でダーク（19時〜6時）</span><button class="g-switch ${g.autoDark?'on':'off'}" onclick="gToggle('autoDark')">${g.autoDark?'ON':'OFF'}</button></div>
+        </div>`;
+        document.getElementById('game-body').innerHTML = html;
+    }
+    function gOtherState() { try { return Object.assign(gsDefault(), JSON.parse(localStorage.getItem(stOtherUser().id + ':gameState')) || {}); } catch(e) { return gsDefault(); } }
+    function heatCells(actDates) {
+        const today = calDayNum(calToday()); let cells = '';
+        // 今日を右下に、過去約17週（119日）
+        const total = 17*7; const start = today - (total - 1);
+        // 先頭の曜日そろえ（日曜始まり）
+        const startDate = new Date(); startDate.setDate(startDate.getDate() - (total-1));
+        const pad = startDate.getDay();
+        for(let i=0;i<pad;i++) cells += `<div class="cell"></div>`;
+        for(let d=0; d<total; d++) {
+            const dn = start + d; const dt = new Date(dn*86400000);
+            const key = `${dt.getFullYear()}-${dt.getMonth()+1}-${dt.getDate()}`;
+            const c = actDates[key]||0; const lvl = c===0?'':c<5?'l1':c<15?'l2':c<30?'l3':'l4';
+            cells += `<div class="cell ${lvl}" title="${key}: ${c}問"></div>`;
+        }
+        return cells;
+    }
+    function gSetGoal() { const v = prompt('1日の目標（問題数）を入れてね', String(gameState().goal||20)); const n = parseInt(v,10); if(!isNaN(n)&&n>0&&n<=999){ const g=gameState(); g.goal=n; gsSave(g); renderGame(); } }
+    function gToggle(key) { const g=gameState(); g[key]=!g[key]; gsSave(g); if(key==='autoDark'&&!g.autoDark){} if(key==='autoDark'&&g.autoDark) applyAutoDark(); if(key==='sfx'&&g.sfx) playSfx('correct'); renderGame(); }
+    function gUnfav(i) { const g=gameState(); g.favs.splice(i,1); gsSave(g); renderGame(); }
+    // ⭐ 実行中の問題をお気に入りに（勉強・テスト画面の各問に⭐ボタンを付ける用）
+    function gFav(q) { if(!currentUserId) return; const g=gameState(); if(g.favs.some(f=>f.q===q)) return; g.favs.unshift({ q, d:Date.now() }); if(g.favs.length>50) g.favs.length=50; gsSave(g); }
+
+    // ---- モーダル（ミニゲーム・タイマー）----
+    let gLoop = null, gState = {};
+    function gOpenModal(html) { document.getElementById('game-play').innerHTML = html; document.getElementById('game-modal').classList.add('on'); }
+    function gCloseModal() {
+        if(gLoop) { clearInterval(gLoop); gLoop=null; }
+        if(gState.timer) { clearTimeout(gState.timer); gState.timer=null; }
+        if(gState.spin) { clearInterval(gState.spin); gState.spin=null; }
+        document.getElementById('game-modal').classList.remove('on');
+        if(document.getElementById('view-game').classList.contains('active')) renderGame();
+    }
+    // ⏱️ ストップウォッチ
+    function gStopwatch() {
+        gState = { sec:0, running:true };
+        gOpenModal(`<h2>⏱️ 勉強ストップウォッチ</h2><div class="g-timer" id="sw-t" style="font-size:48px;">00:00</div>
+            <div style="margin-top:16px;"><button class="btn" style="background:#e67e22;color:#fff;" id="sw-btn" onclick="gSwToggle()">⏸️ 一時停止</button>
+            <button class="btn" style="background:#27ae60;color:#fff;" onclick="gSwSave()">💾 記録して終わる</button></div>
+            <p style="color:#888;font-size:13px;margin-top:10px;">はかった時間は「べんきょう時間」に足されるよ</p>`);
+        gLoop = setInterval(()=>{ if(gState.running){ gState.sec++; const m=String(Math.floor(gState.sec/60)).padStart(2,'0'), s=String(gState.sec%60).padStart(2,'0'); const el=document.getElementById('sw-t'); if(el) el.innerText=`${m}:${s}`; } }, 1000);
+    }
+    function gSwToggle() { gState.running=!gState.running; const b=document.getElementById('sw-btn'); if(b) b.innerText = gState.running?'⏸️ 一時停止':'▶️ さいかい'; }
+    function gSwSave() { gAddStudySec(gState.sec); playSfx('finish'); alert(`⏱️ ${Math.floor(gState.sec/60)}分${gState.sec%60}秒 きろくしたよ！おつかれさま☕`); gCloseModal(); }
+    // 🍅 ポモドーロ（25分集中→5分休憩）
+    function gPomodoro() {
+        gState = { left:25*60, phase:'work', running:true, worked:0 };
+        gOpenModal(`<h2>🍅 ポモドーロ</h2><div id="pomo-phase" style="font-size:20px;font-weight:bold;">集中タイム（25分）</div>
+            <div class="g-timer" id="pomo-t" style="font-size:48px;">25:00</div>
+            <div style="margin-top:16px;"><button class="btn" style="background:#e67e22;color:#fff;" id="pomo-btn" onclick="gPomoToggle()">⏸️ 一時停止</button></div>
+            <p style="color:#888;font-size:13px;margin-top:10px;">25分集中したら5分休憩。くり返して長く集中しよう🔥</p>`);
+        gLoop = setInterval(()=>{ if(!gState.running) return; gState.left--;
+            if(gState.phase==='work') gState.worked++;
+            if(gState.left<=0){ if(gState.phase==='work'){ gState.phase='break'; gState.left=5*60; playSfx('finish'); const p=document.getElementById('pomo-phase'); if(p){p.innerText='休憩タイム（5分）';} }
+                else { gState.phase='work'; gState.left=25*60; playSfx('finish'); const p=document.getElementById('pomo-phase'); if(p){p.innerText='集中タイム（25分）';} } }
+            const m=String(Math.floor(gState.left/60)).padStart(2,'0'), s=String(gState.left%60).padStart(2,'0'); const el=document.getElementById('pomo-t'); if(el) el.innerText=`${m}:${s}`;
+        }, 1000);
+    }
+    function gPomoToggle() { gState.running=!gState.running; const b=document.getElementById('pomo-btn'); if(b) b.innerText=gState.running?'⏸️ 一時停止':'▶️ さいかい'; }
+    // ⚡ フラッシュ暗算（60秒で何問？）
+    function gFlashMath() {
+        gState = { score:0, left:60, ans:0 };
+        gOpenModal(`<h2>⚡ フラッシュ暗算</h2><div class="g-timer" id="fm-time">60</div><div class="g-q" id="fm-q">…</div>
+            <input class="g-input" id="fm-in" type="number" inputmode="numeric" autocomplete="off"><div style="margin-top:10px;color:#888;" id="fm-score">0問せいかい</div>
+            <p style="color:#888;font-size:13px;margin-top:8px;">答えを入れてEnter！60秒で何問とけるかな？</p>`);
+        gFmNext();
+        const inp=document.getElementById('fm-in'); inp.focus();
+        inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ if(Number(inp.value)===gState.ans){ gState.score++; playSfx('correct'); document.getElementById('fm-score').innerText=gState.score+'問せいかい'; gFmNext(); inp.value=''; } else { playSfx('wrong'); inp.value=''; } } });
+        gLoop=setInterval(()=>{ gState.left--; const t=document.getElementById('fm-time'); if(t) t.innerText=gState.left; if(gState.left<=0){ clearInterval(gLoop); gLoop=null; playSfx('finish'); const g=gameState(); g.best.flashMath=Math.max(g.best.flashMath||0,gState.score); gsSave(g); alert(`⚡ 終了！ ${gState.score}問せいかい！\n自己ベスト: ${g.best.flashMath}問`); gCloseModal(); } }, 1000);
+    }
+    function gFmNext() { const a=randNum(2,19), b=randNum(2,19), op=randObj(['+','-','×']); let q,ans; if(op==='+'){q=`${a} + ${b}`;ans=a+b;} else if(op==='-'){const x=Math.max(a,b),y=Math.min(a,b);q=`${x} - ${y}`;ans=x-y;} else {const s=randNum(2,9),t=randNum(2,9);q=`${s} × ${t}`;ans=s*t;} gState.ans=ans; const el=document.getElementById('fm-q'); if(el) el.innerText=q; }
+    // ⌨️ 英単語タイピング
+    function gTyping() {
+        const pool=[...engWordsByLevel.basic, ...engWordsByLevel.mid].sort(()=>Math.random()-0.5);
+        gState={ score:0, left:60, i:0, pool };
+        gOpenModal(`<h2>⌨️ 英単語タイピング</h2><div class="g-timer" id="ty-time">60</div>
+            <div class="g-q" id="ty-word">…</div><div style="color:#888;" id="ty-jp"></div>
+            <input class="g-input" id="ty-in" style="width:260px;" autocomplete="off" autocapitalize="off" spellcheck="false"><div style="margin-top:10px;color:#888;" id="ty-score">0語</div>
+            <p style="color:#888;font-size:13px;margin-top:8px;">出てきた英単語を打ってEnter！スペルの練習にも◎</p>`);
+        gTyNext(); const inp=document.getElementById('ty-in'); inp.focus();
+        inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ const w=gState.pool[gState.i]; if(inp.value.trim().toLowerCase()===w.e.toLowerCase()){ gState.score++; playSfx('correct'); document.getElementById('ty-score').innerText=gState.score+'語'; gState.i=(gState.i+1)%gState.pool.length; gTyNext(); inp.value=''; } else { playSfx('wrong'); } } });
+        gLoop=setInterval(()=>{ gState.left--; const t=document.getElementById('ty-time'); if(t)t.innerText=gState.left; if(gState.left<=0){ clearInterval(gLoop); gLoop=null; playSfx('finish'); const g=gameState(); g.best.typing=Math.max(g.best.typing||0,gState.score); gsSave(g); alert(`⌨️ 終了！ ${gState.score}語タイプ！\n自己ベスト: ${g.best.typing}語`); gCloseModal(); } },1000);
+    }
+    function gTyNext() { const w=gState.pool[gState.i]; const el=document.getElementById('ty-word'); if(el)el.innerText=w.e; const jp=document.getElementById('ty-jp'); if(jp)jp.innerText='（'+w.j+'）'; }
+    // 📝 英単語4択（意味あて・10問）
+    function gVocab() {
+        const pool=[...engWordsByLevel.basic, ...engWordsByLevel.mid];
+        gState={ i:0, score:0, pool:[...pool].sort(()=>Math.random()-0.5).slice(0,10), all:pool };
+        gVocabShow();
+    }
+    function gVocabShow() {
+        if(gState.i>=gState.pool.length){ playSfx('finish'); const g=gameState(); g.best.vocab=Math.max(g.best.vocab||0,gState.score); gsSave(g); gOpenModal(`<h2>📝 けっか</h2><div class="g-q">${gState.score} / ${gState.pool.length} 正解！</div><p style="color:#888;">自己ベスト: ${g.best.vocab}問</p><button class="btn" style="background:#2980b9;color:#fff;" onclick="gVocab()">もう一回</button>`); return; }
+        const w=gState.pool[gState.i];
+        const wrong=gState.all.filter(x=>x.j!==w.j).sort(()=>Math.random()-0.5).slice(0,3);
+        const choices=[w, ...wrong].sort(()=>Math.random()-0.5);
+        gOpenModal(`<h2>📝 英単語4択 (${gState.i+1}/${gState.pool.length})</h2><div class="g-q">${esc(w.e)}</div><div style="color:#888;">意味はどれ？</div>
+            <div class="g-choice">${choices.map(c=>`<button class="btn" style="background:#34495e;color:#fff;" onclick="gVocabPick('${encodeURIComponent(c.j)}','${encodeURIComponent(w.j)}')">${esc(c.j)}</button>`).join('')}</div>
+            <div style="color:#888;">せいかい ${gState.score}</div>`);
+    }
+    function gVocabPick(pick, correct) {
+        if(decodeURIComponent(pick)===decodeURIComponent(correct)){ gState.score++; playSfx('correct'); } else { playSfx('wrong'); }
+        gState.i++; gVocabShow();
+    }
+    // 🧮 九九タイムアタック（20問をタイムアタック）
+    function gKuku() {
+        gState={ i:0, total:20, start:Date.now(), ans:0 };
+        gOpenModal(`<h2>🧮 九九タイムアタック</h2><div style="color:#888;">20問を早くとこう！</div><div class="g-q" id="ku-q">…</div>
+            <input class="g-input" id="ku-in" type="number" inputmode="numeric" autocomplete="off"><div style="margin-top:8px;color:#888;" id="ku-prog">1 / 20</div>`);
+        gKuNext(); const inp=document.getElementById('ku-in'); inp.focus();
+        inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ if(Number(inp.value)===gState.ans){ playSfx('correct'); gState.i++; inp.value=''; if(gState.i>=gState.total){ const sec=Math.round((Date.now()-gState.start)/1000); const g=gameState(); g.best.kuku=g.best.kuku?Math.min(g.best.kuku,sec):sec; gsSave(g); playSfx('finish'); alert(`🧮 クリア！ ${sec}秒！\n自己ベスト: ${g.best.kuku}秒`); gCloseModal(); return; } document.getElementById('ku-prog').innerText=`${gState.i+1} / 20`; gKuNext(); } else { playSfx('wrong'); inp.value=''; } } });
+    }
+    function gKuNext() { const a=randNum(2,9), b=randNum(2,9); gState.ans=a*b; const el=document.getElementById('ku-q'); if(el) el.innerText=`${a} × ${b}`; }
+    // 🎯 反射神経テスト（緑になったらタップ・反応ミリ秒）
+    function gReaction() {
+        gState = { phase:'wait', t0:0 };
+        gOpenModal(`<h2>🎯 反射神経テスト</h2><div id="rt-box" style="margin:20px auto;max-width:360px;height:200px;border-radius:16px;background:#c0392b;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:bold;cursor:pointer;user-select:none;">赤のあいだは待つ…</div><p style="color:#888;font-size:13px;">みどりになったら、できるだけ早くタップ！</p>`);
+        const box=document.getElementById('rt-box');
+        const arm=()=>{ box.style.background='#c0392b'; box.innerText='赤のあいだは待つ…'; gState.phase='wait'; gState.timer=setTimeout(()=>{ box.style.background='#27ae60'; box.innerText='いま！タップ！'; gState.phase='go'; gState.t0=performance.now(); }, randNum(1200,4000)); };
+        box.onclick=()=>{ if(gState.phase==='wait'){ clearTimeout(gState.timer); box.style.background='#e67e22'; box.innerText='早すぎ！もう一回'; playSfx('wrong'); gState.timer=setTimeout(arm,900); }
+            else if(gState.phase==='go'){ const ms=Math.round(performance.now()-gState.t0); playSfx('correct'); const g=gameState(); g.best.reaction=g.best.reaction?Math.min(g.best.reaction,ms):ms; gsSave(g); box.style.background='#2980b9'; box.innerText=`${ms} ms！ (自己ベスト ${g.best.reaction}ms)　もう一回タップ`; gState.phase='wait2'; }
+            else if(gState.phase==='wait2'){ arm(); } };
+        arm();
+    }
+    // 🧠 記憶ゲーム（数字の列をおぼえて打ちこむ・だんだん長く）
+    function gMemory() {
+        gState = { len:3, seq:'' };
+        gMemShow();
+    }
+    function gMemShow() {
+        gState.seq = Array.from({length:gState.len}, ()=>randNum(0,9)).join('');
+        gOpenModal(`<h2>🧠 記憶ゲーム</h2><p style="color:#888;">この数字をおぼえて！</p><div class="g-q" id="mm-seq" style="letter-spacing:8px;">${gState.seq}</div><p id="mm-count" style="color:#888;">${gState.len}けた</p>`);
+        gState.timer=setTimeout(()=>{ if(!document.getElementById('mm-seq') || !document.getElementById('game-modal').classList.contains('on')) return;
+            gOpenModal(`<h2>🧠 記憶ゲーム</h2><p style="color:#888;">さっきの数字を打ってEnter！</p><div class="g-q">❓ ${gState.len}けた</div><input class="g-input" id="mm-in" type="text" inputmode="numeric" autocomplete="off">`);
+            const inp=document.getElementById('mm-in'); inp.focus();
+            inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ if(inp.value.trim()===gState.seq){ playSfx('correct'); gState.len++; const g=gameState(); g.best.memory=Math.max(g.best.memory||0,gState.len-1); gsSave(g); gMemShow(); } else { playSfx('wrong'); const g=gameState(); g.best.memory=Math.max(g.best.memory||0,gState.len-1); gsSave(g); gOpenModal(`<h2>🧠 けっか</h2><div class="g-q">${gState.len-1}けた まで！</div><p style="color:#888;">答え: ${gState.seq}　自己ベスト: ${g.best.memory}けた</p><button class="btn" style="background:#8e44ad;color:#fff;" onclick="gMemory()">もう一回</button>`); } } });
+        }, Math.min(900+gState.len*350, 4000));
+    }
+    // 🔤 英単語アナグラム（バラバラの文字をならべかえる・10問）
+    function gAnagram() {
+        const pool=[...engWordsByLevel.basic,...engWordsByLevel.mid].filter(w=>w.e.length>=3&&w.e.length<=7&&/^[a-z]+$/i.test(w.e));
+        gState={ i:0, score:0, pool:[...pool].sort(()=>Math.random()-0.5).slice(0,10) };
+        gAnaShow();
+    }
+    function gAnaShow() {
+        if(gState.i>=gState.pool.length){ playSfx('finish'); const g=gameState(); g.best.anagram=Math.max(g.best.anagram||0,gState.score); gsSave(g); gOpenModal(`<h2>🔤 けっか</h2><div class="g-q">${gState.score}/${gState.pool.length} 正解！</div><p style="color:#888;">自己ベスト: ${g.best.anagram}</p><button class="btn" style="background:#27ae60;color:#fff;" onclick="gAnagram()">もう一回</button>`); return; }
+        const w=gState.pool[gState.i]; let sc; do { sc=w.e.split('').sort(()=>Math.random()-0.5).join(''); } while(sc===w.e);
+        gOpenModal(`<h2>🔤 アナグラム (${gState.i+1}/${gState.pool.length})</h2><p style="color:#888;">意味：${esc(w.j)}</p><div class="g-q" style="letter-spacing:6px;">${esc(sc)}</div><input class="g-input" id="an-in" style="width:240px;" autocomplete="off" autocapitalize="off" spellcheck="false"><div style="color:#888;margin-top:8px;">せいかい ${gState.score}</div>`);
+        const inp=document.getElementById('an-in'); inp.focus();
+        inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ if(inp.value.trim().toLowerCase()===w.e.toLowerCase()){ gState.score++; playSfx('correct'); } else { playSfx('wrong'); } gState.i++; gAnaShow(); } });
+    }
+    // ➗ 虫食い算（□に入る数・10問）
+    function gMissing() {
+        gState={ i:0, score:0, total:10 };
+        gMisNext();
+    }
+    function gMisNext() {
+        if(gState.i>=gState.total){ playSfx('finish'); const g=gameState(); g.best.missing=Math.max(g.best.missing||0,gState.score); gsSave(g); gOpenModal(`<h2>➗ けっか</h2><div class="g-q">${gState.score}/${gState.total} 正解！</div><p style="color:#888;">自己ベスト: ${g.best.missing}</p><button class="btn" style="background:#2c3e50;color:#fff;" onclick="gMissing()">もう一回</button>`); return; }
+        const a=randNum(2,12), b=randNum(2,12), op=randObj(['+','-','×']); let q, ans;
+        if(op==='+'){ ans=b; q=`${a} + □ = ${a+b}`; } else if(op==='-'){ ans=b; q=`${a+b} − □ = ${a}`; } else { ans=b; q=`${a} × □ = ${a*b}`; }
+        gState.ans=ans;
+        gOpenModal(`<h2>➗ 虫食い算 (${gState.i+1}/${gState.total})</h2><p style="color:#888;">□に入る数は？</p><div class="g-q">${q}</div><input class="g-input" id="ms-in" type="number" inputmode="numeric" autocomplete="off"><div style="color:#888;margin-top:8px;">せいかい ${gState.score}</div>`);
+        const inp=document.getElementById('ms-in'); inp.focus();
+        inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ if(Number(inp.value)===gState.ans){ gState.score++; playSfx('correct'); } else { playSfx('wrong'); } gState.i++; gMisNext(); } });
+    }
+    // ⏰ 10秒ぴったり（見ないで10秒でストップ・ぴったり度）
+    function gStopClock() {
+        gState={ t0:0, running:false };
+        gOpenModal(`<h2>⏰ 10秒ぴったりチャレンジ</h2><p style="color:#888;">スタートを押して、心の中で10秒かぞえてストップ！（時間は見えないよ）</p>
+            <div style="margin:20px;"><button class="btn" style="background:#27ae60;color:#fff;font-size:20px;padding:14px 30px;" id="sc-btn" onclick="gScAction()">▶️ スタート</button></div><div id="sc-res" style="font-size:22px;font-weight:bold;"></div>`);
+    }
+    function gScAction() {
+        const btn=document.getElementById('sc-btn');
+        if(!gState.running){ gState.running=true; gState.t0=performance.now(); btn.innerText='⏹️ ストップ！'; btn.style.background='#e74c3c'; document.getElementById('sc-res').innerText=''; }
+        else { const sec=(performance.now()-gState.t0)/1000; gState.running=false; btn.innerText='▶️ もう一回'; btn.style.background='#27ae60';
+            const diff=Math.abs(sec-10); playSfx(diff<0.5?'finish':diff<1.5?'correct':'wrong');
+            const g=gameState(); g.best.stopClock=g.best.stopClock!=null?Math.min(g.best.stopClock,diff):diff; gsSave(g);
+            document.getElementById('sc-res').innerHTML=`${sec.toFixed(2)}秒！<br><span style="font-size:15px;color:#888;">10秒との差 ${diff.toFixed(2)}秒　${diff<0.3?'🏆ぴったり神！':diff<1?'👏すごい！':'😊ドンマイ'}<br>自己ベスト差 ${g.best.stopClock.toFixed(2)}秒</span>`; }
+    }
+    // 🎰 コインスロット（10コインでスピン・そろえて増やそう）
+    function gSlot() {
+        const g=gameState();
+        gOpenModal(`<h2>🎰 コインスロット</h2><p style="color:#888;">10コインで1回まわせる。そろえたらコインGET！</p>
+            <div id="sl-reel" style="font-size:60px;letter-spacing:10px;margin:16px;">❔ ❔ ❔</div>
+            <div style="font-size:16px;">もってるコイン：🪙 <b id="sl-coins">${g.coins}</b></div>
+            <div id="sl-msg" style="min-height:24px;font-weight:bold;margin:8px;"></div>
+            <button class="btn" style="background:#f39c12;color:#fff;font-size:18px;padding:12px 28px;" id="sl-btn" onclick="gSlotSpin()">🎰 まわす（-10）</button>`);
+    }
+    function gSlotSpin() {
+        const g=gameState();
+        if((g.coins||0)<10){ document.getElementById('sl-msg').innerText='コインが足りないよ😢 勉強してためよう！'; return; }
+        g.coins-=10; gsSave(g);
+        const sym=['🍒','🍋','🔔','⭐','7️⃣','🍀'];
+        const btn=document.getElementById('sl-btn'); btn.disabled=true;
+        let ticks=0; const reel=document.getElementById('sl-reel');
+        gState.spin=setInterval(()=>{ if(!document.getElementById('sl-reel')){ clearInterval(gState.spin); gState.spin=null; return; } reel.innerText=`${randObj(sym)} ${randObj(sym)} ${randObj(sym)}`; ticks++;
+            if(ticks>=12){ clearInterval(gState.spin); gState.spin=null;
+                const r=[randObj(sym),randObj(sym),randObj(sym)]; reel.innerText=r.join(' ');
+                let win=0, msg='';
+                if(r[0]===r[1]&&r[1]===r[2]){ win = r[0]==='7️⃣'?200: r[0]==='⭐'?100:50; msg=`🎉 3つそろった！ +${win}コイン！`; celebrate('big'); playSfx('finish'); }
+                else if(r[0]===r[1]||r[1]===r[2]||r[0]===r[2]){ win=15; msg=`✨ 2つそろい！ +15コイン`; playSfx('correct'); }
+                else { msg='ざんねん…また挑戦！'; playSfx('wrong'); }
+                const g2=gameState(); g2.coins+=win; gsSave(g2);
+                document.getElementById('sl-coins').innerText=g2.coins; document.getElementById('sl-msg').innerText=msg; btn.disabled=false;
+            }
+        }, 90);
+    }
+
     // 🎉 紙吹雪（成功したときのごほうび演出）
     function celebrate(power) {
         const layer = document.getElementById('confetti-layer');
@@ -837,6 +1244,7 @@
         if(id === 'review') renderReview();
         if(id === 'study') { rotateMotivation(); renderUpdateBox(); renderTodayHomework(); } // 応援＋お知らせ＋今日の宿題
         if(id === 'calendar') renderCalendar();
+        if(id === 'game') renderGame();
         if(id === 'run') showRunCheer();
     }
 
@@ -2651,6 +3059,8 @@
         // 🎉 ごほうび演出（合格 or 自己ベスト更新で紙吹雪）
         motiAddDone(ekQData.length); flowerAddActivity();
         hwRecord('eiken', { grade }); // 宿題の自動チェック用に「英検◯級を1回やった」を記録
+        gameOnActivity(ekQData.length, { subj:'英語', correct: nO }); // 🎮 コイン/XP/連続/バッジ
+        if(pass) playSfx('finish');
         const isBest = ekStats.best[grade] === score && ekStats.totalTests > 1;
         if(pass || isBest) celebrate('big');
         const cheer = pass ? (score >= 90 ? '天才！パーフェクトに近いよ🏆' : 'やったね、合格ライン突破！🎉') : (score >= passLine - 10 ? 'おしい！あと一歩、いける！🔥' : 'ここからが伸びどき。次で自己ベストねらおう💪');
@@ -2774,6 +3184,7 @@
     const qRowHtml = (i, q) => `
             <div class="q-row ${q.type === 'text' ? 'grid-1' : ''}">
                 <label style="cursor:pointer;"><input type="checkbox" class="study-check no-print" style="transform:scale(1.3); margin-right:5px;"> (${i})</label>
+                <button class="no-print" title="お気に入りに保存" style="background:none;border:none;cursor:pointer;font-size:16px;opacity:.5;" onclick="gFav(this.closest('.q-row').querySelector('.q-text').innerText.replace(/正解：[\\s\\S]*/,'').trim()); this.style.opacity=1; this.innerText='⭐';">☆</button>
                 <div class="q-text">${q.q} <span class="q-ans-show">正解：${fracA(q.a)}${q.work ? `<br><span style="font-weight:normal; color:#c0392b; font-size:14px;">〔途中式〕 ${q.work}</span>` : ''}</span></div>
                 ${q.type === 'text' ? '<div class="text-space"></div>' : '<div style="height:3em; border-bottom:1px dashed #ccc;"></div>'}
             </div>
@@ -3017,7 +3428,7 @@
                 Object.keys(bySubj).forEach(s => saveScore(s, bySubj[s], `間違い直し: ${s} (${bySubj[s]}問)`));
                 wrongNotes = wrongNotes.filter(w => !cleared.includes(w));
                 saveWrongNotes();
-                motiAddDone(cleared.length); flowerAddActivity(); // 間違い直しも「勉強1回」として花が育つ
+                motiAddDone(cleared.length); flowerAddActivity(); gameOnActivity(cleared.length, { correct: cleared.length }); // 花＋🎮
                 celebrate(cleared.length >= 10 ? 'big' : '');
                 alert(`🎉 ${cleared.length}問クリア！ +${cleared.length}点ゲット！\n苦手をやっつけたキミ、最高だ！💪`);
             }
@@ -3045,6 +3456,7 @@
             let pct = Math.round(chk / total * 100); // 100点満点の点数（例: 10問中2問=20点）
             saveScore(pStudy.subj, chk * 1, `勉強: ${pStudy.unit} (${chk}/${total}問)`, '', pct);
             motiAddDone(chk); flowerAddActivity();
+            gameOnActivity(chk, { subj: pStudy.subj, correct: chk }); playSfx('finish'); // 🎮
             celebrate(chk >= 20 ? 'big' : '');
             let praise = chk >= 30 ? 'すごい集中力！天才かも✨' : chk >= 15 ? 'その調子！よくがんばった🔥' : 'ナイス！1歩前進だね🌱';
             alert(`🎉 ${total}問中${chk}問クリア！ 今回の点数: ${pct}点（100点満点）${addedReview > 0 ? `\n✍️ チェックしなかった${addedReview}問は「間違い直し」に入れておいたよ` : ''}\n${praise}`);
@@ -3222,6 +3634,8 @@
 
         motiAddDone(testQuestionsData.length); flowerAddActivity();
         hwRecord('test', { subj: pTest.subj, unit: pTest.unit, level: pTest.level, pct: totalPct }); // 宿題の自動チェック用
+        gameOnActivity(testQuestionsData.length, { subj: pTest.subj, correct }); // 🎮
+        playSfx(totalPct >= 80 ? 'finish' : totalPct >= 60 ? 'correct' : 'wrong');
         // 🎉 高得点は紙吹雪でお祝い
         if(totalPct >= 80) celebrate('big');
         else if(totalPct >= 60) celebrate('');
