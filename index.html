@@ -127,6 +127,43 @@
         .planter .pot.now { background: #8d6e63; }
         .planter .plabel { font-size: 11px; color: #888; margin-top: 3px; }
 
+        /* ===== 📢 アップデートのお知らせ（応援バナーの上） ===== */
+        .update-box { background: var(--box-bg); border: 1px solid var(--border-color); border-left: 5px solid #9b59b6; border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; box-shadow: 0 2px 6px var(--box-shadow); font-size: 14px; }
+        .update-box .u-now { font-weight: bold; color: var(--head-color); }
+        .update-box .u-next { color: #888; font-size: 13px; margin-top: 4px; }
+        .update-box .u-next b { color: #9b59b6; }
+        /* ホームの「今日の宿題」 */
+        #today-hw { background: var(--box-bg); border: 1px solid var(--border-color); border-left: 5px solid #9b59b6; border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; box-shadow: 0 2px 6px var(--box-shadow); }
+
+        /* ===== 🗓️ カレンダー（宿題）。月ぜんたいのグリッド表示（今月だけ・自動で切りかわる） ===== */
+        .cal-head { text-align: center; font-size: 20px; font-weight: bold; color: var(--head-color); margin-bottom: 10px; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; background: var(--box-bg); border-radius: 10px; box-shadow: 0 2px 6px var(--box-shadow); padding: 10px; }
+        .cal-wd { text-align: center; font-size: 12px; font-weight: bold; color: #888; padding: 4px 0; }
+        .cal-wd.sun { color: #e74c3c; } .cal-wd.sat { color: #3498db; }
+        .cal-cell { position: relative; min-height: 46px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); cursor: pointer; padding: 4px 0 0; text-align: center; font-size: 14px; font-weight: bold; user-select: none; }
+        .cal-cell.blank { border: none; background: transparent; cursor: default; }
+        .cal-cell.today { border: 2px solid #9b59b6; }
+        .cal-cell.selected { background: #9b59b6; color: #fff; }
+        .cal-cell.sun { color: #e74c3c; } .cal-cell.sat { color: #3498db; }
+        .cal-cell.selected.sun, .cal-cell.selected.sat { color: #fff; }
+        .cal-cell .hw-dot { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 6px; height: 6px; border-radius: 50%; background: #e67e22; }
+        .cal-cell .hw-dot.alldone { background: #27ae60; }
+        .cal-cell.selected .hw-dot { background: #fff; }
+        .cal-detail { background: var(--box-bg); border-radius: 10px; box-shadow: 0 2px 6px var(--box-shadow); padding: 12px 14px; margin-top: 12px; }
+        .cal-detail.today { border-left: 5px solid #9b59b6; }
+        .cal-date { font-weight: bold; color: var(--head-color); margin-bottom: 8px; font-size: 15px; }
+        .hw-item { display: flex; align-items: flex-start; gap: 8px; padding: 8px 0; border-top: 1px dashed var(--border-color); }
+        .hw-item:first-of-type { border-top: none; }
+        .hw-check { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 6px; border: 2px solid var(--border-color); background: var(--bg-color); font-size: 16px; line-height: 22px; text-align: center; padding: 0; color: #27ae60; box-sizing: border-box; }
+        .hw-check.auto { cursor: default; } /* 手で押せない＝アプリでやると自動でまるが付く */
+        .hw-check.done { background: #27ae60; border-color: #27ae60; color: #fff; }
+        .hw-remind { flex: 0 0 auto; width: 26px; text-align: center; font-size: 16px; line-height: 26px; }
+        .hw-body { flex: 1; min-width: 0; }
+        .hw-text { line-height: 1.5; }
+        .hw-text.done { text-decoration: line-through; color: #999; }
+        .hw-more { color: var(--main-color); cursor: pointer; font-weight: bold; margin-left: 4px; }
+        .cal-empty { text-align: center; color: #888; font-size: 14px; padding: 10px; }
+
         .login-card { background: var(--box-bg); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.18); padding: 26px 22px; width: 100%; max-width: 380px; text-align: center; }
         .login-card h2 { margin: 0 0 14px; }
         .login-user-btn { display: block; width: 100%; margin: 8px 0; padding: 13px; font-size: 17px; font-weight: bold; border: 2px solid var(--border-color); border-radius: 10px; background: var(--bg-color); color: var(--text-color); cursor: pointer; }
@@ -238,6 +275,7 @@
     <div class="nav-item" onclick="switchView('test-setup')">📝 テスト作成</div>
     <div class="nav-item" onclick="switchView('review')">🔁 間違い直し</div>
     <div class="nav-item" onclick="switchView('hyakumasu')">🧮 百ます計算</div>
+    <div class="nav-item" onclick="switchView('calendar')">🗓️ カレンダー（宿題）</div>
     <div class="nav-item" onclick="switchView('stats')">📊 成績・グラフ</div>
 </div>
 
@@ -245,6 +283,8 @@
     
     <!-- ================= 📖 勉強モード設定 ================= -->
     <div id="view-study" class="view active">
+        <div id="update-box" class="update-box no-print"></div>
+        <div id="today-hw" class="no-print" style="display:none;"></div>
         <div id="moti-home" class="moti-banner no-print" onclick="rotateMotivation()" style="cursor:pointer;">
             <div class="moti-emoji" id="moti-emoji">🔥</div>
             <div>
@@ -406,6 +446,12 @@
         </div>
     </div>
 
+    <!-- ================= 🗓️ カレンダー（宿題） ================= -->
+    <div id="view-calendar" class="view">
+        <h1 class="no-print">🗓️ カレンダー（宿題）</h1>
+        <div id="cal-list"></div>
+    </div>
+
     <!-- ================= 成績グラフ ================= -->
     <div id="view-stats" class="view">
         <h1>📊 成績・頑張りデータ</h1>
@@ -470,7 +516,7 @@
 <script>
     // ===== シラバス・範囲設定 =====
     const studySyllabus = {
-        "中一": { "数学": ["正負の数", "文字式", "方程式", "変化と対応", "平面空間図形", "データの活用"], "英語": ["be動詞", "一般動詞", "過去形", "疑問詞", "文法"], "国語": ["文法", "漢字", "物語文"], "理科": ["植物と動物", "大地の変動", "物質と光音力", "計算と割合"] },
+        "中一": { "数学": ["正負の数", "文字式", "方程式", "変化と対応", "平面空間図形", "データの活用"], "英語": ["be動詞", "一般動詞", "過去形", "疑問詞", "文法", "文章"], "国語": ["文法", "漢字", "物語文"], "理科": ["植物と動物", "大地の変動", "物質と光音力", "計算と割合"] },
         "検定": { "数学": ["数検5級"], "英語": ["英検5級", "英検4級", "英検3級", "単語5級", "単語4級", "単語3級"], "国語": ["漢検5級", "漢検4級"], "理科": ["理検5級"] }
     };
     const testSyllabus = {
@@ -619,6 +665,133 @@
     }
     function rotateMotivation() { motiIdx = (motiIdx + 1) % MOTI_LINES.length; showMotivation(); }
 
+    // ===== 📢 アップデートのお知らせ（応援バナーの上）。今回の内容だけ・日付は出さない =====
+    // 【更新するとき】アップデートを入れたら、このUPDATE_NOWを今回の内容に書きかえる。
+    const UPDATE_NOW = '「今日の宿題」をホーム画面に追加したよ📌 宿題は、アプリでその勉強（英検テスト・方程式・単語など）を実際にやると、自動でまるが付くようになりました！自分ではチェックできないから、どんどんやってまるを増やそう🔥';
+    function renderUpdateBox() {
+        const el = document.getElementById('update-box'); if(!el) return;
+        el.innerHTML = `<div class="u-now">📢 今回のアップデート：${esc(UPDATE_NOW)}</div>`;
+    }
+
+    // ===== 🗓️ カレンダー（宿題）。宿題はここ(HOMEWORK)にクロードが書く。手動チェックは不可＝アプリでやると自動でまるが付く =====
+    // 【書き方】日付キー 'YYYY-M-D' に { t:'内容', m:<自動チェックの条件> } を並べる。mを付けた宿題はアプリでやると自動で✓。
+    //   m の書き方（省略すると自動チェック無しの「おうちでやる系」リマインダー扱い）:
+    //     { eiken:'英検5級', n:2 }                              … その級のテストをその日にn回やったら✓
+    //     { testSubj:'数学', unitIncludes:'方程式', level:5, pct:70 } … その日に数学テストで条件（単元を含む・レベル以上・点以上）を満たしたら✓
+    //     { study:'単語5級' }                                    … その日にその単元の勉強（単語カード等）をやったら✓
+    const HOMEWORK = {
+        '2026-7-22': [ { t:'英検5級テスト 1回', m:{ eiken:'英検5級', n:1 } } ],
+        '2026-7-23': [ { t:'英検5級テスト 1回', m:{ eiken:'英検5級', n:1 } } ],
+        '2026-7-24': [ { t:'英検5級テスト 2回', m:{ eiken:'英検5級', n:2 } }, { t:'数学：方程式 レベル5（70点で合格！）', m:{ testSubj:'数学', unitIncludes:'方程式', level:5, pct:70 } } ],
+        '2026-7-25': [ { t:'勉強→検定→英語→単語5級 レベル5・6', m:{ study:'単語5級' } } ],
+        '2026-7-26': [ { t:'ワーク or 夏休みの宿題をどんどん進めよう！ラストスパート、駆け込みでやりきろう🔥' }, { t:'今日どれだけやったか、なお に報告してね（「今日はここまでやった！」でOK）📣' } ],
+        '2026-7-27': [ { t:'ワーク or 夏休みの宿題をどんどん進めよう！ラストスパート、駆け込みでやりきろう🔥' }, { t:'今日どれだけやったか、なお に報告してね（「今日はここまでやった！」でOK）📣' } ],
+        '2026-7-28': [ { t:'ワーク or 夏休みの宿題をどんどん進めよう！ラストスパート、駆け込みでやりきろう🔥' }, { t:'今日どれだけやったか、なお に報告してね（「今日はここまでやった！」でOK）📣' } ],
+        '2026-7-29': [ { t:'ワーク or 夏休みの宿題をどんどん進めよう！ラストスパート、駆け込みでやりきろう🔥' }, { t:'今日どれだけやったか、なお に報告してね（「今日はここまでやった！」でOK）📣' } ],
+        '2026-7-30': [ { t:'ワーク or 夏休みの宿題をどんどん進めよう！ラストスパート、駆け込みでやりきろう🔥' }, { t:'今日どれだけやったか、なお に報告してね（「今日はここまでやった！」でOK）📣' } ],
+        '2026-7-31': [ { t:'ワーク or 夏休みの宿題を終わらせる駆け込みラスト！最後までやりきろう🔥🔥' }, { t:'今日どれだけやったか、なお に報告してね（「今日はここまでやった！」でOK）📣' } ]
+    };
+    function calDayNum(key) { const p = String(key).split('-').map(Number); return Math.floor(new Date(p[0], p[1]-1, p[2]).getTime() / 86400000); }
+    function calToday() { const n = new Date(); return `${n.getFullYear()}-${n.getMonth()+1}-${n.getDate()}`; }
+    function calLabel(key) {
+        const p = String(key).split('-').map(Number); const d = new Date(p[0], p[1]-1, p[2]);
+        const w = ['日','月','火','水','木','金','土'][d.getDay()];
+        return `${p[1]}月${p[2]}日（${w}）`;
+    }
+    // --- 活動記録（アプリで何をやったか）。日付ごとに英検回数・テスト・勉強を貯める。宿題の自動チェックに使う ---
+    function hwActKey() { return currentUserId + ':hwActivity'; }
+    function hwActLoad() { try { return JSON.parse(localStorage.getItem(hwActKey())) || {}; } catch(e) { return {}; } }
+    function hwActSave(a) { localStorage.setItem(hwActKey(), JSON.stringify(a)); }
+    function hwRecord(kind, data) {
+        if(!currentUserId) return;
+        const a = hwActLoad(), key = calToday();
+        if(!a[key]) a[key] = { eiken:{}, tests:[], studies:[] };
+        const day = a[key];
+        if(kind === 'eiken') day.eiken[data.grade] = (day.eiken[data.grade] || 0) + 1;
+        else if(kind === 'test') day.tests.push({ subj:data.subj, unit:data.unit, level:data.level, pct:data.pct });
+        else if(kind === 'study') day.studies.push({ subj:data.subj, unit:data.unit });
+        // 90日より前の記録は捨てる（ためすぎ防止）
+        const cut = calDayNum(key) - 90;
+        Object.keys(a).forEach(k => { if(calDayNum(k) < cut) delete a[k]; });
+        hwActSave(a);
+        if(document.getElementById('view-study').classList.contains('active')) renderTodayHomework();
+    }
+    // その宿題がやり終わっているか（自動判定）。mが無い宿題は判定しない（＝まるは付かないリマインダー）
+    function hwIsDone(item, dateKey) {
+        const m = item.m; if(!m) return null;
+        const day = hwActLoad()[dateKey]; if(!day) return false;
+        if(m.eiken) return (day.eiken[m.eiken] || 0) >= (m.n || 1);
+        if(m.testSubj) return (day.tests || []).some(t => t.subj === m.testSubj
+            && (!m.unitIncludes || String(t.unit).includes(m.unitIncludes))
+            && (m.level == null || t.level >= m.level)
+            && (m.pct == null || t.pct >= m.pct));
+        if(m.study) return (day.studies || []).some(s => String(s.unit).includes(m.study));
+        return false;
+    }
+    function hwExpand(el) { // 「…つづき」を押すと全文が出る
+        const wrap = el.closest('.hw-text');
+        wrap.querySelector('.hw-shown').style.display = 'none';
+        wrap.querySelector('.hw-full').style.display = '';
+        el.style.display = 'none';
+    }
+    // 1つの宿題を1行のHTMLにする（auto:自動チェック対象は○/□、mが無いものは📌リマインダー）
+    function hwItemHtml(hw, dateKey, idx) {
+        const full = String(hw.t);
+        const needMore = full.length > 20;
+        const short = needMore ? full.slice(0, 20) : full;
+        const body = `<div class="hw-body"><span class="hw-text${hw.m && hwIsDone(hw, dateKey) ? ' done' : ''}">`
+            + `<span class="hw-shown">${esc(short)}${needMore ? '…' : ''}</span>`
+            + (needMore ? `<span class="hw-full" style="display:none;">${esc(full)}</span> <span class="hw-more" onclick="hwExpand(this)">つづき▼</span>` : '')
+            + `</span></div>`;
+        if(!hw.m) return `<div class="hw-item"><span class="hw-remind">📌</span>${body}</div>`; // おうちでやる系（自動チェック無し）
+        const done = hwIsDone(hw, dateKey);
+        return `<div class="hw-item"><span class="hw-check auto${done ? ' done' : ''}" title="${done ? 'できたね！' : 'アプリでやると自動でまるが付くよ'}">${done ? '✓' : ''}</span>${body}</div>`;
+    }
+    let calSelected = null; // タップして選んでいる日（'YYYY-M-D'）
+    function calSelect(key) { calSelected = key; renderCalendar(); }
+    function renderCalendar() {
+        if(!currentUserId) return;
+        const now = new Date();
+        const y = now.getFullYear(), m = now.getMonth(); // 今月だけ表示（月が変われば自動で切りかわる）
+        const today = calToday();
+        // 選んでいる日が今月でなければ今日にリセット（月が変わったら真っ白な当月カレンダーへ）
+        if(!calSelected || Number(calSelected.split('-')[0]) !== y || Number(calSelected.split('-')[1]) !== m + 1) calSelected = today;
+        const firstDow = new Date(y, m, 1).getDay();
+        const daysInMonth = new Date(y, m + 1, 0).getDate();
+        const WD = ['日','月','火','水','木','金','土'];
+        let grid = '';
+        WD.forEach((w, i) => { grid += `<div class="cal-wd ${i===0?'sun':i===6?'sat':''}">${w}</div>`; });
+        for(let b = 0; b < firstDow; b++) grid += `<div class="cal-cell blank"></div>`;
+        for(let d = 1; d <= daysInMonth; d++) {
+            const key = `${y}-${m+1}-${d}`;
+            const dow = new Date(y, m, d).getDay();
+            const hws = HOMEWORK[key] || [];
+            const autoItems = hws.filter(h => h.m);
+            const allDone = autoItems.length && autoItems.every(h => hwIsDone(h, key)); // 自動チェック対象が全部できたら緑
+            const cls = ['cal-cell', dow===0?'sun':dow===6?'sat':'', key===today?'today':'', key===calSelected?'selected':''].filter(Boolean).join(' ');
+            grid += `<div class="${cls}" onclick="calSelect('${key}')">${d}${hws.length ? `<span class="hw-dot${allDone?' alldone':''}"></span>` : ''}</div>`;
+        }
+        // 選んでいる日の宿題（下に表示）
+        const sel = calSelected, selHw = HOMEWORK[sel] || [];
+        const isToday = sel === today;
+        let detail = `<div class="cal-detail${isToday ? ' today' : ''}"><div class="cal-date">${isToday ? '📌 今日の宿題（' + esc(calLabel(sel)) + '）' : '🗓️ ' + esc(calLabel(sel))}</div>`;
+        if(!selHw.length) detail += `<div class="cal-empty">この日は宿題がないよ😊</div>`;
+        selHw.forEach((hw, i) => { detail += hwItemHtml(hw, sel, i); });
+        detail += '</div>';
+        document.getElementById('cal-list').innerHTML =
+            `<div class="cal-head">${y}年 ${m+1}月</div><div class="cal-grid">${grid}</div>${detail}`;
+    }
+    // ホーム（勉強画面）の「今日の宿題」＝お知らせの下。自動チェックのみ
+    function renderTodayHomework() {
+        const box = document.getElementById('today-hw'); if(!box) return;
+        const key = calToday(), hws = HOMEWORK[key] || [];
+        if(!hws.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+        box.style.display = '';
+        let html = `<div class="cal-date">📌 今日の宿題（${esc(calLabel(key))}）</div>`;
+        hws.forEach((hw, i) => { html += hwItemHtml(hw, key, i); });
+        box.innerHTML = html;
+    }
+
     // 🎉 紙吹雪（成功したときのごほうび演出）
     function celebrate(power) {
         const layer = document.getElementById('confetti-layer');
@@ -662,7 +835,8 @@
         document.getElementById('sidebar').classList.remove('open');
         if(id === 'stats') { renderStats('today'); ekRenderGrowth(); renderSchoolTests(false); renderFlower(); }
         if(id === 'review') renderReview();
-        if(id === 'study') rotateMotivation(); // 勉強画面に来るたび新しい応援メッセージ
+        if(id === 'study') { rotateMotivation(); renderUpdateBox(); renderTodayHomework(); } // 応援＋お知らせ＋今日の宿題
+        if(id === 'calendar') renderCalendar();
         if(id === 'run') showRunCheer();
     }
 
@@ -674,11 +848,12 @@
         if(type==='grade') initStudyMenu();
         updateStudySections();
     }
-    // 単語（フラッシュカード）単元のときはレベル・問題数を隠す（全単語を出すため）
+    // 単語カード・文章（速読）の単元では、レベルと問題数を隠す（ぜんぶ出すので選ぶ必要がない）
     function updateStudySections() {
-        let isFlash = pStudy.subj === '英語' && String(pStudy.unit).includes('単語');
-        document.getElementById('study-level-section').style.display = isFlash ? 'none' : '';
-        document.getElementById('study-count-section').style.display = isFlash ? 'none' : '';
+        let u = String(pStudy.unit);
+        let noOpts = pStudy.subj === '英語' && (u.includes('単語') || u.includes('文章'));
+        document.getElementById('study-level-section').style.display = noOpts ? 'none' : '';
+        document.getElementById('study-count-section').style.display = noOpts ? 'none' : '';
     }
     function initStudyMenu() {
         let sDiv = document.getElementById('study-subj-container'); sDiv.innerHTML = '';
@@ -899,6 +1074,62 @@
         {q:"雰囲気",a:"ふんいき"},{q:"丁寧",a:"ていねい"},{q:"鋭い",a:"するどい"},{q:"鈍い",a:"にぶい"},{q:"含む",a:"ふくむ"},
         {q:"驚く",a:"おどろく"},{q:"更に",a:"さらに"}
     ];
+    // ===== 英語「文章」＝速読れんしゅう用の短い英文（約100〜150字） =====
+    // 【追加のしかた】新しいファイルをもらったら、この配列に { t:"英文" } を足すだけでそのまま出題されます。
+    const READING_PASSAGES = [
+        { t:"A: Excuse me, could you tell me where the station is? B: Go straight and turn right at the corner." },
+        { t:"A: When is your birthday? Are you having a party? B: My birthday is in May. I will have a small party." },
+        { t:"A: Do you help your parents with the housework? B: Yes, I usually wash the dishes after dinner." },
+        { t:"A: What did you do on Sunday afternoon? B: I went shopping to buy some new clothes for the summer." },
+        { t:"A: I am going to visit my grandparents tomorrow. B: That sounds wonderful. Have a very good time!" },
+        { t:"A: What are you going to watch on television? B: I am going to watch an exciting baseball game tonight." },
+        { t:"A: Why didn't you come to the party last night? B: Because I had a slight fever and stayed in bed." },
+        { t:"A: Did you find your lost keys this morning? B: Yes, they were hidden under the sofa in the living room." },
+        { t:"A: How long did it take to finish the hard puzzle? B: It took me about three hours to complete it." },
+        { t:"A: What are we going to do if it rains tomorrow? B: We will probably play board games inside the house." },
+        { t:"A: Did you remember to buy milk at the supermarket? B: Oh no, I completely forgot to buy it. I am sorry." },
+        { t:"A: Who is going to clean the classroom today? B: It is my turn to clean the classroom this afternoon." },
+        { t:"A: Have you ever been to the famous temples in Kyoto? B: Yes, I have visited them twice with my family." },
+        { t:"A: Have you finished doing your heavy math homework yet? B: No, not yet. I have been trying to solve it for hours." },
+        { t:"A: This bridge was built by hard workers fifty years ago. B: It is amazing that it is still very strong today." }
+    ];
+
+    // ===== 国語 物語文（長文）＝本1話ぶんの長さを読み通して、10問で読み解く力をつける =====
+    // 【追加のしかた】{ title, text, qs:[{q,a}×10] } をこの配列に足すだけ。勉強の「物語文」で1話まるごと出ます。
+    const LONG_STORIES = [
+        {
+            title: '風の鳴る坂',
+            text: `　六年生の秋、ぼくは転校した。父の仕事の都合で、海沿いの町から山あいの小さな町へ移ったのだ。新しい家の裏には、細く長い坂道があった。両側を杉の木にはさまれたその坂は、風が吹くとひゅうと高い音を立てた。近所の子どもたちは「風鳴り坂」と呼んでいるらしい。
+　転校して二週間が過ぎても、ぼくはクラスにうまくなじめずにいた。前の学校のことを聞かれるたび、海の話をした。「毎朝、波の音で起きてた」と言うと、みんなは目を丸くして「いいなあ」と言う。けれどその「いいなあ」は、ぼくをよけいに遠くへ押しやるようだった。ここには海がない。ぼくの話は、この町では作り話のように響いた。
+　ある日の放課後、ぼくは一人で風鳴り坂を登っていた。かばんが重く、足取りも重い。坂の中ほどで、同じクラスの佐野さんが座りこんでいるのが見えた。自転車の後輪がパンクしたらしく、彼女は困った顔でタイヤをさわっていた。
+　声をかけるべきか迷った。ぼくはまだ、クラスのだれとも「友だち」と呼べるほど話していない。通り過ぎようとしたとき、風がひゅうと鳴った。その音に背中を押されたような気がして、ぼくは足を止めた。
+　「押すの、手伝おうか」
+　佐野さんは驚いた顔で顔を上げ、それから小さく笑った。「ありがとう。この坂、一人だときついんだ」
+　二人で自転車を押した。坂は思ったより長く、途中で何度も息が切れた。佐野さんはぽつりぽつりと話した。この坂の杉は、彼女のおじいさんの世代が植えたものだということ。昔はもっと風が強くて、家の屋根が飛ぶこともあったこと。木を植えてから、風が弱まったこと。
+　「だから風鳴り坂って、いやな名前じゃないんだよ」と佐野さんは言った。「風が鳴るってことは、木がちゃんと風を受け止めてるってことだから」
+　ぼくは杉の木を見上げた。まっすぐに空へのびる幹が、ゆっくりと揺れていた。
+　「海の音と、似てるかも」
+　思わずそう言うと、佐野さんは立ち止まってこちらを見た。「どんなふうに？」
+　ぼくは少し迷ってから答えた。「ずっと鳴ってて、うるさいのに、聞いてると落ち着く」
+　佐野さんは「わかる気がする」と言って、また自転車を押しはじめた。
+　坂を登りきると、町が一望できた。屋根が夕日でオレンジ色に光っている。海はどこにもない。それでも、ぼくは初めてこの景色を「きれいだ」と思った。
+　翌日、教室で佐野さんが「昨日はありがとう」と言ってくれた。それを聞いた何人かが「何かあったの」と集まってきた。ぼくは風鳴り坂の杉の話をした。海の話ではなく、この町の話を。みんなは「知らなかった」と言って佐野さんに聞き返し、佐野さんは得意そうに説明した。
+　その日の帰り道、ぼくはまた坂を登った。風がひゅうと鳴った。ぼくはもう、その音を知っている。知っているというだけで、坂は少し短く感じられた。`,
+            qs: [
+                { q: 'ぼくが転校したのは、どの季節ですか。', a: '秋' },
+                { q: 'ぼくが引っこす前に住んでいたのは、どんな町ですか。（〜の町）', a: '海沿い' },
+                { q: '坂の両側に植えられている木は何ですか。', a: '杉' },
+                { q: '坂で困っていた同級生の名前を答えなさい。', a: '佐野さん' },
+                { q: '佐野さんが坂で困っていたのは、自転車がどうなったからですか。', a: 'パンク' },
+                { q: '通り過ぎようとしたぼくが足を止めたのは、何に背中を押されたように感じたからですか。', a: '風' },
+                { q: '坂の杉を植えたのは、佐野さんの家のだれの世代ですか。', a: 'おじいさん' },
+                { q: '木を植えたことで、この町の風はどうなりましたか。', a: '弱まった' },
+                { q: 'ぼくは風の音を、前に住んでいた町の何の音に似ていると言いましたか。', a: '海' },
+                { q: '最後の場面で坂が少し短く感じられたのは、風の音をどうなったからですか。（〜から）', a: '知っている' }
+            ]
+        }
+    ];
+
     // 国語 物語文
     const stories = [
         { text:"ある朝、ミナは川辺で一羽の小さな鳥を見つけた。羽をけがして飛べずにいるその鳥を、ミナはそっと両手で包んだ。「大丈夫、私が助けてあげる」。家に連れて帰り、毎日えさと水をあげた。数週間後、鳥は元気に羽ばたけるようになった。空へ放つとき、ミナは少しさびしかったが、青空へ消えていく鳥を見上げ、心から笑った。",
@@ -2419,6 +2650,7 @@
 
         // 🎉 ごほうび演出（合格 or 自己ベスト更新で紙吹雪）
         motiAddDone(ekQData.length); flowerAddActivity();
+        hwRecord('eiken', { grade }); // 宿題の自動チェック用に「英検◯級を1回やった」を記録
         const isBest = ekStats.best[grade] === score && ekStats.totalTests > 1;
         if(pass || isBest) celebrate('big');
         const cheer = pass ? (score >= 90 ? '天才！パーフェクトに近いよ🏆' : 'やったね、合格ライン突破！🎉') : (score >= passLine - 10 ? 'おしい！あと一歩、いける！🔥' : 'ここからが伸びどき。次で自己ベストねらおう💪');
@@ -2660,6 +2892,58 @@
             return;
         }
 
+        // 英語「文章」＝速読れんしゅう。全部の文を出して、読んだ内容を自分のことばでまとめる（答えは無し・なおに送る）
+        if(pStudy.subj === '英語' && String(pStudy.unit).includes('文章')) {
+            const list = [...READING_PASSAGES].sort(() => Math.random() - 0.5);
+            document.getElementById('print-title').innerText = '英語 文章（速読れんしゅう）';
+            document.getElementById('run-title').innerText = `📖 英語 - 文章（速読れんしゅう・全${list.length}問）`;
+            let html = `<div class="ek-write-note no-print" style="margin-bottom:12px;">⏱️ できるだけ<b>速く</b>読んで、それぞれ<b>どんな話だったかを日本語で簡潔に</b>書こう！<br>書けたら、この画面をスクリーンショットして <u>なお</u> に送ってね📩</div><div class="grid-3">`;
+            list.forEach((p, i) => {
+                html += `<div class="q-row grid-1">
+                    <div class="q-text">(${i + 1}) ${p.t}</div>
+                    <textarea class="ek-write no-print" placeholder="日本語で簡潔に：どんな話？"></textarea>
+                    <div class="text-space print-only"></div>
+                </div>`;
+            });
+            html += '</div>';
+            runShareData = { title: `英語 文章（速読れんしゅう・${list.length}問）`, items: list.map(p => ({ q: p.t, a: '' })) };
+            document.getElementById('run-content').innerHTML = html;
+            document.getElementById('study-controls').style.display = 'block';
+            document.getElementById('test-controls').style.display = 'none';
+            document.getElementById('eiken-controls').style.display = 'none';
+            document.getElementById('ek-result-banner').style.display = 'none';
+            closeUnitHelp(); setUnitHelpBtn(false);
+            switchView('run');
+            return;
+        }
+
+        // 国語「物語文」＝長い話を1話まるごと読んで、10問で読み解く
+        if(pStudy.subj === '国語' && String(pStudy.unit).includes('物語')) {
+            const s = randObj(LONG_STORIES);
+            document.getElementById('print-title').innerText = `物語文: ${s.title}`;
+            document.getElementById('run-title').innerText = `📖 国語 - 物語文「${s.title}」（全${s.qs.length}問）`;
+            let html = `<div class="ek-write-note no-print" style="margin-bottom:12px;">📚 話をさいごまで読んでから、下の問題に答えよう。答えは本文の中にかならずあるよ！<br>書けたら、この画面をスクリーンショットして <u>なお</u> に送ってね📩</div>
+                <div class="section" style="line-height:2; font-size:16px; white-space:pre-wrap;">${esc(s.text)}</div>
+                <div class="grid-3">`;
+            s.qs.forEach((q, i) => {
+                html += `<div class="q-row grid-1">
+                    <div class="q-text">(${i + 1}) ${esc(q.q)}</div>
+                    <div class="text-space"></div>
+                </div>`;
+            });
+            html += '</div>';
+            // 文章問題は答えを画面に出さない（自分で考えて書く／なおに送る）。共有テキストにも答えを含めない
+            runShareData = { title: `物語文「${s.title}」（${s.qs.length}問）`, items: s.qs.map(q => ({ q: q.q, a: '' })) };
+            document.getElementById('run-content').innerHTML = html;
+            document.getElementById('study-controls').style.display = 'block';
+            document.getElementById('test-controls').style.display = 'none';
+            document.getElementById('eiken-controls').style.display = 'none';
+            document.getElementById('ek-result-banner').style.display = 'none';
+            closeUnitHelp(); setUnitHelpBtn(false);
+            switchView('run');
+            return;
+        }
+
         closeUnitHelp(); setUnitHelpBtn(!!unitHelpKey()); // 過去形・疑問詞のときだけ❓を出す
         document.getElementById('print-title').innerText = `勉強プリント: ${pStudy.subj} (${pStudy.unit}) レベル${pStudy.level}`;
         document.getElementById('run-title').innerText = `📖 ${pStudy.subj} - ${pStudy.unit} (${pStudy.count}問・レベル${pStudy.level})`;
@@ -2740,15 +3024,32 @@
             switchView('review');
             return;
         }
+        hwRecord('study', { subj: pStudy.subj, unit: pStudy.unit }); // 宿題の自動チェック用に「この単元を勉強した」を記録
+
+        // チェックが入っていない問題（＝できなかった・自信がない所）は間違い直しに自動で入れる
+        let checks = document.querySelectorAll('.study-check');
+        let items = (runShareData && runShareData.items) || [];
+        let addedReview = 0;
+        checks.forEach((c, i) => {
+            if(c.checked) return;
+            let it = items[i];
+            if(!it || !it.a) return; // 答えの無い問題（速読の文章など）は入れない
+            let entry = { q: it.q, a: it.a, type: it.type || 'text', subj: pStudy.subj, unit: pStudy.unit, work: it.work };
+            if(!wrongNotes.some(x => x.q === entry.q)) { wrongNotes.unshift(entry); addedReview++; }
+        });
+        if(addedReview > 0) { if(wrongNotes.length > 100) wrongNotes.length = 100; saveWrongNotes(); }
+
         let chk = document.querySelectorAll('.study-check:checked').length;
         if(chk > 0) {
-            let total = pStudy.count || chk;
+            let total = pStudy.count || checks.length || chk;
             let pct = Math.round(chk / total * 100); // 100点満点の点数（例: 10問中2問=20点）
             saveScore(pStudy.subj, chk * 1, `勉強: ${pStudy.unit} (${chk}/${total}問)`, '', pct);
             motiAddDone(chk); flowerAddActivity();
             celebrate(chk >= 20 ? 'big' : '');
             let praise = chk >= 30 ? 'すごい集中力！天才かも✨' : chk >= 15 ? 'その調子！よくがんばった🔥' : 'ナイス！1歩前進だね🌱';
-            alert(`🎉 ${total}問中${chk}問クリア！ 今回の点数: ${pct}点（100点満点）\n${praise}`);
+            alert(`🎉 ${total}問中${chk}問クリア！ 今回の点数: ${pct}点（100点満点）${addedReview > 0 ? `\n✍️ チェックしなかった${addedReview}問は「間違い直し」に入れておいたよ` : ''}\n${praise}`);
+        } else if(addedReview > 0) {
+            alert(`✍️ チェックしなかった${addedReview}問を「間違い直し」に入れておいたよ。あとで復習しよう！`);
         }
         switchView('study');
     }
@@ -2920,6 +3221,7 @@
         switchView('test-result');
 
         motiAddDone(testQuestionsData.length); flowerAddActivity();
+        hwRecord('test', { subj: pTest.subj, unit: pTest.unit, level: pTest.level, pct: totalPct }); // 宿題の自動チェック用
         // 🎉 高得点は紙吹雪でお祝い
         if(totalPct >= 80) celebrate('big');
         else if(totalPct >= 60) celebrate('');
@@ -2939,7 +3241,7 @@
         runShareData.items.forEach((it, i) => {
             tmp.innerHTML = it.q;
             text += `(${i + 1}) ${tmp.textContent.replace(/\s+/g, ' ').trim()}\n`;
-            if(withAns) text += `　→ 答え: ${it.a}\n`;
+            if(withAns && it.a) text += `　→ 答え: ${it.a}\n`; // 答えが無い問題（文章・速読）は答え行を出さない
         });
         return text;
     }
@@ -3152,7 +3454,9 @@
         const canvas = document.getElementById('st-chart');
         if(typeof Chart === 'undefined') { canvas.style.display = 'none'; } else {
             canvas.style.display = '';
-            const n = Math.max(mine.length, theirs.length, 1);
+            // 定期テストは1年に3回（4月〜翌年4月）なので、いつも第1〜3回の3枠を表示する
+            const minSlots = stType === 'teiki' ? 3 : 1;
+            const n = Math.max(mine.length, theirs.length, minSlots);
             const labels = Array.from({length: n}, (_, i) => (mine[i] && mine[i].name) || (theirs[i] && theirs[i].name) || `第${i+1}回`);
             if(stChart) stChart.destroy();
             stChart = new Chart(canvas, {
