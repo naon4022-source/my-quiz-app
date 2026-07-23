@@ -199,6 +199,32 @@
         .g-switch.on { background: #27ae60; } .g-switch.off { background: #95a5a6; }
         .g-phrase { font-size: 16px; line-height: 1.6; }
 
+        /* ===== 💰 お金・経済 ===== */
+        .m-top { background: linear-gradient(135deg,#11998e,#38ef7d); color:#fff; border-radius:14px; padding:14px; text-align:center; margin-bottom:12px; }
+        .m-top .m-total { font-size: 30px; font-weight: bold; }
+        .m-top .m-sub { font-size: 12px; opacity:.9; }
+        .m-tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+        .m-tabs .btn { padding:8px 12px; font-size:13px; }
+        .m-card { background: var(--box-bg); border-radius:12px; box-shadow:0 2px 6px var(--box-shadow); padding:12px 14px; margin-bottom:10px; }
+        .m-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px dashed var(--border-color); gap:8px; }
+        .m-row:last-child { border-bottom:none; }
+        .m-name { font-weight:bold; }
+        .m-desc { font-size:11px; color:#888; }
+        .m-price { text-align:right; white-space:nowrap; }
+        .m-up { color:#e74c3c; font-weight:bold; }
+        .m-down { color:#3498db; font-weight:bold; }
+        .m-flat { color:#888; }
+        .m-btn { padding:5px 10px; font-size:12px; border:none; border-radius:6px; color:#fff; cursor:pointer; }
+        .m-buy { background:#e74c3c; } .m-sell { background:#3498db; } .m-info { background:#95a5a6; }
+        .m-news { background: rgba(52,152,219,.10); border-left:4px solid #3498db; border-radius:8px; padding:8px 12px; margin:6px 0; font-size:13px; }
+        .m-term { padding:8px 0; border-bottom:1px dashed var(--border-color); font-size:13px; }
+        .m-term b { color: var(--head-color); }
+        .m-chart { width:100%; height:120px; }
+        .m-quiz-btn { display:block; width:100%; text-align:left; margin:6px 0; padding:12px; border-radius:8px; border:2px solid var(--border-color); background:var(--bg-color); color:var(--text-color); cursor:pointer; font-size:14px; }
+        .m-quiz-btn:hover { border-color:#11998e; }
+        .m-pill { display:inline-block; font-size:11px; padding:2px 8px; border-radius:10px; background:rgba(17,153,142,.15); color:#11998e; font-weight:bold; margin-left:4px; }
+        .m-warn { background: rgba(231,76,60,.12); border-left:4px solid #e74c3c; border-radius:8px; padding:8px 12px; font-size:13px; margin:6px 0; }
+
         .login-card { background: var(--box-bg); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.18); padding: 26px 22px; width: 100%; max-width: 380px; text-align: center; }
         .login-card h2 { margin: 0 0 14px; }
         .login-user-btn { display: block; width: 100%; margin: 8px 0; padding: 13px; font-size: 17px; font-weight: bold; border: 2px solid var(--border-color); border-radius: 10px; background: var(--bg-color); color: var(--text-color); cursor: pointer; }
@@ -312,6 +338,7 @@
     <div class="nav-item" onclick="switchView('hyakumasu')">🧮 百ます計算</div>
     <div class="nav-item" onclick="switchView('calendar')">🗓️ カレンダー（宿題）</div>
     <div class="nav-item" onclick="switchView('game')">🎮 きろく・あそび</div>
+    <div class="nav-item" onclick="switchView('money')">💰 お金・経済</div>
     <div class="nav-item" onclick="switchView('stats')">📊 成績・グラフ</div>
 </div>
 
@@ -493,6 +520,12 @@
         <h1 class="no-print">🎮 きろく・あそび <button style="font-size:22px;background:none;border:none;cursor:pointer;opacity:.5;vertical-align:middle;" title="あそび方の説明" onclick="gHelp()">❓</button></h1>
         <div id="game-body"></div>
     </div>
+    <!-- ================= 💰 お金・経済 ================= -->
+    <div id="view-money" class="view">
+        <h1 class="no-print">💰 お金・経済 <button style="font-size:22px;background:none;border:none;cursor:pointer;opacity:.5;vertical-align:middle;" title="あそび方" onclick="mHelp()">❓</button></h1>
+        <div id="money-body"></div>
+    </div>
+
     <div id="game-modal" class="g-modal no-print">
         <button class="btn uh-back" style="background:#34495e; color:white; max-width:640px; margin:0 auto 12px; display:block; width:100%;" onclick="gCloseModal()">← とじる</button>
         <div id="game-play" class="g-play"></div>
@@ -714,7 +747,8 @@
 
     // ===== 📢 アップデートのお知らせ（応援バナーの上）。今回の内容だけ・日付は出さない =====
     // 【更新するとき】アップデートを入れたら、このUPDATE_NOWを今回の内容に書きかえる。
-    const UPDATE_NOW = '⚔️ 対戦ボードができたよ！ミニゲームで記録を出すと自動で保存されて、なお と りらん の点数がならんで表示されるようになりました。じゅんばんを待たずに、すきなときにあそぶだけでOK！いちばん上に「今どっちがリードしているか」も出るよ🏆';
+    // ⚠️ お知らせ本文に人の名前は書かないこと（ユーザー指示）
+    const UPDATE_NOW = '💰「お金・経済」を追加！1万円からスタートして、勉強でかせいで・貯金して・株や投信に投資して資産をふやすゲームだよ。相場は毎日ニュースで動く📈 用語じてん・クイズ・複利シミュレーターでお金の勉強もできる。そう資産は⚔️対戦ボードにも出るので、勝負しよう！';
     function renderUpdateBox() {
         const el = document.getElementById('update-box'); if(!el) return;
         el.innerHTML = `<div class="u-now">📢 今回のアップデート：${esc(UPDATE_NOW)}</div>`;
@@ -1060,9 +1094,9 @@
     //   ここに入れるのは「対戦ゲームの点数」だけ。成績・宿題・個人情報は送らない。
     const SYNC_URL = 'https://nobilog-board.naon4022.workers.dev';
     const SYNC_TOKEN = 'nobilog_xyHCdnEL5fDMKD97pa3apnpCRFvT'; // 合言葉（サーバー側と同じ文字列にする。半角の英数字だけで作ること）
-    const VB_HIGHER = { flash:true, typing:true, kuku:false, memory:true, anagram:true, missing:true, reaction:false, stopClock:false, vocab:true };
-    const VB_NAME = { flash:'⚡ フラッシュ暗算', typing:'⌨️ タイピング', kuku:'🧮 九九タイム', memory:'🧠 記憶ゲーム', anagram:'🔤 アナグラム', missing:'➗ 虫食い算', reaction:'🎯 反射神経', stopClock:'⏰ 10秒ぴったり', vocab:'📝 英単語4択' };
-    const VB_UNIT = { flash:'問', typing:'語', kuku:'秒', memory:'けた', anagram:'点', missing:'点', reaction:'ms', stopClock:'秒差', vocab:'点' };
+    const VB_HIGHER = { money:true, flash:true, typing:true, kuku:false, memory:true, anagram:true, missing:true, reaction:false, stopClock:false, vocab:true };
+    const VB_NAME = { money:'💰 そう資産', flash:'⚡ フラッシュ暗算', typing:'⌨️ タイピング', kuku:'🧮 九九タイム', memory:'🧠 記憶ゲーム', anagram:'🔤 アナグラム', missing:'➗ 虫食い算', reaction:'🎯 反射神経', stopClock:'⏰ 10秒ぴったり', vocab:'📝 英単語4択' };
+    const VB_UNIT = { money:'円', flash:'問', typing:'語', kuku:'秒', memory:'けた', anagram:'点', missing:'点', reaction:'ms', stopClock:'秒差', vocab:'点' };
     function vbLoad() { try { return JSON.parse(localStorage.getItem('versusBoard')) || {}; } catch(e) { return {}; } }
     function vbSaveLocal(b) { localStorage.setItem('versusBoard', JSON.stringify(b)); }
     // 記録を出したら保存（自己ベストだけ残す）→ ボードに反映＋オンラインなら送信
@@ -1207,6 +1241,527 @@
         inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ if(Number(inp.value)===gState.ans){ playSfx('correct'); gState.i++; inp.value=''; if(gState.i>=gState.total){ const sec=Math.round((Date.now()-gState.start)/1000); playSfx('finish'); const nb=vbRecord('kuku', sec); const g=gameState(); g.best.kuku=g.best.kuku?Math.min(g.best.kuku,sec):sec; gsSave(g); alert(`🧮 クリア！ ${sec}秒！\n自己ベスト: ${g.best.kuku}秒${nb?'\n⚔️ 対戦ボードの記録をこうしん！':''}`); gCloseModal(); return; } document.getElementById('ku-prog').innerText=`${gState.i+1} / 20`; gKuNext(); } else { playSfx('wrong'); inp.value=''; } } });
     }
     function gKuNext() { const a=randNum(2,9), b=randNum(2,9); gState.ans=a*b; const el=document.getElementById('ku-q'); if(el) el.innerText=`${a} × ${b}`; }
+
+    // ========================= 💰 お金・経済（投資と経済の勉強ゲーム） =========================
+    // 1万円スタート。勉強で稼ぎ、貯金・投資して資産を増やす。相場は「実際の日付」が変わると動く（長期投資の感覚）
+    const M_START = 10000;
+    const M_ASSETS = [
+        { c:'FOOD', n:'のびのび食品', t:'株', p:1000,  v:0.025, div:0.020, d:'食べ物の会社。不景気でも売れやすく、値動きは小さめ' },
+        { c:'GAME', n:'ワクワクゲーム', t:'株', p:2500,  v:0.055, div:0.005, d:'ゲーム会社。ヒットすると大きく上がるが外すと下がる' },
+        { c:'RAIL', n:'みらい鉄道',   t:'株', p:1800,  v:0.020, div:0.025, d:'鉄道。生活に必要なので安定。配当が高め' },
+        { c:'TECH', n:'そらITシステム', t:'株', p:4200,  v:0.060, div:0.000, d:'IT企業。成長に期待だが値動きは激しい' },
+        { c:'BANKS',n:'まなび銀行',   t:'株', p:900,   v:0.030, div:0.035, d:'銀行。金利が上がると強い。配当がとても高い' },
+        { c:'CLOTH',n:'きらら衣料',   t:'株', p:1500,  v:0.040, div:0.015, d:'服の会社。景気やはやりに影響される' },
+        { c:'MED',  n:'げんき製薬',   t:'株', p:3300,  v:0.030, div:0.018, d:'薬の会社。不景気に強いディフェンシブ銘柄' },
+        { c:'ENGY', n:'ひかりエネルギー', t:'株', p:2100, v:0.045, div:0.030, d:'エネルギー。世界の出来事で大きく動く' },
+        { c:'IDX',  n:'インデックス投信', t:'投信', p:10000, v:0.014, div:0.015, d:'たくさんの会社にまとめて投資。分散されていて初心者向き' },
+        { c:'BOND', n:'国債',        t:'債券', p:10000, v:0.004, div:0.008, d:'国にお金を貸す。とても安全だがふえ方はゆっくり' },
+        { c:'GOLD', n:'金（ゴールド）', t:'コモディティ', p:9500, v:0.022, div:0, d:'昔から価値がある。不安なときに買われやすい' },
+        { c:'USD',  n:'米ドル',      t:'外貨', p:150,   v:0.012, div:0, d:'アメリカのお金。円安になると得、円高だと損' },
+        { c:'REIT', n:'不動産（REIT）', t:'不動産', p:20000, v:0.025, div:0.040, d:'建物に投資して家賃がもらえる仕組み。分配金が高い' },
+        { c:'COIN', n:'暗号資産',    t:'暗号資産', p:50000, v:0.140, div:0, d:'⚠️値動きがとても激しい。大もうけも大損もある' }
+    ];
+    const M_ASSET = (c) => M_ASSETS.find(a => a.c === c);
+    // 経済ニュース（相場を動かす）
+    const M_NEWS = [
+        { t:'景気が良くなってきた！みんなの給料が上がりそう', e:{ '株':+0.02 }, k:'好況' },
+        { t:'不景気のニュース。会社のもうけが減りそう…', e:{ '株':-0.025 }, k:'不況' },
+        { t:'金利が上がった！銀行がもうかりやすい', e:{ BANKS:+0.05, BOND:-0.01, '株':-0.005 }, k:'金利' },
+        { t:'金利が下がった。お金を借りやすくなった', e:{ BANKS:-0.03, BOND:+0.01, '株':+0.01 }, k:'金利' },
+        { t:'円安がすすんだ（1ドルの値段が上がった）', e:{ USD:+0.03, ENGY:+0.02 }, k:'為替' },
+        { t:'円高がすすんだ（1ドルの値段が下がった）', e:{ USD:-0.03, TECH:+0.01 }, k:'為替' },
+        { t:'新しいゲームが大ヒット！', e:{ GAME:+0.12 }, k:'ニュース' },
+        { t:'ゲームの発売が延期に…', e:{ GAME:-0.09 }, k:'ニュース' },
+        { t:'新しい技術が発表されてIT株に注目', e:{ TECH:+0.10 }, k:'ニュース' },
+        { t:'ITの規制が強まるかも、という不安', e:{ TECH:-0.08 }, k:'ニュース' },
+        { t:'世界が不安定に。安全な金（ゴールド）が買われた', e:{ GOLD:+0.05, '株':-0.015 }, k:'リスク' },
+        { t:'世界が落ち着いた。株にお金がもどってきた', e:{ GOLD:-0.03, '株':+0.015 }, k:'リスク' },
+        { t:'物の値段が上がっている（インフレ）', e:{ '株':+0.005, BOND:-0.012, GOLD:+0.02 }, k:'インフレ' },
+        { t:'暗号資産が大ブーム！ものすごく上がった', e:{ COIN:+0.30 }, k:'暗号資産' },
+        { t:'暗号資産が大暴落…こわいね', e:{ COIN:-0.28 }, k:'暗号資産' },
+        { t:'新しいお店がたくさんできて服がよく売れた', e:{ CLOTH:+0.06 }, k:'ニュース' },
+        { t:'かぜが流行して薬がよく売れた', e:{ MED:+0.05 }, k:'ニュース' },
+        { t:'原油の値段が上がった', e:{ ENGY:+0.07, '株':-0.008 }, k:'エネルギー' },
+        { t:'町の再開発が決まって不動産に注目', e:{ REIT:+0.05, RAIL:+0.02 }, k:'不動産' },
+        { t:'とくに大きなニュースはない、おだやかな一日', e:{}, k:'平常' }
+    ];
+    // お金の用語じてん
+    const M_TERMS = [
+        ['元本（がんぽん）','さいしょに用意したお金のこと。「元本保証」は減らないという意味'],
+        ['利息・利子','お金を預けたり貸したりするともらえるおれい的なお金'],
+        ['金利','元本に対して1年でどれくらい利息がつくかの割合'],
+        ['単利','元本にだけ利息がつく計算。ふえ方は一定'],
+        ['複利','ふえた利息にもさらに利息がつく。長い時間でものすごい差になる'],
+        ['72の法則','72 ÷ 金利(%) ＝ お金が2倍になるおよその年数'],
+        ['分散投資','ひとつに全部かけず、いろいろに分けて買うこと。失敗を小さくできる'],
+        ['ドルコスト平均法','毎月おなじ金額ずつ買う方法。高いとき少なく、安いとき多く買える'],
+        ['リスク','危険という意味より「値動きのブレの大きさ」のこと'],
+        ['リターン','もうけのこと。リスクが大きいほどリターンも大きくなりやすい'],
+        ['配当（はいとう）','会社がもうけを株主に分けてくれるお金'],
+        ['株主','会社の一部を持っている人。株を買うとなれる'],
+        ['インデックス投信','たくさんの会社をまとめて買える商品。初心者にやさしい'],
+        ['債券（さいけん）','国や会社にお金を貸すこと。安全だがふえ方はゆっくり'],
+        ['インフレ','物の値段が上がること。同じ1万円で買えるものが減る'],
+        ['デフレ','物の値段が下がること。お金の価値は上がるが景気は悪くなりがち'],
+        ['円安','1ドルの値段が上がること。輸入品が高くなる'],
+        ['円高','1ドルの値段が下がること。海外旅行や輸入が安くなる'],
+        ['所得税','かせいだお金にかかる税金。たくさん稼ぐほど割合が上がる'],
+        ['消費税','買い物のときにかかる税金。いまは10%'],
+        ['手数料','売り買いのときにお店に払うお金。小さく見えて積もると大きい'],
+        ['不労所得','働かなくても入ってくるお金（配当・家賃など）'],
+        ['自己投資','勉強や本など、自分の力を上げるための使い方。いちばん利回りが高いとも言われる'],
+        ['予算','使っていい金額をさきに決めておくこと'],
+        ['固定費','毎月かならずかかるお金（家賃・通信費など）'],
+        ['変動費','月によって変わるお金（食費・遊び代など）'],
+        ['ローン','お金を借りること。かならず利息をつけて返す'],
+        ['リボ払い','毎月の支払いは少ないが利息がとても多くなる危険な方法'],
+        ['複利の逆','借金も複利。借りたままだと雪だるま式に増える'],
+        ['非課税','税金がかからないこと。NISAのような制度がある'],
+        ['ポートフォリオ','自分が持っている資産の組み合わせのこと'],
+        ['暴落','価格が一気に大きく下がること。あわてて売ると損しやすい'],
+        ['長期投資','何年も持ちつづける方法。短期でドキドキするより成功しやすい'],
+        ['詐欺（さぎ）','「かならずもうかる」は99%ウソ。うまい話には裏がある']
+    ];
+    // お金クイズ
+    const M_QUIZ = [
+        { q:'「複利」ってどういう意味？', c:['ふえた利息にもさらに利息がつく','元本にだけ利息がつく','税金のこと'], a:0, e:'複利は利息にも利息がつくので、長い時間ほどすごい差になるよ！' },
+        { q:'金利4%のとき、お金が2倍になるのはおよそ何年？（72の法則）', c:['約18年','約4年','約40年'], a:0, e:'72 ÷ 4 = 18。これが「72の法則」！' },
+        { q:'いちばんリスク（値動き）が大きいのは？', c:['暗号資産','国債','銀行預金'], a:0, e:'暗号資産は1日で何十%も動くことがある。国債や預金はとても安定。' },
+        { q:'「分散投資」をする理由は？', c:['ひとつが失敗しても全部を失わないため','もうけを最大にするため','税金が安くなるため'], a:0, e:'たまごを1つのカゴに盛るな、という言葉があるよ。' },
+        { q:'円安になると、どうなる？', c:['輸入するものが高くなる','海外旅行が安くなる','税金が下がる'], a:0, e:'円安＝円の力が弱い。だから外国のものが高く感じる。' },
+        { q:'インフレのとき、現金だけで持っていると？', c:['買えるものが減っていく','かってに増えていく','まったく変わらない'], a:0, e:'物の値段が上がるので、同じ1万円で買える量が減る。だから投資が大事。' },
+        { q:'リボ払いが危ないのはなぜ？', c:['利息がとても多くなるから','店で使えないから','税金がかかるから'], a:0, e:'毎月の支払いは軽く見えるけど、利息の合計がすごく大きくなる。' },
+        { q:'「かならず儲かる」と言われたら？', c:['詐欺をうたがう','すぐお金を出す','友だちにすすめる'], a:0, e:'投資に「かならず」はない。うまい話には必ず裏がある。' },
+        { q:'配当金とは？', c:['会社がもうけを株主に分けるお金','株を買うときの手数料','借金の利息'], a:0, e:'持っているだけでもらえる不労所得のひとつ。' },
+        { q:'ドルコスト平均法とは？', c:['毎月おなじ金額ずつ買う','安いときだけ買う','一気に全部買う'], a:0, e:'高いとき少なく、安いとき多く買えるので平均の値段が安定する。' },
+        { q:'いちばん利回りが高い投資と言われるのは？', c:['自己投資（勉強）','暗号資産','宝くじ'], a:0, e:'勉強して身につけた力は一生使えて、誰にも取られない。' },
+        { q:'買い物でかかる税金は？', c:['消費税','所得税','固定資産税'], a:0, e:'いまの消費税は10%。1000円の物は1100円払う。' },
+        { q:'株価が暴落したとき、やりがちな失敗は？', c:['こわくなって安値で売る','何もしない','積立をつづける'], a:0, e:'長期で見ると、あわてて売った人がいちばん損しやすい。' },
+        { q:'「元本保証」の意味は？', c:['預けたお金が減らない','かならず儲かる','税金がかからない'], a:0, e:'減らない代わりに、ふえ方もとてもゆっくり。' },
+        { q:'不労所得の例は？', c:['配当金や家賃','アルバイト代','おこづかい'], a:0, e:'働かなくても入るお金。これを増やすのが資産形成の目標。' },
+        { q:'1000円の商品が30%引き。いくら？', c:['700円','670円','730円'], a:0, e:'1000 × 0.7 = 700円。割引の計算は買い物で必ず使う！' },
+        { q:'月1万円を年利5%で30年つみたてると、およそ？', c:['約830万円','約360万円','約100万円'], a:0, e:'元本は360万円だけど、複利で約830万円に。時間が最強の味方！' },
+        { q:'銀行にお金を預ける一番の理由は？', c:['安全に保管して少し利息がつく','たくさん増やす','税金対策'], a:0, e:'普通預金の金利はとても低い。増やすには投資も必要。' },
+        { q:'株を買うということは？', c:['会社の一部を持つこと','会社にお金を貸すこと','会社で働くこと'], a:0, e:'株主になると配当をもらえたり、会社の成長で得をする。' },
+        { q:'家計簿をつける一番の目的は？', c:['お金の使い道を知るため','税金を減らすため','人に見せるため'], a:0, e:'何に使ったか分かると、ムダに気づける。お金持ちの第一歩。' }
+    ];
+    const M_BADGES = [
+        { id:'first', e:'🪙', n:'はじめての投資', ok:m=>Object.keys(m.hold||{}).length>=1 },
+        { id:'div', e:'🧺', n:'分散投資マスター', ok:m=>Object.keys(m.hold||{}).length>=5 },
+        { id:'m2', e:'📈', n:'資産2万円', ok:m=>mTotal(m)>=20000 },
+        { id:'m5', e:'💵', n:'資産5万円', ok:m=>mTotal(m)>=50000 },
+        { id:'m10', e:'💰', n:'資産10万円', ok:m=>mTotal(m)>=100000 },
+        { id:'m50', e:'🏦', n:'資産50万円', ok:m=>mTotal(m)>=500000 },
+        { id:'m100', e:'👑', n:'資産100万円', ok:m=>mTotal(m)>=1000000 },
+        { id:'save', e:'🐖', n:'貯金1万円', ok:m=>m.bank>=10000 },
+        { id:'quiz10', e:'🎓', n:'クイズ10問正解', ok:m=>(m.quizOk||0)>=10 },
+        { id:'quizall', e:'🧠', n:'クイズ全問正解', ok:m=>(m.quizOk||0)>=M_QUIZ.length },
+        { id:'divinc', e:'🌴', n:'はじめての不労所得', ok:m=>(m.divTotal||0)>0 },
+        { id:'work', e:'💪', n:'10回はたらいた', ok:m=>(m.workCount||0)>=10 }
+    ];
+    const M_EMPTY = () => ({
+        cash:M_START, bank:0, hold:{}, prices:{}, day:0, lastDay:null,
+        ledger:[], histTotal:[], news:[], quizOk:0, quizDone:[], badges:[],
+        divTotal:0, taxPaid:0, feePaid:0, workCount:0, workDay:null,
+        goal:100000, started:true, autoAmt:0, autoCode:'IDX'
+    });
+    function mLoad() {
+        let m; try { m = JSON.parse(localStorage.getItem(ukey('money'))); } catch(e) { m = null; }
+        if(!m || typeof m.cash !== 'number') { m = M_EMPTY(); M_ASSETS.forEach(a => m.prices[a.c] = a.p); }
+        M_ASSETS.forEach(a => { if(typeof m.prices[a.c] !== 'number') m.prices[a.c] = a.p; }); // 新しい商品が増えても壊れない
+        return Object.assign(M_EMPTY(), m);
+    }
+    function mSave(m) { localStorage.setItem(ukey('money'), JSON.stringify(m)); }
+    const mYen = (n) => '¥' + Math.round(n).toLocaleString('ja-JP');
+    function mHoldValue(m) { let s=0; Object.entries(m.hold||{}).forEach(([c,h]) => { s += (m.prices[c]||0) * h.qty; }); return s; }
+    function mTotal(m) { return (m.cash||0) + (m.bank||0) + mHoldValue(m); }
+    function mLog(m, t, amt) { m.ledger.unshift({ t, amt, d: Date.now() }); if(m.ledger.length > 60) m.ledger.length = 60; }
+
+    // --- 1日ぶん経済をすすめる（実際の日付が変わったら自動で動く） ---
+    function mTick(m) {
+        const today = calToday();
+        if(m.lastDay === today) return false;
+        const days = m.lastDay ? Math.min(calDayNum(today) - calDayNum(m.lastDay), 10) : 1; // まとめて最大10日ぶん
+        for(let i = 0; i < days; i++) {
+            const news = randObj(M_NEWS);
+            m.day++;
+            M_ASSETS.forEach(a => {
+                let move = (Math.random() * 2 - 1) * a.v;              // ふだんの値動き
+                move += 0.0004;                                        // 世界経済はゆっくり成長する
+                if(news.e[a.c] != null) move += news.e[a.c];            // 銘柄ごとのニュース
+                if(news.e[a.t] != null) move += news.e[a.t];            // 種類ごとのニュース
+                let p = m.prices[a.c] * (1 + move);
+                m.prices[a.c] = Math.max(Math.round(p * 100) / 100, a.p * 0.05); // 0にはならない
+            });
+            // 配当・分配金（持っている分だけ、1日ぶん）
+            let div = 0;
+            Object.entries(m.hold || {}).forEach(([c, h]) => {
+                const a = M_ASSET(c); if(!a || !a.div) return;
+                div += m.prices[c] * h.qty * (a.div / 365);
+            });
+            if(div >= 1) { m.cash += Math.round(div); m.divTotal += Math.round(div); mLog(m, '配当・分配金', Math.round(div)); }
+            // 銀行の利息（年0.1%）
+            if(m.bank > 0) { const it = m.bank * 0.001 / 365; if(it >= 1) { m.bank += Math.round(it); mLog(m, '預金の利息', Math.round(it)); } }
+            // 毎月のおこづかい（30日ごと）
+            if(m.day % 30 === 0) { m.cash += 3000; mLog(m, 'おこづかい', 3000); }
+            // 自動つみたて（設定していれば毎日ちょっとずつ）
+            if(m.autoAmt > 0 && m.cash >= m.autoAmt) { mBuyInner(m, m.autoCode, m.autoAmt, true); }
+            m.news.unshift({ t: news.t, k: news.k, day: m.day });
+            if(m.news.length > 12) m.news.length = 12;
+        }
+        m.lastDay = today;
+        m.histTotal.push({ d: today, v: Math.round(mTotal(m)) });
+        if(m.histTotal.length > 120) m.histTotal.shift();
+        return true;
+    }
+    // --- 売買（手数料0.5%・利益に約20%の税金） ---
+    function mBuyInner(m, code, yen, quiet) {
+        const a = M_ASSET(code); if(!a) return '商品が見つからない';
+        const price = m.prices[code];
+        const fee = Math.round(yen * 0.005);
+        const useable = yen - fee;
+        if(yen <= 0) return '金額を入れてね';
+        if(m.cash < yen) return 'お金が足りないよ';
+        const qty = useable / price;
+        if(qty <= 0) return '金額が小さすぎるよ';
+        m.cash -= yen; m.feePaid += fee;
+        const h = m.hold[code] || { qty:0, cost:0 };
+        h.qty += qty; h.cost += useable;
+        m.hold[code] = h;
+        if(!quiet) mLog(m, `${a.n} を買う`, -yen);
+        else mLog(m, `つみたて（${a.n}）`, -yen);
+        return null;
+    }
+    function mSellInner(m, code, ratio) {
+        const a = M_ASSET(code); if(!a) return '商品が見つからない';
+        const h = m.hold[code]; if(!h || h.qty <= 0) return '持っていないよ';
+        const sellQty = h.qty * ratio;
+        const gross = sellQty * m.prices[code];
+        const cost = h.cost * ratio;
+        const fee = Math.round(gross * 0.005);
+        let profit = gross - cost - fee;
+        let tax = profit > 0 ? Math.round(profit * 0.2) : 0;   // もうけに約20%の税金
+        const net = Math.round(gross - fee - tax);
+        m.cash += net; m.feePaid += fee; m.taxPaid += tax;
+        h.qty -= sellQty; h.cost -= cost;
+        if(h.qty < 0.0000001) delete m.hold[code];
+        mLog(m, `${a.n} を売る${tax ? `（税金${mYen(tax)}）` : ''}`, net);
+        return null;
+    }
+    // --- 勉強でお金を稼ぐ（既存の学習フックから呼ばれる） ---
+    function moneyEarnFromStudy(count, kind) {
+        if(!currentUserId || !count || count <= 0) return;
+        const m = mLoad(); mTick(m);
+        const per = kind === 'test' ? 15 : 10;
+        const amt = count * per;
+        m.cash += amt;
+        mLog(m, kind === 'test' ? 'テストのごほうび' : '勉強のごほうび', amt);
+        mSave(m); mAwardBadges();
+    }
+    function mAwardBadges() {
+        const m = mLoad(); let got = [];
+        M_BADGES.forEach(b => { if(!m.badges.includes(b.id) && b.ok(m)) { m.badges.push(b.id); got.push(b); } });
+        if(got.length) { mSave(m); playSfx('badge'); setTimeout(() => alert('💰 お金バッジGET！\n' + got.map(b => b.e + ' ' + b.n).join('\n')), 500); }
+    }
+
+    // ---------------- 画面 ----------------
+    let mTab = 'home';
+    function mSwitchTab(t) { mTab = t; renderMoney(); }
+    function renderMoney() {
+        if(!currentUserId) { document.getElementById('money-body').innerHTML = ''; return; }
+        const m = mLoad();
+        const moved = mTick(m);
+        if(moved) { mSave(m); mAwardBadges(); vbRecord('money', Math.round(mTotal(m))); } // 資産をオンライン対戦ボードへ
+        const total = mTotal(m), hv = mHoldValue(m);
+        const prev = m.histTotal.length > 1 ? m.histTotal[m.histTotal.length - 2].v : M_START;
+        const diff = total - prev;
+        let html = `<div class="m-top">
+            <div style="font-size:12px;">そう資産</div>
+            <div class="m-total">${mYen(total)}</div>
+            <div class="m-sub">現金 ${mYen(m.cash)}／貯金 ${mYen(m.bank)}／投資 ${mYen(hv)}　${diff !== 0 ? `<b>${diff > 0 ? '▲+' : '▼'}${mYen(Math.abs(diff)).slice(1)}</b>` : ''}</div>
+            <div class="m-sub">${m.day}日目　目標 ${mYen(m.goal)} まで あと ${mYen(Math.max(0, m.goal - total))}</div>
+        </div>`;
+        html += `<div class="m-tabs">
+            ${[['home','🏠 ホーム'],['invest','📈 投資'],['bank','🏦 銀行'],['quiz','❓ クイズ'],['terms','📖 じてん'],['book','📒 家計簿']]
+              .map(([k, n]) => `<button class="btn ${mTab === k ? 'btn-active' : 'btn-inactive'}" onclick="mSwitchTab('${k}')">${n}</button>`).join('')}
+        </div>`;
+        if(mTab === 'home') html += mHomeHtml(m, total);
+        if(mTab === 'invest') html += mInvestHtml(m);
+        if(mTab === 'bank') html += mBankHtml(m);
+        if(mTab === 'quiz') html += mQuizHtml(m);
+        if(mTab === 'terms') html += mTermsHtml();
+        if(mTab === 'book') html += mBookHtml(m);
+        document.getElementById('money-body').innerHTML = html;
+        if(mTab === 'home') mDrawChart(m);
+    }
+    function mHomeHtml(m, total) {
+        const rival = gOtherState ? null : null;
+        let h = '';
+        // ニュース
+        h += `<div class="m-card"><b>📰 きょうの経済ニュース</b>`;
+        if(m.news.length) m.news.slice(0, 3).forEach(n => { h += `<div class="m-news"><span class="m-pill">${esc(n.k)}</span> ${esc(n.t)}</div>`; });
+        else h += `<div style="color:#888;font-size:13px;">明日になるとニュースが出るよ</div>`;
+        h += `</div>`;
+        // 資産推移グラフ
+        h += `<div class="m-card"><b>📊 そう資産のうつりかわり</b><canvas id="m-chart" class="m-chart"></canvas>
+            <div style="font-size:11px;color:#888;">毎日ちょっとずつ動くよ。長い目で見るのが投資のコツ</div></div>`;
+        // 稼ぐ
+        const canWork = m.workDay !== calToday();
+        h += `<div class="m-card"><b>💪 お金をかせぐ</b>
+            <div style="font-size:12px;color:#888;margin:4px 0;">勉強やテストをすると自動でもらえる（1問10円／テスト15円）</div>
+            <div class="m-row"><div><div class="m-name">お手伝いをする</div><div class="m-desc">1日1回・300〜800円</div></div>
+              <button class="m-btn ${canWork ? 'm-buy' : 'm-info'}" onclick="mWork()" ${canWork ? '' : 'disabled'}>${canWork ? 'はたらく' : '今日はやった'}</button></div>
+            <div class="m-row"><div><div class="m-name">つみたて設定</div><div class="m-desc">毎日じどうで少しずつ投資（ドルコスト平均法）</div></div>
+              <button class="m-btn m-sell" onclick="mSetAuto()">${m.autoAmt > 0 ? `毎日${mYen(m.autoAmt)}` : '設定する'}</button></div>
+        </div>`;
+        // 内訳
+        h += `<div class="m-card"><b>🥧 資産のうちわけ</b>`;
+        const parts = [['現金', m.cash, '#f39c12'], ['貯金', m.bank, '#3498db'], ['投資', mHoldValue(m), '#27ae60']];
+        parts.forEach(([n, v, c]) => {
+            const pct = total > 0 ? Math.round(v / total * 100) : 0;
+            h += `<div style="margin:6px 0;"><div style="display:flex;justify-content:space-between;font-size:13px;"><span>${n}</span><span>${mYen(v)}（${pct}%）</span></div>
+                <div class="g-bar"><div style="width:${pct}%;background:${c};"></div></div></div>`;
+        });
+        h += `</div>`;
+        // 目標・バッジ
+        h += `<div class="m-card"><b>🎯 目標</b> <button class="m-btn m-info" onclick="mSetGoal()">かえる</button>
+            <div class="g-bar" style="margin-top:6px;"><div style="width:${Math.min(100, Math.round(total / m.goal * 100))}%"></div></div>
+            <div style="font-size:12px;color:#888;">${mYen(total)} / ${mYen(m.goal)}（${Math.min(100, Math.round(total / m.goal * 100))}%）</div></div>`;
+        h += `<div class="m-card"><b>🏅 お金バッジ（${m.badges.length}/${M_BADGES.length}）</b><div class="badges" style="margin-top:8px;">`;
+        M_BADGES.forEach(b => { h += `<div class="badge ${m.badges.includes(b.id) ? 'got' : ''}"><div class="b-e">${b.e}</div>${esc(b.n)}</div>`; });
+        h += `</div></div>`;
+        // 統計
+        h += `<div class="m-card"><b>📌 これまでの記録</b>
+            <div class="m-row"><span>もらった配当・分配金</span><b>${mYen(m.divTotal)}</b></div>
+            <div class="m-row"><span>払った税金</span><b>${mYen(m.taxPaid)}</b></div>
+            <div class="m-row"><span>払った手数料</span><b>${mYen(m.feePaid)}</b></div>
+            <div class="m-row"><span>はたらいた回数</span><b>${m.workCount}回</b></div></div>`;
+        return h;
+    }
+    function mInvestHtml(m) {
+        let h = `<div class="m-card"><b>📈 買えるもの</b>
+            <div style="font-size:12px;color:#888;">売り買いには手数料0.5%、もうけには税金20%がかかるよ（本物と同じ）</div></div>`;
+        const types = [...new Set(M_ASSETS.map(a => a.t))];
+        types.forEach(t => {
+            h += `<div class="m-card"><b>${t}</b>`;
+            M_ASSETS.filter(a => a.t === t).forEach(a => {
+                const p = m.prices[a.c];
+                const chg = ((p - a.p) / a.p) * 100;
+                const cls = chg > 0.5 ? 'm-up' : chg < -0.5 ? 'm-down' : 'm-flat';
+                const hold = m.hold[a.c];
+                h += `<div class="m-row"><div style="flex:1;min-width:0;">
+                        <div class="m-name">${esc(a.n)} ${a.div ? `<span class="m-pill">配当${(a.div * 100).toFixed(1)}%</span>` : ''}</div>
+                        <div class="m-desc">${esc(a.d)}</div>
+                        ${hold ? `<div class="m-desc">保有 ${mYen(p * hold.qty)}（もうけ ${hold.cost ? ((p * hold.qty - hold.cost) >= 0 ? '+' : '') + mYen(p * hold.qty - hold.cost).replace('¥', '¥') : '-'}）</div>` : ''}
+                      </div>
+                      <div class="m-price"><div>${mYen(p)}</div><div class="${cls}" style="font-size:12px;">${chg >= 0 ? '+' : ''}${chg.toFixed(1)}%</div>
+                        <div style="margin-top:4px;white-space:nowrap;">
+                          <button class="m-btn m-buy" onclick="mBuy('${a.c}')">買う</button>
+                          ${hold ? `<button class="m-btn m-sell" onclick="mSell('${a.c}')">売る</button>` : ''}
+                        </div></div></div>`;
+            });
+            h += `</div>`;
+        });
+        h += `<div class="m-warn">⚠️ 暗号資産のように値動きが激しいものは、一度に全部を入れないこと。<b>分散</b>と<b>長期</b>が投資の基本！</div>`;
+        return h;
+    }
+    function mBankHtml(m) {
+        return `<div class="m-card"><b>🏦 銀行</b>
+            <div style="font-size:12px;color:#888;">貯金は年0.1%の利息。安全だけど、ふえ方はとてもゆっくり</div>
+            <div class="m-row"><span>現金</span><b>${mYen(m.cash)}</b></div>
+            <div class="m-row"><span>貯金</span><b>${mYen(m.bank)}</b></div>
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <button class="btn" style="background:#3498db;color:#fff;flex:1;" onclick="mDeposit()">預ける</button>
+              <button class="btn" style="background:#e67e22;color:#fff;flex:1;" onclick="mWithdraw()">おろす</button>
+            </div></div>
+            <div class="m-card"><b>🧮 複利シミュレーター</b>
+            <div style="font-size:12px;color:#888;">毎月つみたてたら将来いくらになる？（72の法則も試してみよう）</div>
+            <div class="st-grid" style="margin-top:8px;">
+              <div class="st-cell">毎月<input class="st-input" id="sim-m" type="number" value="10000"></div>
+              <div class="st-cell">年利%<input class="st-input" id="sim-r" type="number" value="5"></div>
+              <div class="st-cell">年数<input class="st-input" id="sim-y" type="number" value="30"></div>
+            </div>
+            <button class="btn" style="background:#11998e;color:#fff;width:100%;margin-top:8px;" onclick="mSimulate()">けいさんする</button>
+            <div id="sim-out" style="margin-top:10px;"></div></div>`;
+    }
+    function mQuizHtml(m) {
+        const done = m.quizDone || [];
+        return `<div class="m-card"><b>❓ お金クイズ</b>
+            <div style="font-size:12px;color:#888;">正解すると200円もらえる（1問1回だけ）。${done.length}/${M_QUIZ.length}問クリア</div>
+            <div class="g-bar" style="margin-top:6px;"><div style="width:${Math.round(done.length / M_QUIZ.length * 100)}%"></div></div>
+            <button class="btn" style="background:#11998e;color:#fff;width:100%;margin-top:10px;" onclick="mStartQuiz()">${done.length >= M_QUIZ.length ? '🔁 もう一度あそぶ（お金なし）' : '▶️ クイズをはじめる'}</button></div>`;
+    }
+    function mTermsHtml() {
+        let h = `<div class="m-card"><b>📖 お金の用語じてん（${M_TERMS.length}語）</b>`;
+        M_TERMS.forEach(([w, d]) => { h += `<div class="m-term"><b>${esc(w)}</b><br>${esc(d)}</div>`; });
+        h += `</div>`;
+        return h;
+    }
+    function mBookHtml(m) {
+        let h = `<div class="m-card"><b>📒 家計簿（お金の出入り）</b>
+            <div style="font-size:12px;color:#888;">何にお金を使ったか分かると、ムダに気づける</div>`;
+        if(!m.ledger.length) h += `<div style="color:#888;font-size:13px;padding:8px;">まだ記録がないよ</div>`;
+        m.ledger.slice(0, 40).forEach(l => {
+            h += `<div class="m-row"><span style="font-size:13px;">${esc(l.t)}</span>
+                <b class="${l.amt >= 0 ? 'm-up' : 'm-down'}">${l.amt >= 0 ? '+' : '−'}${mYen(Math.abs(l.amt)).slice(1)}</b></div>`;
+        });
+        h += `</div>`;
+        return h;
+    }
+    // ---------------- そうさ ----------------
+    function mBuy(code) {
+        const m = mLoad(); const a = M_ASSET(code);
+        const v = prompt(`「${a.n}」をいくら分 買う？\n今の値段: ${mYen(m.prices[code])}\n持っている現金: ${mYen(m.cash)}\n（手数料0.5%がかかるよ）`, '1000');
+        if(v === null) return;
+        const yen = Math.floor(Number(v));
+        if(!isFinite(yen) || yen <= 0) { alert('数字を入れてね'); return; }
+        const err = mBuyInner(m, code, yen);
+        if(err) { alert(err); return; }
+        mSave(m); playSfx('correct'); mAwardBadges(); vbRecord('money', Math.round(mTotal(m))); renderMoney();
+    }
+    function mSell(code) {
+        const m = mLoad(); const a = M_ASSET(code); const h = m.hold[code];
+        if(!h) { alert('持っていないよ'); return; }
+        const val = m.prices[code] * h.qty;
+        const v = prompt(`「${a.n}」をどれくらい売る？\n持っている分: ${mYen(val)}\n\n1 = ぜんぶ / 0.5 = 半分 / 0.25 = 4分の1`, '1');
+        if(v === null) return;
+        const r = Number(v);
+        if(!isFinite(r) || r <= 0 || r > 1) { alert('1 / 0.5 / 0.25 のように入れてね'); return; }
+        const err = mSellInner(m, code, r);
+        if(err) { alert(err); return; }
+        mSave(m); playSfx('correct'); mAwardBadges(); vbRecord('money', Math.round(mTotal(m))); renderMoney();
+    }
+    function mDeposit() {
+        const m = mLoad();
+        const v = prompt(`いくら預ける？（現金 ${mYen(m.cash)}）`, String(Math.min(1000, m.cash)));
+        if(v === null) return;
+        const yen = Math.floor(Number(v));
+        if(!isFinite(yen) || yen <= 0) { alert('数字を入れてね'); return; }
+        if(yen > m.cash) { alert('現金が足りないよ'); return; }
+        m.cash -= yen; m.bank += yen; mLog(m, '銀行に預けた', -yen);
+        mSave(m); mAwardBadges(); renderMoney();
+    }
+    function mWithdraw() {
+        const m = mLoad();
+        const v = prompt(`いくらおろす？（貯金 ${mYen(m.bank)}）`, String(Math.min(1000, m.bank)));
+        if(v === null) return;
+        const yen = Math.floor(Number(v));
+        if(!isFinite(yen) || yen <= 0) { alert('数字を入れてね'); return; }
+        if(yen > m.bank) { alert('貯金が足りないよ'); return; }
+        m.bank -= yen; m.cash += yen; mLog(m, '銀行からおろした', yen);
+        mSave(m); renderMoney();
+    }
+    function mWork() {
+        const m = mLoad();
+        if(m.workDay === calToday()) { alert('今日はもうはたらいたよ。また明日！'); return; }
+        const jobs = ['お皿あらい','お風呂そうじ','洗濯たたみ','買い物のおてつだい','くつそろえ','ゴミ出し','部屋のそうじ'];
+        const job = randObj(jobs), pay = randNum(3, 8) * 100;
+        m.cash += pay; m.workDay = calToday(); m.workCount = (m.workCount || 0) + 1;
+        mLog(m, `おてつだい（${job}）`, pay);
+        mSave(m); playSfx('finish'); mAwardBadges();
+        alert(`💪 「${job}」をがんばった！\n${mYen(pay)} もらったよ`);
+        renderMoney();
+    }
+    function mSetAuto() {
+        const m = mLoad();
+        const v = prompt('毎日じどうで投資する金額は？（0でやめる）\n少しずつ買うと「ドルコスト平均法」になって安全だよ', String(m.autoAmt || 100));
+        if(v === null) return;
+        const yen = Math.floor(Number(v));
+        if(!isFinite(yen) || yen < 0) { alert('数字を入れてね'); return; }
+        m.autoAmt = yen; m.autoCode = 'IDX';
+        mSave(m);
+        alert(yen > 0 ? `毎日 ${mYen(yen)} ずつ「インデックス投信」を自動で買うよ📈` : 'つみたてをやめたよ');
+        renderMoney();
+    }
+    function mSetGoal() {
+        const m = mLoad();
+        const v = prompt('目標の金額は？', String(m.goal));
+        if(v === null) return;
+        const yen = Math.floor(Number(v));
+        if(!isFinite(yen) || yen <= 0) { alert('数字を入れてね'); return; }
+        m.goal = yen; mSave(m); renderMoney();
+    }
+    function mSimulate() {
+        const mo = Number(document.getElementById('sim-m').value);
+        const r = Number(document.getElementById('sim-r').value);
+        const y = Number(document.getElementById('sim-y').value);
+        const out = document.getElementById('sim-out');
+        if(!isFinite(mo) || !isFinite(r) || !isFinite(y) || mo < 0 || y <= 0 || y > 60) { out.innerHTML = '<span style="color:#e74c3c;">数字を入れてね（年数は1〜60）</span>'; return; }
+        const n = y * 12, im = r / 100 / 12;
+        const fv = im === 0 ? mo * n : mo * ((Math.pow(1 + im, n) - 1) / im);
+        const paid = mo * n;
+        const dbl = r > 0 ? (72 / r).toFixed(1) : '—';
+        out.innerHTML = `<div class="m-card" style="margin:0;">
+            <div class="m-row"><span>じぶんで出したお金</span><b>${mYen(paid)}</b></div>
+            <div class="m-row"><span>ふえた分（複利のちから）</span><b class="m-up">+${mYen(fv - paid).slice(1)}</b></div>
+            <div class="m-row"><span>${y}年後の合計</span><b style="font-size:18px;color:#11998e;">${mYen(fv)}</b></div>
+            <div style="font-size:12px;color:#888;margin-top:6px;">💡 72の法則：72 ÷ ${r} ＝ 約${dbl}年 でお金が2倍になる計算だよ</div></div>`;
+        playSfx('correct');
+    }
+    // クイズ
+    let mQ = {};
+    function mStartQuiz() {
+        const m = mLoad();
+        const done = m.quizDone || [];
+        let pool = M_QUIZ.map((q, i) => i).filter(i => !done.includes(i));
+        const replay = pool.length === 0;
+        if(replay) pool = M_QUIZ.map((q, i) => i);
+        mQ = { list: pool.sort(() => Math.random() - 0.5).slice(0, 5), i: 0, ok: 0, replay };
+        mQuizShow();
+    }
+    function mQuizShow() {
+        if(mQ.i >= mQ.list.length) {
+            gOpenModal(`<h2>💰 けっか</h2><div class="g-q">${mQ.ok} / ${mQ.list.length} 正解！</div>
+                <p style="color:#888;">${mQ.replay ? '（2回目なのでお金はもらえないよ）' : `もらったお金：${mYen(mQ.ok * 200)}`}</p>
+                <button class="btn" style="background:#11998e;color:#fff;" onclick="gCloseModal(); mSwitchTab('quiz');">とじる</button>`);
+            return;
+        }
+        const qi = mQ.list[mQ.i], q = M_QUIZ[qi];
+        gOpenModal(`<h2>❓ お金クイズ (${mQ.i + 1}/${mQ.list.length})</h2>
+            <div style="font-size:19px;font-weight:bold;margin:16px 0;">${esc(q.q)}</div>
+            <div style="max-width:520px;margin:0 auto;">${q.c.map((c, ci) => `<button class="m-quiz-btn" onclick="mQuizPick(${ci})">${esc(c)}</button>`).join('')}</div>
+            <div style="color:#888;margin-top:10px;">せいかい ${mQ.ok}</div>`);
+    }
+    function mQuizPick(ci) {
+        const qi = mQ.list[mQ.i], q = M_QUIZ[qi];
+        const right = ci === q.a;
+        const m = mLoad();
+        if(right) {
+            mQ.ok++; playSfx('correct');
+            if(!mQ.replay && !(m.quizDone || []).includes(qi)) {
+                m.quizDone.push(qi); m.quizOk = (m.quizOk || 0) + 1;
+                m.cash += 200; mLog(m, 'クイズ正解のごほうび', 200); mSave(m); mAwardBadges();
+            }
+        } else playSfx('wrong');
+        gOpenModal(`<h2>${right ? '⭕️ せいかい！' : '❌ ざんねん'}</h2>
+            <div style="font-size:18px;margin:12px 0;">答え：<b>${esc(q.c[q.a])}</b></div>
+            <div class="m-news" style="text-align:left;max-width:520px;margin:12px auto;">💡 ${esc(q.e)}</div>
+            ${right && !mQ.replay ? '<div style="color:#11998e;font-weight:bold;">+200円 もらった！</div>' : ''}
+            <button class="btn" style="background:#11998e;color:#fff;margin-top:10px;" onclick="mQ.i++; mQuizShow();">つぎへ</button>`);
+    }
+    function mHelp() {
+        gOpenModal(`<div style="text-align:left;max-width:640px;margin:0 auto;">
+            <h2 style="text-align:center;">💰 お金・経済 の あそび方</h2>
+            <div class="uh-box"><h3>🎯 目標</h3><p>大人になってお金に困らないように、<b>今のうちにお金の勉強</b>をするゲーム。1万円からスタートして、かせいで・ためて・投資して、資産をふやしていこう！</p></div>
+            <div class="uh-box"><h3>💪 かせぐ（収入）</h3><p>・<b>勉強やテスト</b>をすると自動でお金がもらえる（1問10円／テストは15円）<br>・<b>おてつだい</b>は1日1回（300〜800円）<br>・<b>クイズ</b>に正解すると200円<br>・30日ごとに<b>おこづかい3000円</b></p></div>
+            <div class="uh-box"><h3>🏦 ためる（貯金）</h3><p>銀行に預けると年0.1%の利息。安全だけどふえ方はゆっくり。<b>だから投資も大事</b>だと分かるよ。</p></div>
+            <div class="uh-box"><h3>📈 ふやす（投資）</h3><p>株・投信・債券・金・外貨・不動産・暗号資産が買える。<br>・値段は<b>毎日</b>ニュースで動く（実際の日付が変わったとき）<br>・持っていると<b>配当</b>がもらえる商品もある<br>・売り買いには<b>手数料0.5%</b>、もうけには<b>税金20%</b>（本物と同じ！）</p></div>
+            <div class="uh-box"><h3>⚠️ 大事な考え方</h3><p>・<b>分散</b>：ひとつに全部かけない<br>・<b>長期</b>：あわてて売らない<br>・<b>つみたて</b>：毎日おなじ額を買うと安全（ドルコスト平均法）<br>・<b>複利</b>：時間が最強の味方。シミュレーターで試してみて<br>・「かならず儲かる」は<b>詐欺</b>。うまい話には裏がある</p></div>
+            <div class="uh-box"><h3>📖 勉強もできる</h3><p>「じてん」には${M_TERMS.length}個の用語、「クイズ」には${M_QUIZ.length}問。ぜんぶ覚えたら大人より詳しくなれるよ！<br>資産は⚔️対戦ボードにも出るので、りらんと競争できる。</p></div>
+            <div style="text-align:center;"><button class="btn" style="background:#34495e;color:#fff;" onclick="gCloseModal()">とじる</button></div></div>`);
+    }
+
+    function mDrawChart(m) {
+        const cv = document.getElementById('m-chart'); if(!cv || typeof Chart === 'undefined') return;
+        const data = m.histTotal.slice(-40);
+        if(m._chart) { try { m._chart.destroy(); } catch(e) {} }
+        if(window.__mChart) { try { window.__mChart.destroy(); } catch(e) {} }
+        window.__mChart = new Chart(cv, {
+            type:'line',
+            data:{ labels: data.map((_, i) => i + 1), datasets:[{ label:'そう資産', data: data.map(d => d.v), borderColor:'#11998e', backgroundColor:'rgba(17,153,142,.15)', fill:true, tension:.3, pointRadius:0 }] },
+            options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:false } } }
+        });
+    }
     // 🎯 反射神経テスト（緑になったらタップ・反応ミリ秒）
     function gReaction() {
         gState = { phase:'wait', t0:0 };
@@ -1349,6 +1904,7 @@
         if(id === 'study') { rotateMotivation(); renderUpdateBox(); renderTodayHomework(); } // 応援＋お知らせ＋今日の宿題
         if(id === 'calendar') renderCalendar();
         if(id === 'game') renderGame();
+        if(id === 'money') renderMoney();
         if(id === 'run') showRunCheer();
     }
 
@@ -3163,7 +3719,7 @@
         // 🎉 ごほうび演出（合格 or 自己ベスト更新で紙吹雪）
         motiAddDone(ekQData.length); flowerAddActivity();
         hwRecord('eiken', { grade }); // 宿題の自動チェック用に「英検◯級を1回やった」を記録
-        gameOnActivity(ekQData.length, { subj:'英語', correct: nO }); // 🎮 コイン/XP/連続/バッジ
+        gameOnActivity(ekQData.length, { subj:'英語', correct: nO }); moneyEarnFromStudy(nO, 'test'); // 🎮💰
         if(pass) playSfx('finish');
         const isBest = ekStats.best[grade] === score && ekStats.totalTests > 1;
         if(pass || isBest) celebrate('big');
@@ -3560,7 +4116,7 @@
             let pct = Math.round(chk / total * 100); // 100点満点の点数（例: 10問中2問=20点）
             saveScore(pStudy.subj, chk * 1, `勉強: ${pStudy.unit} (${chk}/${total}問)`, '', pct);
             motiAddDone(chk); flowerAddActivity();
-            gameOnActivity(chk, { subj: pStudy.subj, correct: chk }); playSfx('finish'); // 🎮
+            gameOnActivity(chk, { subj: pStudy.subj, correct: chk }); moneyEarnFromStudy(chk, 'study'); playSfx('finish'); // 🎮💰
             celebrate(chk >= 20 ? 'big' : '');
             let praise = chk >= 30 ? 'すごい集中力！天才かも✨' : chk >= 15 ? 'その調子！よくがんばった🔥' : 'ナイス！1歩前進だね🌱';
             alert(`🎉 ${total}問中${chk}問クリア！ 今回の点数: ${pct}点（100点満点）${addedReview > 0 ? `\n✍️ チェックしなかった${addedReview}問は「間違い直し」に入れておいたよ` : ''}\n${praise}`);
@@ -3738,7 +4294,7 @@
 
         motiAddDone(testQuestionsData.length); flowerAddActivity();
         hwRecord('test', { subj: pTest.subj, unit: pTest.unit, level: pTest.level, pct: totalPct }); // 宿題の自動チェック用
-        gameOnActivity(testQuestionsData.length, { subj: pTest.subj, correct }); // 🎮
+        gameOnActivity(testQuestionsData.length, { subj: pTest.subj, correct }); moneyEarnFromStudy(correct, 'test'); // 🎮💰
         playSfx(totalPct >= 80 ? 'finish' : totalPct >= 60 ? 'correct' : 'wrong');
         // 🎉 高得点は紙吹雪でお祝い
         if(totalPct >= 80) celebrate('big');
