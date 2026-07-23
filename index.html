@@ -490,7 +490,7 @@
 
     <!-- ================= 🎮 きろく・あそび ================= -->
     <div id="view-game" class="view">
-        <h1 class="no-print">🎮 きろく・あそび</h1>
+        <h1 class="no-print">🎮 きろく・あそび <button style="font-size:22px;background:none;border:none;cursor:pointer;opacity:.5;vertical-align:middle;" title="あそび方の説明" onclick="gHelp()">❓</button></h1>
         <div id="game-body"></div>
     </div>
     <div id="game-modal" class="g-modal no-print">
@@ -714,7 +714,7 @@
 
     // ===== 📢 アップデートのお知らせ（応援バナーの上）。今回の内容だけ・日付は出さない =====
     // 【更新するとき】アップデートを入れたら、このUPDATE_NOWを今回の内容に書きかえる。
-    const UPDATE_NOW = '「今日の宿題」をホーム画面に追加したよ📌 宿題は、アプリでその勉強（英検テスト・方程式・単語など）を実際にやると、自動でまるが付くようになりました！自分ではチェックできないから、どんどんやってまるを増やそう🔥';
+    const UPDATE_NOW = '⚔️ 対戦ボードができたよ！ミニゲームで記録を出すと自動で保存されて、なお と りらん の点数がならんで表示されるようになりました。じゅんばんを待たずに、すきなときにあそぶだけでOK！いちばん上に「今どっちがリードしているか」も出るよ🏆';
     function renderUpdateBox() {
         const el = document.getElementById('update-box'); if(!el) return;
         el.innerHTML = `<div class="u-now">📢 今回のアップデート：${esc(UPDATE_NOW)}</div>`;
@@ -970,10 +970,13 @@
         html += `<div class="section"><h3>⭐ お気に入りの問題 (${g.favs.length})</h3>`;
         html += g.favs.length ? g.favs.slice(0,20).map((f,i)=>`<div class="g-fav">${esc(f.q)}<button class="btn" style="background:#95a5a6;color:#fff;padding:2px 8px;font-size:11px;float:right;" onclick="gUnfav(${i})">削除</button></div>`).join('') : '<div style="color:#888;font-size:13px;">問題の「⭐」を押すとここに保存されるよ</div>';
         html += `</div>`;
-        // ミニゲーム
-        html += `<div class="section"><h3>🎲 ミニゲーム＆ツール</h3><div class="g-launch">
+        // 🛠️ ツール（勉強を助けるもの）
+        html += `<div class="section"><h3>🛠️ ツール</h3><div class="g-launch">
             <button class="btn" style="background:#e74c3c;color:#fff;" onclick="gStopwatch()">⏱️ ストップウォッチ</button>
             <button class="btn" style="background:#e67e22;color:#fff;" onclick="gPomodoro()">🍅 ポモドーロ</button>
+        </div></div>`;
+        // 🎲 ミニゲーム（1人であそぶ）
+        html += `<div class="section"><h3>🎲 ミニゲーム（1人）</h3><div class="g-launch">
             <button class="btn" style="background:#9b59b6;color:#fff;" onclick="gFlashMath()">⚡ フラッシュ暗算</button>
             <button class="btn" style="background:#16a085;color:#fff;" onclick="gTyping()">⌨️ 英単語タイピング</button>
             <button class="btn" style="background:#2980b9;color:#fff;" onclick="gVocab()">📝 英単語4択</button>
@@ -985,6 +988,11 @@
             <button class="btn" style="background:#c2185b;color:#fff;" onclick="gStopClock()">⏰ 10秒ぴったり</button>
             <button class="btn" style="background:#f39c12;color:#fff;" onclick="gSlot()">🎰 コインスロット</button>
         </div></div>`;
+        // ⚔️ 対戦ボード（それぞれ好きなときに遊ぶだけ。記録が出たら自動で保存＆反映される）
+        html += `<div class="section"><h3>⚔️ 対戦ボード（${esc(stMe().name)} vs ${esc(stOtherUser().name)}）</h3>
+            <div style="font-size:12px;color:#888;margin-bottom:8px;">ミニゲームで記録を出すと自動で保存されて、ここに2人の点数が反映されるよ。${SYNC_URL ? '🌐 オンライン同期ON' : '📱 この端末の中で2人のきろくを共有中'}
+            ${SYNC_URL ? ' <button class="btn" style="background:#3498db;color:#fff;padding:2px 10px;font-size:12px;" onclick="vbRefresh()">🔄 さいしんにする</button>' : ''}</div>
+            ${vbBoardHtml()}</div>`;
         // 設定
         html += `<div class="section"><h3>⚙️ せってい</h3>
             <div class="g-toggle"><span>🔊 こうか音</span><button class="g-switch ${g.sfx?'on':'off'}" onclick="gToggle('sfx')">${g.sfx?'ON':'OFF'}</button></div>
@@ -1025,6 +1033,101 @@
         document.getElementById('game-modal').classList.remove('on');
         if(document.getElementById('view-game').classList.contains('active')) renderGame();
     }
+
+    // ❓ あそび方の説明（コインの貯め方・使い方・レベル・バッジ）
+    function gHelp() {
+        gOpenModal(`<div style="text-align:left; max-width:640px; margin:0 auto;">
+            <h2 style="text-align:center;">❓ きろく・あそび の あそび方</h2>
+            <div class="uh-box"><h3>🪙 コインの ためかた</h3>
+                <p>べんきょうやテストを1問やるごとに <b>コインが1まい</b> たまるよ。<br>・ふつうの勉強で「✅ チェックした分を記録」をおす<br>・テストや英検テストをやる<br>・間違い直しをやる<br>…どれでも、やったぶんだけ自動でたまる！</p></div>
+            <div class="uh-box"><h3>🛍️ コインの つかいかた</h3>
+                <p>ためたコインは <b>「🎰 コインスロット」</b> であそべるよ。10コインで1回まわして、絵をそろえるとコインが増える（3つそろいで最大200まい！）。コインが足りないとまわせないよ。</p></div>
+            <div class="uh-box"><h3>⭐ レベルの あげかた</h3>
+                <p>問題を解くと <b>けいけんち（XP）</b> がたまって、たまるとレベルアップ！たくさん勉強するほどレベルが上がるよ。レベルが上がるほど、つぎのレベルまで少しずつ多くひつようになるんだ。</p></div>
+            <div class="uh-box"><h3>🏅 バッジの しくみ</h3>
+                <p>ある条件をクリアすると、バッジが自動でもらえるよ（ぜんぶで12こ）。<br>れい：はじめて勉強→🌱／100問→💯／7日れんぞく→✨／英検合格→🎫／花を満開→🌷 など。あつめてコンプリートをめざそう！</p></div>
+            <div class="uh-box"><h3>🔥 れんぞく・🎯目標・🔮おみくじ</h3>
+                <p>・<b>連続</b>：毎日つづけると日数がのびる（1日休むとリセット）<br>・<b>今日の目標</b>：1日にやる問題数を決めて、リングでたっせい度を見る<br>・<b>おみくじ</b>：1日1回引ける（24時をすぎるとまた引ける）</p></div>
+            <div class="uh-box"><h3>⚔️ 対戦ボード（なお vs りらん）</h3>
+                <p>ミニゲームで記録を出すと、その点数が<b>じどうで保存されて対戦ボードに反映</b>されるよ。じゅんばんを待たなくてOK！すきなときに、それぞれあそぶだけ。<br>ボードにはゲームごとに2人の点数がならんで、勝っているほうに🏆が付く。いちばん上に「<b>いまどっちがリードしているか</b>」も出るよ。ぬかれたら、やりかえそう🔥</p></div>
+            <div style="text-align:center;"><button class="btn" style="background:#34495e;color:#fff;" onclick="gCloseModal()">とじる</button></div>
+        </div>`);
+    }
+
+    // ===== ⚔️ 対戦ボード（オンライン対応）。1人であそぶだけで記録が保存され、2人の点数と勝敗がいつでも見られる =====
+    // 【オンラインにするには】SYNC_URL と SYNC_TOKEN を入れるだけ（Cloudflare Workers を想定）。
+    //   空のときは、この端末の中で2人のきろくを共有する（なお/りらん どちらのログインからも同じボードが見える）。
+    //   ここに入れるのは「対戦ゲームの点数」だけ。成績・宿題・個人情報は送らない。
+    const SYNC_URL = 'https://nobilog-board.naon4022.workers.dev';
+    const SYNC_TOKEN = 'nobilog_xyHCdnEL5fDMKD97pa3apnpCRFvT'; // 合言葉（サーバー側と同じ文字列にする。半角の英数字だけで作ること）
+    const VB_HIGHER = { flash:true, typing:true, kuku:false, memory:true, anagram:true, missing:true, reaction:false, stopClock:false, vocab:true };
+    const VB_NAME = { flash:'⚡ フラッシュ暗算', typing:'⌨️ タイピング', kuku:'🧮 九九タイム', memory:'🧠 記憶ゲーム', anagram:'🔤 アナグラム', missing:'➗ 虫食い算', reaction:'🎯 反射神経', stopClock:'⏰ 10秒ぴったり', vocab:'📝 英単語4択' };
+    const VB_UNIT = { flash:'問', typing:'語', kuku:'秒', memory:'けた', anagram:'点', missing:'点', reaction:'ms', stopClock:'秒差', vocab:'点' };
+    function vbLoad() { try { return JSON.parse(localStorage.getItem('versusBoard')) || {}; } catch(e) { return {}; } }
+    function vbSaveLocal(b) { localStorage.setItem('versusBoard', JSON.stringify(b)); }
+    // 記録を出したら保存（自己ベストだけ残す）→ ボードに反映＋オンラインなら送信
+    function vbRecord(key, score) {
+        if(!currentUserId || score == null || isNaN(score)) return false;
+        const b = vbLoad(); b[key] = b[key] || {};
+        const higher = VB_HIGHER[key], prev = b[key][currentUserId];
+        const better = !prev || (higher ? score > prev.score : score < prev.score);
+        if(better) { b[key][currentUserId] = { score, at: Date.now() }; vbSaveLocal(b); vbPush(); }
+        return better;
+    }
+    function vbBetter(key, a, b) { if(a == null) return b == null ? -1 : 1; if(b == null) return 0; if(a === b) return -1; return VB_HIGHER[key] ? (a > b ? 0 : 1) : (a < b ? 0 : 1); }
+    // 2つのボードを合体（それぞれのゲームで良い方の記録を残す）
+    function vbMerge(a, b) {
+        const out = JSON.parse(JSON.stringify(a || {}));
+        Object.keys(b || {}).forEach(k => { out[k] = out[k] || {};
+            Object.keys(b[k]).forEach(uid => { const mine = out[k][uid], theirs = b[k][uid];
+                if(!mine || (VB_HIGHER[k] ? theirs.score > mine.score : theirs.score < mine.score)) out[k][uid] = theirs; }); });
+        return out;
+    }
+    const vbIsFirebase = (u) => /firebaseio\.com|firebasedatabase\.app/.test(u);
+    function vbHeaders(extra) { const h = Object.assign({}, extra || {}); if(SYNC_TOKEN && !vbIsFirebase(SYNC_URL)) h['Authorization'] = 'Bearer ' + SYNC_TOKEN; return h; }
+    async function vbPush() {
+        if(!SYNC_URL) return;
+        try {
+            const body = JSON.stringify(vbLoad());
+            if(vbIsFirebase(SYNC_URL)) await fetch(SYNC_URL, { method:'PUT', body }); // Firebaseは PUT で上書き
+            else await fetch(SYNC_URL, { method:'POST', headers: vbHeaders({ 'Content-Type':'application/json' }), body });
+        } catch(e) {}
+    }
+    async function vbPull() {
+        if(!SYNC_URL) return false;
+        try {
+            const r = await fetch(SYNC_URL, { cache:'no-store', headers: vbHeaders() });
+            if(!r.ok) return false;
+            const remote = await r.json();
+            if(remote && typeof remote === 'object') vbSaveLocal(vbMerge(vbLoad(), remote)); // 中身が無いときは今のまま
+            return true;
+        } catch(e) { return false; }
+    }
+    async function vbRefresh() { const ok = await vbPull(); if(document.getElementById('view-game').classList.contains('active')) renderGame(); return ok; }
+    // 対戦ボードのHTML（2人の点数＋いまどっちが勝っているか）
+    function vbBoardHtml() {
+        const b = vbLoad(), me = stMe(), rival = stOtherUser();
+        let winMe = 0, winRival = 0, rows = '';
+        Object.keys(VB_NAME).forEach(k => {
+            const mine = b[k] && b[k][me.id] ? b[k][me.id].score : null;
+            const theirs = b[k] && b[k][rival.id] ? b[k][rival.id].score : null;
+            if(mine == null && theirs == null) return; // まだ誰もやってないゲームは出さない
+            const w = vbBetter(k, mine, theirs);
+            if(w === 0) winMe++; else if(w === 1) winRival++;
+            const fmt = v => v == null ? '<span style="color:#bbb;">まだ</span>' : `${v}${VB_UNIT[k]}`;
+            rows += `<tr><td>${VB_NAME[k]}</td><td style="text-align:center;color:#e67e22;font-weight:bold;">${fmt(mine)}</td>
+                <td style="text-align:center;color:#888;font-weight:bold;">${fmt(theirs)}</td>
+                <td style="text-align:center;">${w === 0 ? '🏆' : w === 1 ? '　' : '🤝'}</td></tr>`;
+        });
+        if(!rows) return `<div class="cal-empty">まだ記録がないよ。ミニゲームであそぶと、ここに2人の点数が出て勝負がはじまる⚔️</div>`;
+        const lead = winMe > winRival ? `🏆 いま <b style="color:#e67e22;">${esc(me.name)}</b> がリード！（${winMe}勝 - ${winRival}勝）`
+            : winRival > winMe ? `😤 いま <b>${esc(rival.name)}</b> がリード…（${winMe}勝 - ${winRival}勝）くやしい！ぬきかえそう🔥`
+            : `🤝 ごかく！（${winMe}勝 - ${winRival}勝）つぎで差をつけよう！`;
+        return `<div style="text-align:center;font-size:16px;margin-bottom:8px;">${lead}</div>
+            <div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:14px;">
+            <tr style="border-bottom:2px solid var(--border-color);"><th style="text-align:left;">ゲーム</th><th>${esc(me.name)}</th><th>${esc(rival.name)}</th><th>勝</th></tr>
+            ${rows}</table></div>`;
+    }
     // ⏱️ ストップウォッチ
     function gStopwatch() {
         gState = { sec:0, running:true };
@@ -1060,7 +1163,7 @@
         gFmNext();
         const inp=document.getElementById('fm-in'); inp.focus();
         inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ if(Number(inp.value)===gState.ans){ gState.score++; playSfx('correct'); document.getElementById('fm-score').innerText=gState.score+'問せいかい'; gFmNext(); inp.value=''; } else { playSfx('wrong'); inp.value=''; } } });
-        gLoop=setInterval(()=>{ gState.left--; const t=document.getElementById('fm-time'); if(t) t.innerText=gState.left; if(gState.left<=0){ clearInterval(gLoop); gLoop=null; playSfx('finish'); const g=gameState(); g.best.flashMath=Math.max(g.best.flashMath||0,gState.score); gsSave(g); alert(`⚡ 終了！ ${gState.score}問せいかい！\n自己ベスト: ${g.best.flashMath}問`); gCloseModal(); } }, 1000);
+        gLoop=setInterval(()=>{ gState.left--; const t=document.getElementById('fm-time'); if(t) t.innerText=gState.left; if(gState.left<=0){ clearInterval(gLoop); gLoop=null; playSfx('finish'); const nb=vbRecord('flash', gState.score); const g=gameState(); g.best.flashMath=Math.max(g.best.flashMath||0,gState.score); gsSave(g); alert(`⚡ 終了！ ${gState.score}問せいかい！\n自己ベスト: ${g.best.flashMath}問${nb?'\n⚔️ 対戦ボードの記録をこうしん！':''}`); gCloseModal(); } }, 1000);
     }
     function gFmNext() { const a=randNum(2,19), b=randNum(2,19), op=randObj(['+','-','×']); let q,ans; if(op==='+'){q=`${a} + ${b}`;ans=a+b;} else if(op==='-'){const x=Math.max(a,b),y=Math.min(a,b);q=`${x} - ${y}`;ans=x-y;} else {const s=randNum(2,9),t=randNum(2,9);q=`${s} × ${t}`;ans=s*t;} gState.ans=ans; const el=document.getElementById('fm-q'); if(el) el.innerText=q; }
     // ⌨️ 英単語タイピング
@@ -1073,7 +1176,7 @@
             <p style="color:#888;font-size:13px;margin-top:8px;">出てきた英単語を打ってEnter！スペルの練習にも◎</p>`);
         gTyNext(); const inp=document.getElementById('ty-in'); inp.focus();
         inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ const w=gState.pool[gState.i]; if(inp.value.trim().toLowerCase()===w.e.toLowerCase()){ gState.score++; playSfx('correct'); document.getElementById('ty-score').innerText=gState.score+'語'; gState.i=(gState.i+1)%gState.pool.length; gTyNext(); inp.value=''; } else { playSfx('wrong'); } } });
-        gLoop=setInterval(()=>{ gState.left--; const t=document.getElementById('ty-time'); if(t)t.innerText=gState.left; if(gState.left<=0){ clearInterval(gLoop); gLoop=null; playSfx('finish'); const g=gameState(); g.best.typing=Math.max(g.best.typing||0,gState.score); gsSave(g); alert(`⌨️ 終了！ ${gState.score}語タイプ！\n自己ベスト: ${g.best.typing}語`); gCloseModal(); } },1000);
+        gLoop=setInterval(()=>{ gState.left--; const t=document.getElementById('ty-time'); if(t)t.innerText=gState.left; if(gState.left<=0){ clearInterval(gLoop); gLoop=null; playSfx('finish'); const nb=vbRecord('typing', gState.score); const g=gameState(); g.best.typing=Math.max(g.best.typing||0,gState.score); gsSave(g); alert(`⌨️ 終了！ ${gState.score}語タイプ！\n自己ベスト: ${g.best.typing}語${nb?'\n⚔️ 対戦ボードの記録をこうしん！':''}`); gCloseModal(); } },1000);
     }
     function gTyNext() { const w=gState.pool[gState.i]; const el=document.getElementById('ty-word'); if(el)el.innerText=w.e; const jp=document.getElementById('ty-jp'); if(jp)jp.innerText='（'+w.j+'）'; }
     // 📝 英単語4択（意味あて・10問）
@@ -1083,7 +1186,7 @@
         gVocabShow();
     }
     function gVocabShow() {
-        if(gState.i>=gState.pool.length){ playSfx('finish'); const g=gameState(); g.best.vocab=Math.max(g.best.vocab||0,gState.score); gsSave(g); gOpenModal(`<h2>📝 けっか</h2><div class="g-q">${gState.score} / ${gState.pool.length} 正解！</div><p style="color:#888;">自己ベスト: ${g.best.vocab}問</p><button class="btn" style="background:#2980b9;color:#fff;" onclick="gVocab()">もう一回</button>`); return; }
+        if(gState.i>=gState.pool.length){ playSfx('finish'); const nb=vbRecord('vocab', gState.score); const g=gameState(); g.best.vocab=Math.max(g.best.vocab||0,gState.score); gsSave(g); gOpenModal(`<h2>📝 けっか</h2><div class="g-q">${gState.score} / ${gState.pool.length} 正解！</div><p style="color:#888;">自己ベスト: ${g.best.vocab}問${nb?'<br>⚔️ 対戦ボードこうしん！':''}</p><button class="btn" style="background:#2980b9;color:#fff;" onclick="gVocab()">もう一回</button>`); return; }
         const w=gState.pool[gState.i];
         const wrong=gState.all.filter(x=>x.j!==w.j).sort(()=>Math.random()-0.5).slice(0,3);
         const choices=[w, ...wrong].sort(()=>Math.random()-0.5);
@@ -1101,7 +1204,7 @@
         gOpenModal(`<h2>🧮 九九タイムアタック</h2><div style="color:#888;">20問を早くとこう！</div><div class="g-q" id="ku-q">…</div>
             <input class="g-input" id="ku-in" type="number" inputmode="numeric" autocomplete="off"><div style="margin-top:8px;color:#888;" id="ku-prog">1 / 20</div>`);
         gKuNext(); const inp=document.getElementById('ku-in'); inp.focus();
-        inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ if(Number(inp.value)===gState.ans){ playSfx('correct'); gState.i++; inp.value=''; if(gState.i>=gState.total){ const sec=Math.round((Date.now()-gState.start)/1000); const g=gameState(); g.best.kuku=g.best.kuku?Math.min(g.best.kuku,sec):sec; gsSave(g); playSfx('finish'); alert(`🧮 クリア！ ${sec}秒！\n自己ベスト: ${g.best.kuku}秒`); gCloseModal(); return; } document.getElementById('ku-prog').innerText=`${gState.i+1} / 20`; gKuNext(); } else { playSfx('wrong'); inp.value=''; } } });
+        inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ if(Number(inp.value)===gState.ans){ playSfx('correct'); gState.i++; inp.value=''; if(gState.i>=gState.total){ const sec=Math.round((Date.now()-gState.start)/1000); playSfx('finish'); const nb=vbRecord('kuku', sec); const g=gameState(); g.best.kuku=g.best.kuku?Math.min(g.best.kuku,sec):sec; gsSave(g); alert(`🧮 クリア！ ${sec}秒！\n自己ベスト: ${g.best.kuku}秒${nb?'\n⚔️ 対戦ボードの記録をこうしん！':''}`); gCloseModal(); return; } document.getElementById('ku-prog').innerText=`${gState.i+1} / 20`; gKuNext(); } else { playSfx('wrong'); inp.value=''; } } });
     }
     function gKuNext() { const a=randNum(2,9), b=randNum(2,9); gState.ans=a*b; const el=document.getElementById('ku-q'); if(el) el.innerText=`${a} × ${b}`; }
     // 🎯 反射神経テスト（緑になったらタップ・反応ミリ秒）
@@ -1111,7 +1214,7 @@
         const box=document.getElementById('rt-box');
         const arm=()=>{ box.style.background='#c0392b'; box.innerText='赤のあいだは待つ…'; gState.phase='wait'; gState.timer=setTimeout(()=>{ box.style.background='#27ae60'; box.innerText='いま！タップ！'; gState.phase='go'; gState.t0=performance.now(); }, randNum(1200,4000)); };
         box.onclick=()=>{ if(gState.phase==='wait'){ clearTimeout(gState.timer); box.style.background='#e67e22'; box.innerText='早すぎ！もう一回'; playSfx('wrong'); gState.timer=setTimeout(arm,900); }
-            else if(gState.phase==='go'){ const ms=Math.round(performance.now()-gState.t0); playSfx('correct'); const g=gameState(); g.best.reaction=g.best.reaction?Math.min(g.best.reaction,ms):ms; gsSave(g); box.style.background='#2980b9'; box.innerText=`${ms} ms！ (自己ベスト ${g.best.reaction}ms)　もう一回タップ`; gState.phase='wait2'; }
+            else if(gState.phase==='go'){ const ms=Math.round(performance.now()-gState.t0); playSfx('correct'); const nb=vbRecord('reaction', ms); const g=gameState(); g.best.reaction=g.best.reaction?Math.min(g.best.reaction,ms):ms; gsSave(g); box.style.background='#2980b9'; box.innerText=`${ms} ms！ (自己ベスト ${g.best.reaction}ms)${nb?' ⚔️こうしん!':''}　もう一回タップ`; gState.phase='wait2'; }
             else if(gState.phase==='wait2'){ arm(); } };
         arm();
     }
@@ -1126,7 +1229,7 @@
         gState.timer=setTimeout(()=>{ if(!document.getElementById('mm-seq') || !document.getElementById('game-modal').classList.contains('on')) return;
             gOpenModal(`<h2>🧠 記憶ゲーム</h2><p style="color:#888;">さっきの数字を打ってEnter！</p><div class="g-q">❓ ${gState.len}けた</div><input class="g-input" id="mm-in" type="text" inputmode="numeric" autocomplete="off">`);
             const inp=document.getElementById('mm-in'); inp.focus();
-            inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ if(inp.value.trim()===gState.seq){ playSfx('correct'); gState.len++; const g=gameState(); g.best.memory=Math.max(g.best.memory||0,gState.len-1); gsSave(g); gMemShow(); } else { playSfx('wrong'); const g=gameState(); g.best.memory=Math.max(g.best.memory||0,gState.len-1); gsSave(g); gOpenModal(`<h2>🧠 けっか</h2><div class="g-q">${gState.len-1}けた まで！</div><p style="color:#888;">答え: ${gState.seq}　自己ベスト: ${g.best.memory}けた</p><button class="btn" style="background:#8e44ad;color:#fff;" onclick="gMemory()">もう一回</button>`); } } });
+            inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ if(inp.value.trim()===gState.seq){ playSfx('correct'); gState.len++; const g=gameState(); g.best.memory=Math.max(g.best.memory||0,gState.len-1); gsSave(g); gMemShow(); } else { playSfx('wrong'); const nb=vbRecord('memory', gState.len-1); const g=gameState(); g.best.memory=Math.max(g.best.memory||0,gState.len-1); gsSave(g); gOpenModal(`<h2>🧠 けっか</h2><div class="g-q">${gState.len-1}けた まで！</div><p style="color:#888;">答え: ${gState.seq}　自己ベスト: ${g.best.memory}けた${nb?'<br>⚔️ 対戦ボードこうしん！':''}</p><button class="btn" style="background:#8e44ad;color:#fff;" onclick="gMemory()">もう一回</button>`); } } });
         }, Math.min(900+gState.len*350, 4000));
     }
     // 🔤 英単語アナグラム（バラバラの文字をならべかえる・10問）
@@ -1136,7 +1239,7 @@
         gAnaShow();
     }
     function gAnaShow() {
-        if(gState.i>=gState.pool.length){ playSfx('finish'); const g=gameState(); g.best.anagram=Math.max(g.best.anagram||0,gState.score); gsSave(g); gOpenModal(`<h2>🔤 けっか</h2><div class="g-q">${gState.score}/${gState.pool.length} 正解！</div><p style="color:#888;">自己ベスト: ${g.best.anagram}</p><button class="btn" style="background:#27ae60;color:#fff;" onclick="gAnagram()">もう一回</button>`); return; }
+        if(gState.i>=gState.pool.length){ playSfx('finish'); const nb=vbRecord('anagram', gState.score); const g=gameState(); g.best.anagram=Math.max(g.best.anagram||0,gState.score); gsSave(g); gOpenModal(`<h2>🔤 けっか</h2><div class="g-q">${gState.score}/${gState.pool.length} 正解！</div><p style="color:#888;">自己ベスト: ${g.best.anagram}${nb?'<br>⚔️ 対戦ボードこうしん！':''}</p><button class="btn" style="background:#27ae60;color:#fff;" onclick="gAnagram()">もう一回</button>`); return; }
         const w=gState.pool[gState.i]; let sc; do { sc=w.e.split('').sort(()=>Math.random()-0.5).join(''); } while(sc===w.e);
         gOpenModal(`<h2>🔤 アナグラム (${gState.i+1}/${gState.pool.length})</h2><p style="color:#888;">意味：${esc(w.j)}</p><div class="g-q" style="letter-spacing:6px;">${esc(sc)}</div><input class="g-input" id="an-in" style="width:240px;" autocomplete="off" autocapitalize="off" spellcheck="false"><div style="color:#888;margin-top:8px;">せいかい ${gState.score}</div>`);
         const inp=document.getElementById('an-in'); inp.focus();
@@ -1148,7 +1251,7 @@
         gMisNext();
     }
     function gMisNext() {
-        if(gState.i>=gState.total){ playSfx('finish'); const g=gameState(); g.best.missing=Math.max(g.best.missing||0,gState.score); gsSave(g); gOpenModal(`<h2>➗ けっか</h2><div class="g-q">${gState.score}/${gState.total} 正解！</div><p style="color:#888;">自己ベスト: ${g.best.missing}</p><button class="btn" style="background:#2c3e50;color:#fff;" onclick="gMissing()">もう一回</button>`); return; }
+        if(gState.i>=gState.total){ playSfx('finish'); const nb=vbRecord('missing', gState.score); const g=gameState(); g.best.missing=Math.max(g.best.missing||0,gState.score); gsSave(g); gOpenModal(`<h2>➗ けっか</h2><div class="g-q">${gState.score}/${gState.total} 正解！</div><p style="color:#888;">自己ベスト: ${g.best.missing}${nb?'<br>⚔️ 対戦ボードこうしん！':''}</p><button class="btn" style="background:#2c3e50;color:#fff;" onclick="gMissing()">もう一回</button>`); return; }
         const a=randNum(2,12), b=randNum(2,12), op=randObj(['+','-','×']); let q, ans;
         if(op==='+'){ ans=b; q=`${a} + □ = ${a+b}`; } else if(op==='-'){ ans=b; q=`${a+b} − □ = ${a}`; } else { ans=b; q=`${a} × □ = ${a*b}`; }
         gState.ans=ans;
@@ -1167,8 +1270,9 @@
         if(!gState.running){ gState.running=true; gState.t0=performance.now(); btn.innerText='⏹️ ストップ！'; btn.style.background='#e74c3c'; document.getElementById('sc-res').innerText=''; }
         else { const sec=(performance.now()-gState.t0)/1000; gState.running=false; btn.innerText='▶️ もう一回'; btn.style.background='#27ae60';
             const diff=Math.abs(sec-10); playSfx(diff<0.5?'finish':diff<1.5?'correct':'wrong');
+            const nb=vbRecord('stopClock', Math.round(diff*100)/100);
             const g=gameState(); g.best.stopClock=g.best.stopClock!=null?Math.min(g.best.stopClock,diff):diff; gsSave(g);
-            document.getElementById('sc-res').innerHTML=`${sec.toFixed(2)}秒！<br><span style="font-size:15px;color:#888;">10秒との差 ${diff.toFixed(2)}秒　${diff<0.3?'🏆ぴったり神！':diff<1?'👏すごい！':'😊ドンマイ'}<br>自己ベスト差 ${g.best.stopClock.toFixed(2)}秒</span>`; }
+            document.getElementById('sc-res').innerHTML=`${sec.toFixed(2)}秒！<br><span style="font-size:15px;color:#888;">10秒との差 ${diff.toFixed(2)}秒　${diff<0.3?'🏆ぴったり神！':diff<1?'👏すごい！':'😊ドンマイ'}<br>自己ベスト差 ${g.best.stopClock.toFixed(2)}秒${nb?'　⚔️こうしん!':''}</span>`; }
     }
     // 🎰 コインスロット（10コインでスピン・そろえて増やそう）
     function gSlot() {
