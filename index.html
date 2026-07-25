@@ -391,6 +391,29 @@
         <input id="login-pin" type="password" inputmode="numeric" maxlength="4" placeholder="PIN（4桁）">
         <div id="login-err"></div>
         <button class="btn btn-action" style="width:100%;" onclick="tryLogin()">🔓 はじめる</button>
+        <div style="margin-top:16px;font-size:12px;color:#888;">
+            アドレスが変わって記録が見あたらない？
+            <a href="#" onclick="openMigrate();return false;" style="color:var(--main-color);font-weight:bold;">📦 きろくの引っこし</a>
+        </div>
+    </div>
+</div>
+
+<!-- 📦 きろくの引っこし（アドレス／端末が変わっても記録を持っていく） -->
+<div id="migrate-overlay" class="no-print" style="display:none; position:fixed; inset:0; z-index:5500; background:var(--bg-color); overflow-y:auto; padding:20px;">
+    <div style="max-width:560px; margin:0 auto;">
+        <h2 style="text-align:center;">📦 きろくの引っこし</h2>
+        <div class="uh-box"><h3>① 前のアプリでコピー</h3>
+            <p>今まで使っていたほう（前のアドレス）で下のボタンを押して、出てきた<b>引っこしコード</b>をぜんぶコピーしてね。</p>
+            <button class="btn btn-action" style="width:100%;" onclick="migExport()">📤 このデバイスの記録をコピーする</button>
+            <textarea id="mig-out" readonly placeholder="ここに引っこしコードが出るよ（長いよ）" style="width:100%; box-sizing:border-box; height:90px; margin-top:10px; font-size:11px; border:2px solid var(--border-color); border-radius:8px; padding:8px; background:var(--box-bg); color:var(--text-color);"></textarea>
+        </div>
+        <div class="uh-box"><h3>② 新しいアプリで貼りつけ</h3>
+            <p>新しいほう（このアドレス）で、コピーした引っこしコードを下に貼りつけて「取りこむ」を押すと、記録がぜんぶ引きつがれるよ。</p>
+            <textarea id="mig-in" placeholder="ここに引っこしコードを貼りつけてね" style="width:100%; box-sizing:border-box; height:90px; font-size:11px; border:2px solid var(--border-color); border-radius:8px; padding:8px; background:var(--box-bg); color:var(--text-color);"></textarea>
+            <button class="btn btn-test" style="width:100%; margin-top:10px;" onclick="migImport()">📥 貼りつけて取りこむ</button>
+        </div>
+        <div style="font-size:12px; color:#888; text-align:center;">※ 引っこしは1台につき1回でOK。前のアプリの記録は消えません。</div>
+        <button class="btn" style="background:#34495e; color:#fff; width:100%; margin-top:14px;" onclick="closeMigrate()">← もどる</button>
     </div>
 </div>
 
@@ -721,8 +744,17 @@
     // ログインしたユーザーの記録を読み込む
     function loadUserState() {
         userData = jparse(ukey('appData'), { totalScores: { math:0, eng:0, jpn:0, sci:0, soc:0 }, history: [] });
+        // 一部だけ入った（こわれた）データでも成績画面が落ちないように、足りない所をおぎなう
+        if(!userData || typeof userData !== 'object') userData = {};
+        if(!userData.totalScores || typeof userData.totalScores !== 'object') userData.totalScores = {};
+        ['math','eng','jpn','sci','soc'].forEach(k => { if(typeof userData.totalScores[k] !== 'number') userData.totalScores[k] = 0; });
+        if(!Array.isArray(userData.history)) userData.history = [];
         wrongNotes = jparse(ukey('wrongNotes'), []);
+        if(!Array.isArray(wrongNotes)) wrongNotes = [];
         ekStats = jparse(ukey('ekStats'), { history:[], best:{}, totalTests:0, totalQ:0, totalCorrect:0, stamps:0, streak:0, bestStreak:0 });
+        if(!ekStats || typeof ekStats !== 'object') ekStats = {};
+        if(!Array.isArray(ekStats.history)) ekStats.history = [];
+        if(!ekStats.best || typeof ekStats.best !== 'object') ekStats.best = {};
         ekSeen = jparse(ukey('ekSeenReading'), []);
         motiDaily = jparse(ukey('motiDaily'), { date: motiToday(), count: 0, best: 0 });
         if(motiDaily.date !== motiToday()) motiDaily = { date: motiToday(), count: 0, best: motiDaily.best || 0 };
@@ -826,7 +858,7 @@
     // ===== 📢 アップデートのお知らせ（応援バナーの上）。今回の内容だけ・日付は出さない =====
     // 【更新するとき】アップデートを入れたら、このUPDATE_NOWを今回の内容に書きかえる。
     // ⚠️ お知らせ本文に人の名前は書かないこと（ユーザー指示）
-    const UPDATE_NOW = '💰お金・経済が<b>🏛️政治と経済</b>に大へんしん！①<b>会社が100社</b>に増えました（20の業種・証券コードつき。名前でさがせるよ）②<b>ニュースが毎日3回</b>（朝7時・昼12時・夕方18時）とどきます。オンラインで自動更新、1本ずつ「ここが学べる」つき③<b>🏛️政治タブ</b>を新設（三権分立・選挙・税金の使いみち・憲法）＋「もし総理大臣になったら」政策シミュレーター④用語じてんが<b>131語</b>・クイズが<b>52問</b>に⑤アプリぜんぶに<b>なめらかなアニメーション</b>を入れました✨';
+    const UPDATE_NOW = '🏛️政治と経済を大アップデート！①ニュースを<b>🏙️のびログ版</b>と<b>🌍現実版</b>に分けました。のびログ版の内容で<b>株価が同じタイミングで動く</b>よ📈②<b>お給料は毎月5日</b>（勉強で<b>20問正解＝1万円</b>）③<b>配当金も毎月5日</b>にもらえる💴④株を<b>「株数」で売り買い</b>できるように（1株千円なら100株で10万円。前は1円で買えちゃうバグがありました🙏）⑤ニュースも相場も<b>2人とも同じ</b>＝オンライン化⑥お詫びに<b>5万円プレゼント</b>🎁';
     function renderUpdateBox() {
         const el = document.getElementById('update-box'); if(!el) return;
         // UPDATE_NOW はこのファイルに書いてある固定の文（ユーザーの入力ではない）ので、
@@ -1502,9 +1534,10 @@
         { k:'evening', e:'🌙', n:'夕刊',  time:'18:00', h:18 }
     ];
     const M_CATS = { money:['お金・くらし','money'], econ:['経済','econ'], pol:['政治','pol'], world:['世界','world'] };
+    // ======= 📰 のびログ版ニュース（このゲームの世界のニュース。これが「のびログの株価」を動かす） =======
     // ニュースのもと。{co}=会社名 {sec}=業種 {n1}{n2}=数字（r で範囲をきめる）
     // e = 相場へのえいきょう。キーは 銘柄コード / 種類（株・債券など） / 業種名 / '@sec'（えらばれた業種） / '@co'（えらばれた会社）
-    const M_NEWS_T = [
+    const M_NEWS_NOBI = [
         // ───── 💴 お金・くらし ─────
         { cat:'money', t:'スーパーの食品が平均{n1}%値上がり　家計にずっしり', r:[[2,9]],
           b:'パンや牛乳など、毎日買う食べ物のねだんが上がりました。同じ千円札で買えるものが少なくなっています。',
@@ -1705,99 +1738,184 @@
           b:'国際機関が、世界の経済はこれまでの予想より良くなりそうだと発表しました。',
           l:'世界全体は長い目で見ると成長してきた。だから「世界に分散して長く持つ」が王道なんだ。', e:{ '株':+0.015, ALLC:+0.012, IDX:+0.01 } }
     ];
-    // 時間帯ごとの味つけ（どのカテゴリを多めに出すか）
-    const M_SLOT_MIX = [ ['econ','money','pol','econ'], ['pol','econ','world','money'], ['econ','world','money','pol'] ];
-    // --- 日付＋時間帯で決まる乱数（だれの端末でも同じニュースになる） ---
+    // ======= 🌍 現実版ニュース（本物の世界のしくみを学ぶ用。株価は動かさない） =======
+    // ※これは「今日この会社がこうした」という速報ではなく、現実の世界でくり返し起きる
+    //   経済・政治のしくみを、ニュースの形で学ぶためのもの（内容は固定・いつ読んでも正しい）。
+    const M_NEWS_REAL = [
+        // 💴 お金・くらし
+        { cat:'money', t:'物のねだんが上がると、同じ千円で買えるものが減る', b:'パンや牛乳などのねだんが上がることを「インフレ」という。給料の上がり方が追いつかないと、生活は苦しく感じる。', l:'げんきんのまま置いておくと、インフレのぶんだけお金の「力」は弱くなる。だから貯金と投資の両方が大事。' },
+        { cat:'money', t:'クレジットカードやスマホ決済は「あとで払う」しくみ', b:'カードは今すぐお金がなくても買えるが、あとでまとめて口座から引かれる。使った実感がうすいのが弱点。', l:'とくに「リボ払い」は毎月の支払いが軽く見えて、利息の合計がとても大きくなる。気をつけよう。' },
+        { cat:'money', t:'消費税は、買い物のときにみんなが同じ割合ではらう税金', b:'今の消費税は10%（食品などは8%）。1000円の物を買うと100円の税がつく。集めた税金は社会保障などに使われる。', l:'はらう人と負担する人が同じ税を「直接税」、ちがう税（消費税など）を「間接税」というよ。' },
+        { cat:'money', t:'銀行の預金金利はとても低い時代が長く続いた', b:'普通預金の金利は年0.1%以下のことも多い。100万円あずけても1年で数百円ほど。', l:'安全だけどふえ方はゆっくり。だから「NISA」などの制度を使った投資が注目されている。' },
+        { cat:'money', t:'18さいから大人あつかい（成年）になった', b:'2022年から成年年齢が20さいから18さいに。親の同意なしで契約ができるようになった一方、責任も生まれる。', l:'自分で契約できる＝だまされたときに自分で困る、ということ。お金の知識が身を守る。' },
+        // 📈 経済
+        { cat:'econ', t:'ねだんは「ほしい人」と「売りたい人」のバランスで決まる', b:'ほしい人が多くて品物が少ないとねだんは上がり、あまっていると下がる。これを「需要と供給」という。', l:'行列のできる店の値上げも、セールの値下げも、ぜんぶこのしくみで説明できる。' },
+        { cat:'econ', t:'中央銀行は金利を上げ下げして景気を調整する', b:'物のねだんが上がりすぎたら金利を上げてお金の流れをゆっくりにし、景気が悪ければ金利を下げてあたためる。', l:'これを「金融政策」という。ニュースで「利上げ・利下げ」と聞いたら、この話だよ。' },
+        { cat:'econ', t:'円安・円高で、得する人と損する人が入れかわる', b:'円安（円の力が弱い）だと輸出する会社は得をし、輸入品は高くなる。円高はその逆。', l:'同じできごとでも「立場」によってうれしさが逆になる。ニュースはいつも両方の側から見よう。' },
+        { cat:'econ', t:'株を買うと、その会社の一部を持つ「株主」になれる', b:'会社が成長すれば株のねだんが上がり、もうけの一部を「配当」として受け取れることもある。', l:'株主は会社の持ち主のひとり。株主総会では1株1票で会社の方針に意見を出せる。' },
+        { cat:'econ', t:'「分散」と「長期」が投資の基本と言われる', b:'ひとつに全部かけず、いろいろに分けて、あわてず長く持つ。これで失敗を小さくできる。', l:'「たまごは一つのカゴに盛るな」という有名な言葉があるよ。' },
+        { cat:'econ', t:'景気には良いときと悪いときの波がある', b:'物がよく売れて給料も上がる「好況」と、売れずに苦しい「不況」がくり返しやってくる。', l:'不況のときにあわてて売った人がいちばん損しやすい。波があると知っていれば冷静になれる。' },
+        { cat:'econ', t:'GDPは、その国が1年でうみ出した「もうけ」の合計', b:'国内総生産（GDP）が大きいほど経済の規模が大きい。増えていれば景気が良い目安になる。', l:'国の元気さをはかる「ものさし」のひとつ。ニュースの数字も、意味が分かると面白い。' },
+        { cat:'econ', t:'会社は3か月ごとに成績（決算）を発表する', b:'もうけが予想より多いと株価が上がり、少ないと下がることが多い。', l:'「良い会社」でも悪い年はある。だから1社に全部かけないのが投資の鉄則。' },
+        { cat:'econ', t:'ものやサービスの多くは、世界とつながって作られている', b:'スマホ1台にも、いろいろな国の部品や技術が使われている。どこかで問題が起きると世界に影響する。', l:'だから「世界に分散して投資する」という考え方（オルカンなど）が人気なんだ。' },
+        // 🏛️ 政治
+        { cat:'pol', t:'国のルールを決める力は、国民にある（国民主権）', b:'わたしたちは選挙で代表（議員）を選び、その人たちが国会で法律や予算を決める。', l:'投票は「どんな社会にするか」を選ぶこと。行かないと、行った人だけで決まってしまう。' },
+        { cat:'pol', t:'力を3つに分ける「三権分立」', b:'法律をつくる国会（立法）、国を動かす内閣（行政）、争いを裁く裁判所（司法）。おたがい見はっている。', l:'力をひとつに集めるとあぶない。分けておくことで、まちがいや暴走をふせいでいる。' },
+        { cat:'pol', t:'国会には衆議院と参議院の2つがある（二院制）', b:'2つの議院でじっくり話し合うことで、まちがいを減らしている。任期や解散のルールがちがう。', l:'いちばん議席が多いグループが「与党」、それ以外が「野党」。野党のチェックも大事な役わり。' },
+        { cat:'pol', t:'税金は、みんなで出し合って社会を支えるお金', b:'集めた税金は、学校・道路・警察・消防、そして年金や医りょうなどの社会保障に使われる。', l:'国の予算でいちばん多いのは社会保障。病気やお年よりを、みんなで支えるしくみだよ。' },
+        { cat:'pol', t:'憲法は「国が守らなければならない」いちばん上のルール', b:'国民主権・基本的人権の尊重・平和主義の三原則からできている。法律は憲法に反してはいけない。', l:'法律は国民が守るルール、憲法は国を縛るルール。向きが逆なのがポイント。' },
+        { cat:'pol', t:'裁判は、まちがいを防ぐため3回まで受けられる（三審制）', b:'人が裁くから、まちがうこともある。だからやり直せるようにしてある。', l:'裁判所は「その法律が憲法に合っているか」も判断できる。これを違憲審査というよ。' },
+        { cat:'pol', t:'自分たちの町のことは、自分たちで決める（地方自治）', b:'都道府県や市町村が、その地いきだけのルール（条例）やサービスを決められる。', l:'国がぜんぶ決めるのではなく、身近なことは身近で決める。これも民主主義のかたち。' },
+        { cat:'pol', t:'政府には、景気を動かす2つのレバーがある', b:'税金や公共事業でお金を動かす「財政政策」と、中央銀行が金利で動かす「金融政策」。', l:'政治の決定は、そのまま会社のもうけや、わたしたちの生活のねだんに効いてくる。' },
+        // 🌍 世界
+        { cat:'world', t:'国どうしのもめごとは、話し合い（外交）で解決するのが原則', b:'戦争ではなく、話し合いや条約で問題を解こうとするのが、政治のいちばん大事な役わり。', l:'国連（国際連合）は、世界の平和と協力のために作られた組織だよ。' },
+        { cat:'world', t:'貿易のルール（関税）で、物のねだんは変わる', b:'関税は輸入品にかける税金。上げると国内の会社を守れるが、物のねだんは上がる。', l:'自分の国を守りたい気持ちと、安く買いたい気持ち。世界はこのバランスをいつも話し合っている。' },
+        { cat:'world', t:'世界の株式市場は、たがいにつながって動く', b:'アメリカの株が下がると、次の日に日本の株も下がる、ということがよく起きる。', l:'落ちるときは世界いっしょ。だから「時間を分けて少しずつ買う（積み立て）」と安心なんだ。' },
+        { cat:'world', t:'エネルギー（石油）のねだんは、世界のできごとで動く', b:'石油の多くを輸入している国は、世界の情勢しだいでガソリンや電気代が上がったり下がったりする。', l:'遠い国のニュースが、自分の家のねだんに響く。世界はつながっている。' },
+        { cat:'world', t:'地球温暖化をふせぐため、世界が協力しようとしている', b:'各国が集まって、二酸化炭素をへらす目標を話し合っている。環境を守るルールは会社のもうけ方も変える。', l:'ルールを作る「政治」が、経済（会社のもうけ）を大きく動かす良い例だよ。' },
+        { cat:'world', t:'新しい技術は、世界共通のルール作りの競争になる', b:'AIやスマホの通信など、世界で使う「標準」になれた国の会社が有利になる。', l:'ルールを作る側になれるかどうかで、会社のもうけが何年も変わることがある。' },
+        { cat:'world', t:'安全とされるもの（金・国債）は、不安なときに買われる', b:'世界のどこかで心配なできごとがあると、投資家は値動きの小さい「安全資産」にお金をうつす。', l:'なぜ金のねだんが上がったのか、理由が分かると、ニュースが「自分ごと」になる。' }
+    ];
+    // --- 日付＋時間帯で決まる乱数（だれの端末でも同じニュース・同じ株価になる） ---
     function mHash(s) { let h = 2166136261; for(let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
     function mRng(seed) { let a = seed >>> 0; return function() { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-    // 1本のニュースを作る（テンプレートの {co} {sec} {n1} を実際の言葉・数字にかえる）
-    function mBuildArticle(tpl, rnd) {
-        const co = M_CORPS[Math.floor(rnd() * M_CORPS.length)];
-        const sec = M_SECTORS[Math.floor(rnd() * M_SECTORS.length)];
-        const nums = (tpl.r || []).map(([lo, hi]) => lo + Math.floor(rnd() * (hi - lo + 1)));
-        const fill = (s) => String(s || '')
-            .replace(/\{co\}/g, co.n).replace(/\{sec\}/g, sec)
-            .replace(/\{n1\}/g, nums[0]).replace(/\{n2\}/g, nums[1]);
+    const NOBI_K = 3, REAL_K = 3;   // 1回のニュースは のびログ版3本 ＋ 現実版3本
+    // そのスロットの乱数（サーバーのたね seed があればそれ・無ければ日付から）
+    function mSlotRng(day, slot, seed) { return mRng(typeof seed === 'number' && isFinite(seed) ? (seed >>> 0) : mHash('nobilog-news|' + day + '|' + slot)); }
+    // プールから k 本えらぶ（重ならないように）。会社・業種・数字もここで決める＝あとで文にも効果にも使える
+    function mPickRaw(rnd, pool, k) {
+        const used = [], out = [];
+        for(let n = 0; n < k && used.length < pool.length; n++) {
+            let idx, tries = 0;
+            do { idx = Math.floor(rnd() * pool.length); tries++; } while(used.indexOf(idx) >= 0 && tries < 50);
+            used.push(idx);
+            const tpl = pool[idx];
+            const co = M_CORPS[Math.floor(rnd() * M_CORPS.length)];
+            const sec = M_SECTORS[Math.floor(rnd() * M_SECTORS.length)];
+            const nums = (tpl.r || []).map(([lo, hi]) => lo + Math.floor(rnd() * (hi - lo + 1)));
+            out.push({ tpl, co, sec, nums });
+        }
+        return out;
+    }
+    // えらんだもとから「読める記事」を作る（{co}{sec}{n1} を実際の言葉・数字にかえる）
+    function mBuildArticle(raw) {
+        const { tpl, co, sec, nums } = raw;
+        const fill = (s) => String(s || '').replace(/\{co\}/g, co.n).replace(/\{sec\}/g, sec).replace(/\{n1\}/g, nums[0]).replace(/\{n2\}/g, nums[1]);
         const e = {};
-        Object.entries(tpl.e || {}).forEach(([k, v]) => { e[k === '@sec' ? sec : k === '@co' ? co.c : k] = v; });
+        Object.entries(tpl.e || {}).forEach(([k, v]) => { const kk = k === '@sec' ? sec : k === '@co' ? co.c : k; e[kk] = (e[kk] || 0) + v; });
         return { cat: tpl.cat, t: fill(tpl.t), b: fill(tpl.b), l: fill(tpl.l), e };
     }
-    // その日・その時間帯のニュース（4本）をまとめて作る
-    // seed をサーバーからもらうと、その回だけの「本当にランダムな」ニュースになる（2人とも同じものが読める）
-    function mMakeBatch(dayKey, slot, seed) {
-        const online = typeof seed === 'number' && isFinite(seed);
-        const rnd = mRng(online ? (seed >>> 0) : mHash('nobilog-news|' + dayKey + '|' + slot));
-        const mix = M_SLOT_MIX[slot] || M_SLOT_MIX[0];
-        const used = [], items = [];
-        mix.forEach(cat => {
-            const pool = M_NEWS_T.map((t, i) => [t, i]).filter(([t, i]) => t.cat === cat && used.indexOf(i) < 0);
-            const list = pool.length ? pool : M_NEWS_T.map((t, i) => [t, i]).filter(([t, i]) => used.indexOf(i) < 0);
-            if(!list.length) return;
-            const [tpl, idx] = list[Math.floor(rnd() * list.length)];
-            used.push(idx);
-            items.push(mBuildArticle(tpl, rnd));
-        });
-        return { day: dayKey, slot, items, src: online ? 'online' : 'local' };
-    }
-    // サーバーからもらった「ニュースのたね（seed）」の置き場。キー: "日付|時間帯" → 数字
-    // ※ニュースの文そのものはアプリの中にあるので、オフラインでも必ず読める
-    let M_NEWS_CACHE = {};
-    try { M_NEWS_CACHE = JSON.parse(localStorage.getItem('nobilogNews')) || {}; } catch(e) { M_NEWS_CACHE = {}; }
-    function mNewsKey(dayKey, slot) { return dayKey + '|' + slot; }
-    function mNewsFor(dayKey, slot) { return mMakeBatch(dayKey, slot, M_NEWS_CACHE[mNewsKey(dayKey, slot)]); }
-    // ニュース全部のえいきょうを合体（大きくなりすぎないように上限をつける）
-    function mNewsEffects(batch) {
+    // えらんだもとから「相場への効果」だけを取り出す（文は作らない＝軽い）
+    function mRawEffects(raw) {
+        const { tpl, co, sec } = raw;
         const e = {};
-        (batch.items || []).forEach(it => Object.entries(it.e || {}).forEach(([k, v]) => { e[k] = (e[k] || 0) + v; }));
+        Object.entries(tpl.e || {}).forEach(([k, v]) => { const kk = k === '@sec' ? sec : k === '@co' ? co.c : k; e[kk] = (e[kk] || 0) + v; });
+        return e;
+    }
+    // その日・その時間帯のニュース（のびログ版＋現実版）をまとめて作る
+    function mMakeBatch(day, slot, seed) {
+        const rnd = mSlotRng(day, slot, seed);
+        const nobiRaw = mPickRaw(rnd, M_NEWS_NOBI, NOBI_K);   // ★先にのびログ版（効果の再現に使う）
+        const realRaw = mPickRaw(rnd, M_NEWS_REAL, REAL_K);
+        return { day, slot, nobi: nobiRaw.map(mBuildArticle), real: realRaw.map(mBuildArticle),
+                 src: (typeof seed === 'number' && isFinite(seed)) ? 'online' : 'local' };
+    }
+    // のびログ版ニュースの「相場への効果」だけを再現する（mMakeBatch と同じ乱数の並び＝同じ結果）
+    function mNobiEffectsAt(day, slot, seed) {
+        const rnd = mSlotRng(day, slot, seed);
+        const raw = mPickRaw(rnd, M_NEWS_NOBI, NOBI_K);
+        return mCombineEffects(raw.map(mRawEffects));
+    }
+    // 効果を合体（大きくなりすぎないように上限をつける）
+    function mCombineEffects(list) {
+        const e = {};
+        list.forEach(m => Object.entries(m).forEach(([k, v]) => { e[k] = (e[k] || 0) + v; }));
         Object.keys(e).forEach(k => { e[k] = Math.max(-0.20, Math.min(0.20, e[k] * 0.7)); });
         return e;
     }
-    // ニュース全体が「上がりやすい／下がりやすい」にかたよっていると、
-    // 何年も続けたときに株価がとんでもない値になってしまう。
-    // そこで、ニュースの平均的なえいきょう（かたより）を先に計算しておいて、毎回そのぶんを引く。
-    // → 良いニュースで上がる・悪いニュースで下がる関係はそのまま。長い目で見たときだけ公平になる。
-    // 商品ごとに「ニュースから受ける平均のえいきょう(bias)」を先に計算しておく
-    function mComputeNewsStats() {
-        const catPool = {};
-        M_NEWS_T.forEach(t => { (catPool[t.cat] = catPool[t.cat] || []).push(t); });
-        const nS = M_SECTORS.length, nC = M_CORPS.length;
-        // テンプレート1本が、その商品にあたえるえいきょうの「平均」と「2乗の平均」
-        const tplStats = (t, a) => {
-            let D = 0, vs = 0, vc = 0;
-            Object.entries(t.e || {}).forEach(([k, v]) => {
-                if(k === '@sec') { if(a.sec) vs += v; }                                  // ランダムに選ばれる業種
-                else if(k === '@co') { if(a.t === '株') vc += v; }                        // ランダムに選ばれる会社
-                else if(k === a.c || k === a.t || (a.sec && k === a.sec)) D += v;         // 決まっているもの
-            });
-            const ps = a.sec ? 1 / nS : 0, pc = a.t === '株' ? 1 / nC : 0;
-            return [D + vs * ps + vc * pc];
-        };
-        const bias = {}, n = M_SLOT_MIX.length;
-        M_ASSETS.forEach(a => {
-            let sumMean = 0;
-            M_SLOT_MIX.forEach(mix => {
-                let mS = 0;
-                mix.forEach(cat => {
-                    const pool = catPool[cat] || [];
-                    if(!pool.length) return;
-                    let e1 = 0;
-                    pool.forEach(t => { e1 += tplStats(t, a)[0]; });
-                    mS += e1 / pool.length;
-                });
-                sumMean += 0.7 * mS;              // mNewsEffects と同じ 0.7 倍
-            });
-            bias[a.c] = sumMean / n;
+    function mNewsEffects(batch) { return mCombineEffects((batch.nobi || []).map(it => it.e || {})); }
+    // サーバーからもらった「ニュースのたね（seed）」の置き場。キー: "日付|時間帯" → 数字
+    // ※ニュースの文も株価の計算式もアプリの中にあるので、オフラインでも必ず読める・動く
+    let M_NEWS_CACHE = {};
+    try { M_NEWS_CACHE = JSON.parse(localStorage.getItem('nobilogNews')) || {}; } catch(e) { M_NEWS_CACHE = {}; }
+    function mNewsKey(day, slot) { return day + '|' + slot; }
+    function mNewsSeed(day, slot) { return M_NEWS_CACHE[mNewsKey(day, slot)]; }
+    // キーを「古い順」にならべる（"2026-7-9|2" のような文字列を、ちゃんと日付の早い順に）
+    function mNewsSortKeys(keys) {
+        return keys.slice().sort((a, b) => {
+            const pa = a.split('|'), pb = b.split('|');
+            return (calDayNum(pa[0]) * 3 + (+pa[1])) - (calDayNum(pb[0]) * 3 + (+pb[1]));
         });
-        return { bias };
     }
-    const M_NEWS_STAT = mComputeNewsStats();
-    const M_NEWS_BIAS = M_NEWS_STAT.bias;
+    function mNewsFor(day, slot) { return mMakeBatch(day, slot, mNewsSeed(day, slot)); }
+
+    // ===== 相場エンジン（のびログ版ニュースで株価が動く。Math.randomを使わない＝どの端末でも同じ株価） =====
     // 長い目で見たときの伸び（年利のイメージ）。種類ごとにちがう＝これが「リスクとリターンの関係」
     const M_GROWTH = { '株':0.07, '投信':0.06, '債券':0.005, 'コモディティ':0.03, '外貨':0.00, '不動産':0.03, '暗号資産':0.08 };
     const M_SLOTS_YEAR = 365 * 3;      // 1日3回 × 365日
-    function mDriftPerSlot(a) {
-        const g = M_GROWTH[a.t] != null ? M_GROWTH[a.t] : 0.03;
-        return Math.log(1 + g) / M_SLOTS_YEAR;
+    function mDriftPerSlot(a) { const g = M_GROWTH[a.t] != null ? M_GROWTH[a.t] : 0.03; return Math.log(1 + g) / M_SLOTS_YEAR; }
+    // ニュース全体の「上がりやすい／下がりやすいかたより」を先に計算（引かないと何年かで株価が暴走する）
+    function mComputeNewsBias() {
+        const nS = M_SECTORS.length, nC = M_CORPS.length, P = M_NEWS_NOBI.length;
+        const poolMean = (a) => {
+            let sum = 0;
+            M_NEWS_NOBI.forEach(t => {
+                let D = 0, vs = 0, vc = 0;
+                Object.entries(t.e || {}).forEach(([k, v]) => {
+                    if(k === '@sec') { if(a.sec) vs += v; }
+                    else if(k === '@co') { if(a.t === '株') vc += v; }
+                    else if(k === a.c || k === a.t || (a.sec && k === a.sec)) D += v;
+                });
+                sum += D + vs * (a.sec ? 1 / nS : 0) + vc * (a.t === '株' ? 1 / nC : 0);
+            });
+            return sum / P;
+        };
+        const bias = {};
+        M_ASSETS.forEach(a => { bias[a.c] = 0.7 * NOBI_K * poolMean(a); });   // 1回の平均効果（0.7倍・k本）
+        return bias;
+    }
+    const M_NEWS_BIAS = mComputeNewsBias();
+    // 商品ごとの下じき（毎回計算しないよう先に用意）
+    const M_ASTAT = {};
+    M_ASSETS.forEach(a => { M_ASTAT[a.c] = { drift: mDriftPerSlot(a), nscale: Math.min(1, Math.max(0.12, a.v / 0.022)) }; });
+    const M_PRICE_W = 90;      // 直近90回（＝30日ぶん）のニュースと値動きが、今の株価を決める
+    let __priceMemo = {};
+    function mClearPriceCache() { __priceMemo = {}; }
+    // 決まった値の小さな乱数（Math.randomを使わない＝どの端末でも同じ株価になる）
+    function mNoise(code, num, seed) { const r = mRng(mHash(code + '#' + num + '#' + ((seed >>> 0) || 0))); return r() * 2 - 1; }
+    // 「その時間帯の株価」を計算する。直近90スロットのニュースと値動きを積み上げるだけ（＝経路によらず同じ）
+    function mPricesAt(day, slot) {
+        const key = day + '|' + slot;
+        if(__priceMemo[key]) return __priceMemo[key];
+        const slots = []; let cur = { day, s: slot };
+        for(let i = 0; i < M_PRICE_W; i++) { slots.push(cur); cur = mPrevSlot(cur.day, cur.s); }
+        slots.reverse();
+        const effs = slots.map(sl => mNobiEffectsAt(sl.day, sl.s, mNewsSeed(sl.day, sl.s)));
+        const nums = slots.map(sl => calDayNum(sl.day) * 3 + sl.s);
+        const seeds = slots.map(sl => mNewsSeed(sl.day, sl.s));
+        const out = {};
+        M_ASSETS.forEach(a => {
+            const st = M_ASTAT[a.c]; let logp = 0;
+            for(let i = 0; i < slots.length; i++) {
+                const e = effs[i];
+                let nf = 0;
+                if(e[a.c] != null) nf += e[a.c];              // 銘柄ごと
+                if(e[a.t] != null) nf += e[a.t];              // 種類ごと（株・債券など）
+                if(a.sec && e[a.sec] != null) nf += e[a.sec]; // 業種ごと
+                nf -= (M_NEWS_BIAS[a.c] || 0);                // ニュース全体のかたよりを打ち消す
+                let step = st.drift + mNoise(a.c, nums[i], seeds[i]) * a.v * 0.62 + nf * st.nscale;
+                if(logp > 1.1) step -= (logp - 1.1) * 0.004;  // 上がりすぎ・下がりすぎはゆっくり戻る
+                else if(logp < -1.1) step += (-1.1 - logp) * 0.004;
+                logp += step;
+            }
+            let p = a.p * Math.exp(logp);
+            // 株は「1株いくら」が整数（1株千円なら100株で10万円）。ほかは小数までOK・0にはならない
+            if(a.t === '株') p = Math.max(Math.round(p), Math.round(a.p * 0.1));
+            else p = Math.max(Math.round(p * 100) / 100, a.p * 0.05);
+            out[a.c] = p;
+        });
+        __priceMemo[key] = out;
+        return out;
     }
     // サーバー（Cloudflare Workers）から最新のニュースのたねをもらう
     // サーバーは毎日 朝7時・昼12時・夕方18時（日本時間）に、新しいたねを作って置いてくれる
@@ -1823,9 +1941,9 @@
                 if(M_NEWS_CACHE[k] !== b.seed) changed = true;
                 M_NEWS_CACHE[k] = b.seed; n++;
             });
-            const keys = Object.keys(M_NEWS_CACHE);                      // 古いものは消す（30個まで）
-            if(keys.length > 30) keys.sort().slice(0, keys.length - 30).forEach(k => { delete M_NEWS_CACHE[k]; changed = true; });
-            if(changed) localStorage.setItem('nobilogNews', JSON.stringify(M_NEWS_CACHE));
+            const keys = Object.keys(M_NEWS_CACHE);                      // 古いものは消す（110個まで＝株価の窓90回ぶんをカバー）
+            if(keys.length > 110) mNewsSortKeys(keys).slice(0, keys.length - 110).forEach(k => { delete M_NEWS_CACHE[k]; changed = true; });
+            if(changed) { localStorage.setItem('nobilogNews', JSON.stringify(M_NEWS_CACHE)); mClearPriceCache(); } // たねが変わったら株価も計算し直す
             mNewsOnline = n > 0;
             if(changed && mNewsReady && document.getElementById('view-money').classList.contains('active')) renderMoney();
             return true;
@@ -2045,9 +2163,13 @@
         { id:'divinc', e:'🌴', n:'はじめての不労所得', ok:m=>(m.divTotal||0)>0 },
         { id:'work', e:'💪', n:'10回はたらいた', ok:m=>(m.workCount||0)>=10 }
     ];
-    const M_DIV_EVERY = 30;       // 何日ごとに配当・分配金がもらえるか（権利確定日のイメージ）
+    const M_PAY_DAY = 5;          // 毎月5日に「給料」と「配当金」がまとめて入る
+    const M_PAY_PER_CORRECT = 500; // 給料は勉強しだい：20問正解で1万円（＝1問500円）
     // 【お金の配布】ここに1行足すと、その人のアプリを次に開いたとき1回だけ配られる（idが同じなら二重には配られない）
-    const M_GRANTS = [];
+    const M_GRANTS = [
+        { id:'20260725-owabi-nao', user:'u1', yen:50000, msg:'🙇 リニューアルのお詫びに5万円プレゼント！' },
+        { id:'20260725-owabi-rir', user:'u2', yen:50000, msg:'🙇 リニューアルのお詫びに5万円プレゼント！' }
+    ];
     // 【お金データのリセット】ここにidを書くと、次に開いたとき1回だけ まっさら（1万円スタート）に戻る
     const M_RESETS = [
         { id:'20260724-reset-all', users:['u1','u2'], msg:'💰 お金・経済がリセットされたよ！\nまた1万円からスタート！' }
@@ -2058,7 +2180,8 @@
         divTotal:0, divTotalNisa:0, divHist:[], taxPaid:0, taxGain:0, taxDiv:0, taxSaved:0,
         feePaid:0, workCount:0, workDay:null, nisaUsed:0, nisaYear:null,
         goal:100000, started:true, autoAmt:0, autoCode:'ALLC', autoAcct:'nisa',
-        nisaLife:0, trustFee:0, grants:[]
+        nisaLife:0, trustFee:0, grants:[],
+        payCorrect:0, salaryTotal:0, lastPaidYM:null   // 給料：正解した問題数をためて毎月5日にまとめて受け取る
     });
     // リセットを反映（同じidは1回だけ。実行するとお金データがまっさら＝1万円スタートに戻る）
     function mApplyResets() {
@@ -2066,6 +2189,7 @@
         const doneKey = ukey('moneyResets');
         let done = [];
         try { done = JSON.parse(localStorage.getItem(doneKey)) || []; } catch(e) { done = []; }
+        if(!Array.isArray(done)) done = [];   // データがこわれていても落ちないように
         let msg = null;
         M_RESETS.forEach(r => {
             if(!r.users.includes(currentUserId)) return;
@@ -2087,11 +2211,11 @@
     function mApplyGrants() {
         if(!currentUserId) return false;
         const m = mLoad();
+        if(!Array.isArray(m.grants)) m.grants = [];   // データがこわれていても落ちないように
         let changed = false; const msgs = [];
         M_GRANTS.forEach(g => {
             if(g.user !== currentUserId) return;
-            if((m.grants || []).includes(g.id)) return;
-            m.grants = m.grants || [];
+            if(m.grants.includes(g.id)) return;
             m.grants.push(g.id);
             m.cash += g.yen;
             mLog(m, 'とくべつ配布', g.yen);
@@ -2105,10 +2229,14 @@
         let m; try { m = JSON.parse(localStorage.getItem(ukey('money'))); } catch(e) { m = null; }
         if(!m || typeof m.cash !== 'number') { m = M_EMPTY(); }
         m = Object.assign(M_EMPTY(), m);
-        M_ALL().forEach(a => {
-            if(typeof m.prices[a.c] !== 'number') m.prices[a.c] = a.p;      // 新しい商品が増えても壊れない
-            if(typeof m.divRate[a.c] !== 'number') m.divRate[a.c] = a.div;  // 配当利回りは増配・減配で変わる
-        });
+        // 配列であるべき所がこわれていても落ちないように直す（保険）
+        ['ledger','histTotal','news','quizDone','badges','divHist','grants'].forEach(k => { if(!Array.isArray(m[k])) m[k] = []; });
+        ['hold','nisa'].forEach(k => { if(!m[k] || typeof m[k] !== 'object') m[k] = {}; });
+        // 株価は「今の時間帯」から計算する（保存はしない＝どの端末でも同じ・データがずれない）
+        const now = mSlotInfo();
+        m.prices = Object.assign({}, mPricesAt(now.day, now.s));
+        m.divRate = {};
+        M_ALL().forEach(a => { m.divRate[a.c] = a.div; });                  // 配当利回りは固定
         // むかし買ったまま定義が無い商品も、値段が無いと表示できないので用意しておく（データを守る）
         ['hold','nisa'].forEach(k => Object.keys(m[k] || {}).forEach(c => {
             if(typeof m.prices[c] !== 'number') m.prices[c] = M_ASSET(c).p;
@@ -2120,6 +2248,14 @@
         if(m.nisaYear !== y) { m.nisaYear = y; m.nisaUsed = 0; }            // 年が変わるとNISAの枠が復活
         return m;
     }
+    // いまの株価（1株いくら）
+    function mPrice(m, code) {
+        if(m && typeof m.prices[code] === 'number') return m.prices[code];
+        const now = mSlotInfo();
+        return mPricesAt(now.day, now.s)[code] || M_ASSET(code).p;
+    }
+    // 株かどうか（株は「株数」で、投信・そのほかは「金額」で売り買いする）
+    function mIsShareType(a) { return a && a.t === '株'; }
     function mSave(m) { localStorage.setItem(ukey('money'), JSON.stringify(m)); }
     const mYen = (n) => '¥' + Math.round(n).toLocaleString('ja-JP');
     const mAcctName = (a) => a === 'nisa' ? 'NISA' : '課税口座';
@@ -2153,140 +2289,152 @@
         return { day: `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`, s: 0 };
     }
     // --- ニュース1回ぶん経済をすすめる（1日3回。朝・昼・夕でニュースが変わって相場が動く） ---
+    // 「YYYY-M-D」を数字に
+    function mYMD(day) { const p = String(day).split('-').map(Number); return { y:p[0], mo:p[1], d:p[2] }; }
+    // 毎月5日の「給料＋配当＋利息」。開いていなかった月ぶんもまとめて受け取れる
+    function mRunPaydays(m, now) {
+        const c = mYMD(now.day);
+        let toY = c.y, toMo = c.mo;                          // いつの月ぶんまで払うか
+        if(c.d < M_PAY_DAY) { toMo--; if(toMo < 1) { toMo = 12; toY--; } } // まだ5日前なら前の月まで
+        let sy, smo;
+        if(m.lastPaidYM) { const q = String(m.lastPaidYM).split('-').map(Number); sy = q[0]; smo = q[1] + 1; if(smo > 12) { smo = 1; sy++; } }
+        else { sy = toY; smo = toMo; }                       // はじめての人は「当月ぶん」だけ（さかのぼらない）
+        let paid = false, guard = 0;
+        while((sy < toY || (sy === toY && smo <= toMo)) && guard < 24) {
+            guard++;
+            if(mPayMonth(m, sy, smo)) paid = true;
+            m.lastPaidYM = sy + '-' + smo;
+            smo++; if(smo > 12) { smo = 1; sy++; }
+        }
+        return paid;
+    }
+    function mPayMonth(m, y, mo) {
+        let did = false;
+        // 💼 給料（勉強でためた正解ぶん・20問で1万円）
+        const sal = (m.payCorrect || 0) * M_PAY_PER_CORRECT;
+        if(sal > 0) { m.cash += sal; m.salaryTotal = (m.salaryTotal || 0) + sal; mLog(m, `お給料（勉強 ${m.payCorrect}問ぶん）`, sal); m.payCorrect = 0; did = true; }
+        // 💴 配当金（1か月ぶん。課税口座は20.315%引き・NISAはまるごと）
+        let divTax = 0, divNisa = 0;
+        Object.entries(m.hold || {}).forEach(([c, h]) => { const r = m.divRate[c] || M_ASSET(c).div || 0; if(r) divTax += mPrice(m, c) * h.qty * r / 12; });
+        Object.entries(m.nisa || {}).forEach(([c, h]) => { const r = m.divRate[c] || M_ASSET(c).div || 0; if(r) divNisa += mPrice(m, c) * h.qty * r / 12; });
+        const tax = Math.round(divTax * M_TAX), netTax = Math.round(divTax) - tax, nisaAmt = Math.round(divNisa);
+        if(netTax > 0 || nisaAmt > 0) {
+            m.cash += netTax + nisaAmt;
+            m.divTotal += netTax; m.divTotalNisa = (m.divTotalNisa || 0) + nisaAmt;
+            m.taxPaid += tax; m.taxDiv = (m.taxDiv || 0) + tax;
+            m.taxSaved = (m.taxSaved || 0) + Math.round(divNisa * M_TAX);
+            m.divHist.unshift({ ym:y + '-' + mo, tax:netTax, nisa:nisaAmt, taxed:tax });
+            if(m.divHist.length > 12) m.divHist.length = 12;
+            if(netTax > 0) mLog(m, `配当金（税金${mYen(tax)}引き）`, netTax);
+            if(nisaAmt > 0) mLog(m, 'NISAの配当金（税金ゼロ！）', nisaAmt);
+            did = true;
+        }
+        // 🏦 銀行の利息（年0.1%の1か月ぶん・利息にも税金）
+        if(m.bank > 0) { const it = m.bank * 0.001 / 12; if(it >= 1) { const t = Math.round(it * M_TAX); m.bank += Math.round(it) - t; m.taxPaid += t; mLog(m, '預金の利息', Math.round(it) - t); did = true; } }
+        return did;
+    }
+    // --- 経済をすすめる（株価はニュースから計算・毎月5日に給料と配当・毎日つみたてと信託報酬） ---
     function mTick(m) {
         const now = mSlotInfo();
-        let cur;
-        if(m.lastSlot && typeof m.lastSlot.day === 'string') cur = mNextSlot(m.lastSlot.day, m.lastSlot.s);
-        else if(m.lastDay) cur = mNextSlot(m.lastDay, 2);       // 前のバージョン（1日1回）からの引きつぎ
-        else cur = { day: now.day, s: now.s };                  // はじめて開いた人は今回のぶんだけ
-        let steps = (calDayNum(now.day) - calDayNum(cur.day)) * 3 + (now.s - cur.s) + 1;
-        if(steps <= 0) return false;
-        if(steps > 30) { for(let i = 0; i < steps - 30; i++) cur = mNextSlot(cur.day, cur.s); steps = 30; } // まとめて最大10日ぶん
-        for(let step = 0; step < steps; step++) {
-            const batch = mNewsFor(cur.day, cur.s);
-            const news = { e: mNewsEffects(batch) };
-            const newDay = (cur.s === 0) || m.day === 0;        // 朝刊で1日ぶんすすむ
-            if(newDay) m.day++;
-            // いま買える商品＋むかしの商品（持っている人の資産が固まらないように）ぜんぶ動かす
-            const moving = M_ALL().slice();
-            ['hold','nisa'].forEach(k => Object.keys(m[k] || {}).forEach(c => { if(!moving.some(a => a.c === c)) moving.push(M_ASSET(c)); }));
-            moving.forEach(a => {
-                if(typeof m.prices[a.c] !== 'number') m.prices[a.c] = a.p;
-                let move = (Math.random() * 2 - 1) * a.v * 0.62;       // ふだんの値動き（1日3回動くので1回分は小さめ）
-                if(a._drift == null) { a._drift = mDriftPerSlot(a); a._nscale = Math.min(1, Math.max(0.12, a.v / 0.022)); }
-                move += a._drift;                                      // 長い目で見るとゆっくり成長する
-                let nf = 0;
-                if(news.e[a.c] != null) nf += news.e[a.c];              // 銘柄ごとのニュース
-                if(news.e[a.t] != null) nf += news.e[a.t];              // 種類ごとのニュース（株・債券など）
-                if(a.sec && news.e[a.sec] != null) nf += news.e[a.sec]; // 業種ごとのニュース
-                nf -= (M_NEWS_BIAS[a.c] || 0);                          // ニュース全体のかたよりを打ち消す
-                // 国債のように値動きがもともと小さいものは、ニュースでも大きくは動かない
-                move += nf * a._nscale;
-                // 上がりすぎ・下がりすぎたら、ゆっくり元の方へもどす力がはたらく（本物にも「割高・割安」がある）
-                const lr = Math.log(m.prices[a.c] / a.p);
-                if(lr > 1.1) move -= (lr - 1.1) * 0.004;
-                else if(lr < -1.1) move += (-1.1 - lr) * 0.004;
-                // 「かけ算」で動かす（本物の値段と同じで、0円やマイナスにはならない）
-                let p = m.prices[a.c] * Math.exp(move);
-                m.prices[a.c] = Math.max(Math.round(p * 100) / 100, a.p * 0.05);
-            });
-            // 見出しを保存（ホーム画面に「さいきんの動き」として出る）
-            m.news = (batch.items || []).map(it => ({ t: it.t, cat: it.cat, day: m.day, slot: cur.s, dayKey: cur.day })).concat(m.news);
-            if(m.news.length > 24) m.news.length = 24;
-            cur = mNextSlot(cur.day, cur.s);
-            if(!newDay) continue;                                       // ここから下は「1日1回」のできごと
-            // 増配・減配（たまに配当利回りが変わる。本物の会社と同じ）
-            if(m.day % 90 === 0) {
-                M_ALL().forEach(a => {
-                    if(!a.div) return;
-                    const r = (m.divRate[a.c] || a.div) * (1 + (Math.random() * 0.3 - 0.12)); // 増配しやすい
-                    m.divRate[a.c] = Math.min(Math.max(r, a.div * 0.3), a.div * 2.2);
-                });
-                mLog(m, '会社の決算：配当の見直しがあった', 0);
+        // 株価はいつでも「今の時間帯」から計算する（保存しない＝どの端末でも同じ・ニュースと同じタイミングで動く）
+        m.prices = Object.assign({}, mPricesAt(now.day, now.s));
+        // 今の時間帯のニュース見出しをホーム用に保存
+        const batch = mNewsFor(now.day, now.s);
+        m.news = (batch.nobi || []).concat(batch.real || []).map(it => ({ t: it.t, cat: it.cat, day: now.day, slot: now.s }));
+        // 進んだ「日数」を数える（前に開いた日から今日まで。最大10日ぶん）
+        const last = (m.lastSlot && typeof m.lastSlot.day === 'string') ? m.lastSlot : (m.lastDay ? { day:m.lastDay, s:2 } : null);
+        const nowNum = calDayNum(now.day) * 3 + now.s;
+        const lastNum = last ? calDayNum(last.day) * 3 + last.s : nowNum - 1;
+        let changed = false;
+        if(nowNum > lastNum || m.day === 0) {
+            let newDays = last ? Math.max(0, calDayNum(now.day) - calDayNum(last.day)) : 1;
+            if(m.day === 0 && newDays === 0) newDays = 1;
+            newDays = Math.min(newDays, 10);
+            for(let i = 0; i < newDays; i++) {
+                m.day++;
+                // 信託報酬（投信は持っているだけで毎日ちょっとずつ引かれる＝見えないコスト）
+                let tf = 0;
+                ['hold','nisa'].forEach(k => Object.entries(m[k] || {}).forEach(([c, h]) => {
+                    const a = M_ASSET(c); if(!a || !a.fee) return;
+                    tf += mPrice(m, c) * h.qty * (a.fee / 365);
+                    h.qty = h.qty * (1 - a.fee / 365);
+                }));
+                m._tfAcc = (m._tfAcc || 0) + tf;
+                if(m._tfAcc >= 1) { const w = Math.floor(m._tfAcc); m.trustFee = (m.trustFee || 0) + w; m._tfAcc -= w; }
+                // 自動つみたて（設定していれば毎日ちょっとずつ買う）
+                if(m.autoAmt > 0 && m.cash >= m.autoAmt) { mBuyInner(m, m.autoCode, m.autoAmt, true, m.autoAcct); }
             }
-            // 信託報酬（投信は持っているだけで毎日ちょっとずつ引かれる。本物と同じ「見えないコスト」）
-            let tf = 0;
-            ['hold','nisa'].forEach(k => Object.entries(m[k] || {}).forEach(([c, h]) => {
-                const a = M_ASSET(c); if(!a || !a.fee) return;
-                tf += m.prices[c] * h.qty * (a.fee / 365);
-                h.qty = h.qty * (1 - a.fee / 365);   // 口数がほんの少し減る＝手数料を払っている
-            }));
-            // 1円未満でも捨てずにためる（少額でも積もると分かるように）
-            m._tfAcc = (m._tfAcc || 0) + tf;
-            if(m._tfAcc >= 1) { const w = Math.floor(m._tfAcc); m.trustFee = (m.trustFee || 0) + w; m._tfAcc -= w; }
-            // 配当・分配金（30日ごとの権利確定日にまとめてもらう）
-            if(m.day % M_DIV_EVERY === 0) {
-                let divTax = 0, divNisa = 0;
-                Object.entries(m.hold || {}).forEach(([c, h]) => {           // 課税口座 → 20.315%が引かれる
-                    const rate = m.divRate[c] || 0; if(!rate) return;
-                    divTax += m.prices[c] * h.qty * rate * (M_DIV_EVERY / 365);
-                });
-                Object.entries(m.nisa || {}).forEach(([c, h]) => {           // NISA → まるごともらえる
-                    const rate = m.divRate[c] || 0; if(!rate) return;
-                    divNisa += m.prices[c] * h.qty * rate * (M_DIV_EVERY / 365);
-                });
-                const tax = Math.round(divTax * M_TAX);
-                const netTax = Math.round(divTax) - tax;
-                const nisaAmt = Math.round(divNisa);
-                if(netTax > 0 || nisaAmt > 0) {
-                    m.cash += netTax + nisaAmt;
-                    m.divTotal += netTax; m.divTotalNisa = (m.divTotalNisa || 0) + nisaAmt;
-                    m.taxPaid += tax; m.taxDiv = (m.taxDiv || 0) + tax;
-                    m.taxSaved = (m.taxSaved || 0) + Math.round(divNisa * M_TAX); // NISAで得した分
-                    m.divHist.unshift({ day:m.day, tax:netTax, nisa:nisaAmt, taxed:tax });
-                    if(m.divHist.length > 12) m.divHist.length = 12;
-                    if(netTax > 0) mLog(m, `配当金（税金${mYen(tax)}を引かれた）`, netTax);
-                    if(nisaAmt > 0) mLog(m, 'NISAの配当金（税金ゼロ！）', nisaAmt);
-                }
-            }
-            // 銀行の利息（年0.1%・利息にも20.315%の税金がかかる）
-            if(m.bank > 0) {
-                const it = m.bank * 0.001 / 365;
-                if(it >= 1) { const t = Math.round(it * M_TAX); m.bank += Math.round(it) - t; m.taxPaid += t; mLog(m, '預金の利息', Math.round(it) - t); }
-            }
-            // 毎月のおこづかい（30日ごと）
-            if(m.day % 30 === 0) { m.cash += 3000; mLog(m, 'おこづかい', 3000); }
-            // 自動つみたて（設定していれば毎日ちょっとずつ）
-            if(m.autoAmt > 0 && m.cash >= m.autoAmt) { mBuyInner(m, m.autoCode, m.autoAmt, true, m.autoAcct); }
-            m.histTotal.push({ d: m.day, v: Math.round(mTotal(m)) });
-            if(m.histTotal.length > 120) m.histTotal.shift();
+            changed = true;
         }
+        // 毎月5日の給料・配当（さかのぼり分もまとめて）
+        if(mRunPaydays(m, now)) changed = true;
+        m.histTotal.push({ d: m.day, v: Math.round(mTotal(m)) });
+        if(m.histTotal.length > 120) m.histTotal.shift();
         m.lastSlot = { day: now.day, s: now.s };
         m.lastDay = now.day;
-        return true;
+        return changed;
     }
-    // --- 売買（買付手数料0.5%／もうけに20.315%の税金／NISAは非課税） ---
+    // --- 売買 ---
+    // 株は「株数」で買う（1株千円なら100株で10万円）。投信・そのほかは「金額」で買う（本物と同じ）
+    // amount = 株なら株数、それ以外は金額（円）。買付手数料0.5%（投信は0円）・もうけに20.315%の税金（NISAは0円）
     // acct: 'nisa' = NISAつみたて投資枠、'hold' = 課税口座（特定口座）
-    function mBuyInner(m, code, yen, quiet, acct) {
+    function mBuyInner(m, code, amount, quiet, acct) {
         const a = M_ASSET(code); if(!a) return '商品が見つからない';
         acct = acct === 'nisa' ? 'nisa' : 'hold';
         if(acct === 'nisa' && !a.nisa) return 'これはNISAのつみたて投資枠では買えないよ（投資信託だけ）';
-        if(yen <= 0) return '金額を入れてね';
-        if(m.cash < yen) return 'お金が足りないよ';
-        if(acct === 'nisa') {
-            if(yen > mNisaLeft(m)) return `今年のNISAの枠が足りないよ（あと${mYen(mNisaLeft(m))}）`;
-            if(yen > mNisaLifeLeft(m)) return `NISAの一生ぶんの枠が足りないよ（あと${mYen(mNisaLifeLeft(m))}）`;
+        const price = mPrice(m, code);
+        let qty, cost, fee, spend;
+        if(mIsShareType(a)) {
+            // 株：amount ＝ 株数（整数）
+            const shares = Math.floor(amount);
+            if(shares <= 0) return '1株から買えるよ';
+            const gross = shares * price;                       // 1株の値段 × 株数
+            fee = Math.round(gross * 0.005);
+            spend = gross + fee;                                // 手数料は上のせ
+            if(m.cash < spend) return `お金が足りないよ（${shares}株で${mYen(spend)}ひつよう）`;
+            qty = shares; cost = gross;
+        } else {
+            // 投信・そのほか：amount ＝ 金額（円）
+            const yen = Math.floor(amount);
+            if(yen <= 0) return '金額を入れてね';
+            if(m.cash < yen) return 'お金が足りないよ';
+            fee = a.t === '投信' ? 0 : Math.round(yen * 0.005);
+            const useable = yen - fee;
+            qty = useable / price;
+            if(qty <= 0) return '金額が小さすぎるよ';
+            cost = useable; spend = yen;
         }
-        const price = m.prices[code];
-        const fee = a.t === '投信' ? 0 : Math.round(yen * 0.005);  // 投信はノーロード（買付手数料0円）が普通
-        const useable = yen - fee;
-        const qty = useable / price;
-        if(qty <= 0) return '金額が小さすぎるよ';
-        m.cash -= yen; m.feePaid += fee;
+        if(acct === 'nisa') {
+            if(spend > mNisaLeft(m)) return `今年のNISAの枠が足りないよ（あと${mYen(mNisaLeft(m))}）`;
+            if(spend > mNisaLifeLeft(m)) return `NISAの一生ぶんの枠が足りないよ（あと${mYen(mNisaLifeLeft(m))}）`;
+        }
+        m.cash -= spend; m.feePaid += fee;
         const h = m[acct][code] || { qty:0, cost:0 };
-        h.qty += qty; h.cost += useable;
+        h.qty += qty; h.cost += cost;
         m[acct][code] = h;
-        if(acct === 'nisa') { m.nisaUsed = (m.nisaUsed || 0) + yen; m.nisaLife = (m.nisaLife || 0) + yen; }
-        mLog(m, `${quiet ? 'つみたて' : '買う'}：${a.n}（${mAcctName(acct)}）`, -yen);
+        if(acct === 'nisa') { m.nisaUsed = (m.nisaUsed || 0) + spend; m.nisaLife = (m.nisaLife || 0) + spend; }
+        mLog(m, `${quiet ? 'つみたて' : '買う'}：${a.n}（${mAcctName(acct)}）`, -spend);
         return null;
     }
-    function mSellInner(m, code, ratio, acct) {
+    // arg = 株なら「売る株数」、それ以外は「わりあい(0〜1)」
+    function mSellInner(m, code, arg, acct) {
         const a = M_ASSET(code); if(!a) return '商品が見つからない';
         acct = acct === 'nisa' ? 'nisa' : 'hold';
         const h = m[acct][code]; if(!h || h.qty <= 0) return `${mAcctName(acct)}には持っていないよ`;
-        const sellQty = h.qty * ratio;
-        const gross = sellQty * m.prices[code];
-        const cost = h.cost * ratio;
+        let sellQty;
+        if(mIsShareType(a)) {
+            let shares = Math.floor(arg);
+            if(shares <= 0) return '1株から売れるよ';
+            if(shares > h.qty) shares = h.qty;
+            sellQty = shares;
+        } else {
+            const ratio = Math.max(0, Math.min(1, arg));
+            sellQty = h.qty * ratio;
+        }
+        if(sellQty <= 0) return '売る分がないよ';
+        const price = mPrice(m, code);
+        const gross = sellQty * price;
+        const cost = h.cost * (sellQty / h.qty);
         const fee = a.t === '投信' ? 0 : Math.round(gross * 0.005);
         const profit = gross - cost - fee;
         // NISAはもうけに税金がかからない（ここが最大のメリット）
@@ -2295,18 +2443,15 @@
         const net = Math.round(gross - fee - tax);
         m.cash += net; m.feePaid += fee; m.taxPaid += tax; m.taxGain = (m.taxGain || 0) + tax;
         h.qty -= sellQty; h.cost -= cost;
-        if(h.qty < 0.0000001) delete m[acct][code];
+        if(h.qty < (mIsShareType(a) ? 0.5 : 0.0000001)) delete m[acct][code];
         mLog(m, `売る：${a.n}（${mAcctName(acct)}${tax ? `・税金${mYen(tax)}` : acct === 'nisa' && profit > 0 ? '・税金0円' : ''}）`, net);
         return null;
     }
-    // --- 勉強でお金を稼ぐ（既存の学習フックから呼ばれる） ---
+    // --- 勉強でお金を稼ぐ（給料のもとになる。毎月5日にまとめて受け取る） ---
     function moneyEarnFromStudy(count, kind) {
         if(!currentUserId || !count || count <= 0) return;
         const m = mLoad(); if(mNewsReady) mTick(m);   // ニュースがそろう前は相場を動かさない（画面を開いたときに動く）
-        const per = kind === 'test' ? 15 : 10;
-        const amt = count * per;
-        m.cash += amt;
-        mLog(m, kind === 'test' ? 'テストのごほうび' : '勉強のごほうび', amt);
+        m.payCorrect = (m.payCorrect || 0) + count;   // 正解した問題数をためる（20問で1万円）
         mSave(m); mAwardBadges();
     }
     function mAwardBadges() {
@@ -2364,10 +2509,16 @@
         h += `<div class="m-card"><b>📊 そう資産のうつりかわり</b>
             <div style="position:relative;height:70px;"><canvas id="m-chart"></canvas></div>
             <div style="font-size:11px;color:#888;">毎日ちょっとずつ動くよ。長い目で見るのが投資のコツ</div></div>`;
+        // 給料（毎月5日）
+        const salaryPreview = (m.payCorrect || 0) * M_PAY_PER_CORRECT;
+        h += `<div class="m-card"><b>💼 お給料（毎月5日）</b>
+            <div style="font-size:12px;color:#888;margin:4px 0;">給料は勉強しだい。<b>20問 正解すると1万円</b>（1問${M_PAY_PER_CORRECT}円）。ためた分は毎月5日にまとめて入るよ</div>
+            <div class="m-row"><span>いまためている（${m.payCorrect || 0}問 正解）</span><b class="m-up">${mYen(salaryPreview)}</b></div>
+            <div class="m-row"><span>これまでの給料の合計</span><b>${mYen(m.salaryTotal || 0)}</b></div></div>`;
         // 稼ぐ
         const canWork = m.workDay !== calToday();
-        h += `<div class="m-card"><b>💪 お金をかせぐ</b>
-            <div style="font-size:12px;color:#888;margin:4px 0;">勉強やテストをすると自動でもらえる（1問10円／テスト15円）</div>
+        h += `<div class="m-card"><b>💪 ほかにお金をかせぐ</b>
+            <div style="font-size:12px;color:#888;margin:4px 0;">配当金も毎月5日にもらえる（株や投信を持っていると）</div>
             <div class="m-row"><div><div class="m-name">お手伝いをする</div><div class="m-desc">1日1回・300〜800円</div></div>
               <button class="m-btn ${canWork ? 'm-buy' : 'm-info'}" onclick="mWork()" ${canWork ? '' : 'disabled'}>${canWork ? 'はたらく' : '今日はやった'}</button></div>
             <div class="m-row"><div><div class="m-name">つみたて設定 ${m.autoAmt > 0 && m.autoAcct === 'nisa' ? '<span class="m-pill">🎁NISA</span>' : ''}</div>
@@ -2410,18 +2561,21 @@
         const cls = chg > 0.5 ? 'm-up' : chg < -0.5 ? 'm-down' : 'm-flat';
         const hh = m.hold[a.c], hn = m.nisa[a.c];
         const rate = m.divRate[a.c] || 0;
+        const isShare = mIsShareType(a);
         const line = (h2, acct) => {
             if(!h2 || h2.qty <= 0) return '';
             const val = p * h2.qty, pl = val - h2.cost;
-            return `<div class="m-desc">${acct === 'nisa' ? '🎁NISA' : '課税'} ${mYen(val)}（<span class="${pl>=0?'m-up':'m-down'}">${pl>=0?'+':'−'}${mYen(Math.abs(pl)).slice(1)}</span>）
+            const held = isShare ? `${Math.round(h2.qty)}株 ` : '';
+            return `<div class="m-desc">${acct === 'nisa' ? '🎁NISA' : '課税'} ${held}${mYen(val)}（<span class="${pl>=0?'m-up':'m-down'}">${pl>=0?'+':'−'}${mYen(Math.abs(pl)).slice(1)}</span>）
                 <button class="m-btn m-sell" style="padding:2px 8px;" onclick="mSell('${a.c}','${acct}')">売る</button></div>`;
         };
+        const unit = isShare ? '<span style="font-size:11px;color:#888;">/株</span>' : '';
         return `<div class="m-row"><div style="flex:1;min-width:0;">
                 <div class="m-name">${a.sc ? `<span class="m-code">${esc(a.sc)}</span>` : ''}${esc(a.n)} ${a.nisa ? '<span class="m-pill">🎁NISA可</span>' : ''} ${rate ? `<span class="m-pill">配当${(rate*100).toFixed(1)}%</span>` : ''}</div>
                 <div class="m-desc">${esc(a.d)}${a.fee ? `／信託報酬 年${(a.fee*100).toFixed(2)}%` : ''}</div>
                 ${line(hn,'nisa')}${line(hh,'hold')}
               </div>
-              <div class="m-price"><div>${mYen(p)}</div><div class="${cls}" style="font-size:12px;">${chg >= 0 ? '+' : ''}${chg.toFixed(1)}%</div>
+              <div class="m-price"><div>${mYen(p)}${unit}</div><div class="${cls}" style="font-size:12px;">${chg >= 0 ? '+' : ''}${chg.toFixed(1)}%</div>
                 <div style="margin-top:4px;white-space:nowrap;">
                   ${a.nisa ? `<button class="m-btn" style="background:#11998e;" onclick="mBuy('${a.c}','nisa')">🎁NISAで買う</button><br>` : ''}
                   <button class="m-btn m-buy" style="margin-top:3px;" onclick="mBuy('${a.c}','hold')">買う</button>
@@ -2522,7 +2676,9 @@
         return { day: `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`, s: 2 };
     }
     let mNewsSel = null;                       // 見ているニュース（null なら「いま」）
+    let mNewsMode = 'nobi';                     // 'nobi'=のびログ版（株価が動く） / 'real'=現実版
     function mNewsPick(day, s) { mNewsSel = { day, s: Number(s) }; renderMoney(); }
+    function mNewsMode2(mode) { mNewsMode = mode; renderMoney(); }
     function mDayLabel(day) {
         const d = calDayNum(day) - calDayNum(calToday());
         return d === 0 ? '今日' : d === -1 ? 'きのう' : d === -2 ? 'おととい' : day.split('-').slice(1).join('/') + '日';
@@ -2551,17 +2707,27 @@
                 const t = M_SLOTS[s2.s];
                 return `<button class="${on ? 'on' : ''}" onclick="mNewsPick('${s2.day}',${s2.s})">${t.e} ${mDayLabel(s2.day)}の${t.n}</button>`;
             }).join('')}</div></div>`;
-        h += `<div class="m-card"><b>${sl.e} ${mDayLabel(sel.day)}の${sl.n}（${sl.time}）</b>`;
-        (batch.items || []).forEach(it => {
+        // 🏙️のびログ版（株価が動く） / 🌍現実版（学習用）の切りかえ
+        h += `<div class="m-card"><div class="m-slot" style="margin-bottom:0;">
+            <button class="${mNewsMode === 'nobi' ? 'on' : ''}" onclick="mNewsMode2('nobi')">🏙️ のびログ版（株価が動く）</button>
+            <button class="${mNewsMode === 'real' ? 'on' : ''}" onclick="mNewsMode2('real')">🌍 現実版（世界のしくみ）</button>
+        </div>
+        <div style="font-size:11px;color:#888;margin-top:6px;">${mNewsMode === 'nobi'
+            ? 'このゲームの世界のニュース。この内容で、下の投資の株価が同じタイミングで動くよ📈'
+            : '本物の世界のしくみを学ぶニュース。※こちらは株価は動かさないよ'}</div></div>`;
+        h += `<div class="m-card"><b>${sl.e} ${mDayLabel(sel.day)}の${sl.n}（${sl.time}）${mNewsMode === 'nobi' ? '｜🏙️のびログ版' : '｜🌍現実版'}</b>`;
+        const items = mNewsMode === 'nobi' ? (batch.nobi || []) : (batch.real || []);
+        items.forEach(it => {
             const cat = M_CATS[it.cat] || M_CATS.econ;
-            const eff = Object.entries(it.e || {}).filter(([k, v]) => v);
+            const eff = mNewsMode === 'nobi' ? Object.entries(it.e || {}).filter(([k, v]) => v) : [];
             h += `<div class="m-art"><span class="m-cat ${cat[1]}">${cat[0]}</span>
                 <h4>${esc(it.t)}</h4>
                 <div class="m-body">${esc(it.b)}</div>
                 ${it.l ? `<div class="m-learn">💡 <b>ここが学べる</b>：${esc(it.l)}</div>` : ''}
-                ${eff.length ? `<div class="m-impact">📈 そうばへの影響：${eff.map(([k, v]) => `${esc(mEffLabel(k))} <span class="${v > 0 ? 'm-up' : 'm-down'}">${v > 0 ? '↑' : '↓'}</span>`).join('／')}</div>` : ''}
+                ${eff.length ? `<div class="m-impact">📈 のびログの株価への影響：${eff.map(([k, v]) => `${esc(mEffLabel(k))} <span class="${v > 0 ? 'm-up' : 'm-down'}">${v > 0 ? '↑' : '↓'}</span>`).join('／')}</div>` : ''}
             </div>`;
         });
+        if(!items.length) h += `<div style="color:#888;font-size:13px;padding:8px;">この回のニュースはないよ</div>`;
         h += `</div>`;
         h += `<div class="m-card"><b>🧠 ニュースの読み方</b>
             <div style="font-size:13px;line-height:1.9;">
@@ -2773,15 +2939,28 @@
     function mBuy(code, acct) {
         const m = mLoad(); const a = M_ASSET(code);
         acct = acct === 'nisa' ? 'nisa' : 'hold';
-        const feeNote = a.t === '投信' ? '買付手数料0円（ノーロード）' : '買付手数料0.5%';
+        const price = mPrice(m, code);
         const nisaNote = acct === 'nisa'
             ? `\n【NISA】もうけも配当も税金0円！\n今年の枠のこり: ${mYen(mNisaLeft(m))}`
             : `\n【課税口座】もうけに ${(M_TAX*100).toFixed(3)}% の税金がかかる`;
-        const v = prompt(`「${a.n}」をいくら分 買う？（${mAcctName(acct)}）\n今の値段: ${mYen(m.prices[code])}\n持っている現金: ${mYen(m.cash)}\n${feeNote}${nisaNote}`, '1000');
-        if(v === null) return;
-        const yen = Math.floor(Number(v));
-        if(!isFinite(yen) || yen <= 0) { alert('数字を入れてね'); return; }
-        const err = mBuyInner(m, code, yen, false, acct);
+        let err;
+        if(mIsShareType(a)) {
+            // 株は「株数」で買う（1株の値段 × 株数 ＋ 手数料0.5%）
+            const canBuy = Math.floor(m.cash / (price * 1.005));
+            const v = prompt(`「${a.n}」を何株 買う？（${mAcctName(acct)}）\n1株の値段: ${mYen(price)}\n持っている現金: ${mYen(m.cash)}（あと${canBuy}株まで買える）\n買付手数料0.5%${nisaNote}`, String(Math.min(canBuy, 10) || 1));
+            if(v === null) return;
+            const shares = Math.floor(Number(v));
+            if(!isFinite(shares) || shares <= 0) { alert('1以上の株数を入れてね'); return; }
+            err = mBuyInner(m, code, shares, false, acct);
+        } else {
+            // 投信・そのほかは「金額」で買う
+            const feeNote = a.t === '投信' ? '買付手数料0円（ノーロード）' : '買付手数料0.5%';
+            const v = prompt(`「${a.n}」をいくら分 買う？（${mAcctName(acct)}）\n今の値段: ${mYen(price)}\n持っている現金: ${mYen(m.cash)}\n${feeNote}${nisaNote}`, '1000');
+            if(v === null) return;
+            const yen = Math.floor(Number(v));
+            if(!isFinite(yen) || yen <= 0) { alert('数字を入れてね'); return; }
+            err = mBuyInner(m, code, yen, false, acct);
+        }
         if(err) { alert(err); return; }
         mSave(m); playSfx('correct'); mAwardBadges(); vbRecord('money', Math.round(mTotal(m))); renderMoney();
     }
@@ -2790,16 +2969,27 @@
         acct = acct === 'nisa' ? 'nisa' : 'hold';
         const h = m[acct][code];
         if(!h) { alert(`${mAcctName(acct)}には持っていないよ`); return; }
-        const val = m.prices[code] * h.qty;
+        const price = mPrice(m, code);
+        const val = price * h.qty;
         const profit = val - h.cost;
         const taxNote = acct === 'nisa'
             ? 'NISAなので、もうけに税金はかからないよ🎉'
             : `もうけ${mYen(profit)}に ${(M_TAX*100).toFixed(3)}% の税金がかかる`;
-        const v = prompt(`「${a.n}」をどれくらい売る？（${mAcctName(acct)}）\n持っている分: ${mYen(val)}（もうけ ${profit>=0?'+':''}${mYen(profit).slice(1)}）\n${taxNote}\n\n1 = ぜんぶ / 0.5 = 半分 / 0.25 = 4分の1`, '1');
-        if(v === null) return;
-        const r = Number(v);
-        if(!isFinite(r) || r <= 0 || r > 1) { alert('1 / 0.5 / 0.25 のように入れてね'); return; }
-        const err = mSellInner(m, code, r, acct);
+        let err;
+        if(mIsShareType(a)) {
+            const have = Math.round(h.qty);
+            const v = prompt(`「${a.n}」を何株 売る？（${mAcctName(acct)}）\n持っている: ${have}株 ＝ ${mYen(val)}（もうけ ${profit>=0?'+':''}${mYen(profit).slice(1)}）\n1株の値段: ${mYen(price)}\n${taxNote}\n\n（ぜんぶ売るなら ${have}）`, String(have));
+            if(v === null) return;
+            const shares = Math.floor(Number(v));
+            if(!isFinite(shares) || shares <= 0) { alert('1以上の株数を入れてね'); return; }
+            err = mSellInner(m, code, shares, acct);
+        } else {
+            const v = prompt(`「${a.n}」をどれくらい売る？（${mAcctName(acct)}）\n持っている分: ${mYen(val)}（もうけ ${profit>=0?'+':''}${mYen(profit).slice(1)}）\n${taxNote}\n\n1 = ぜんぶ / 0.5 = 半分 / 0.25 = 4分の1`, '1');
+            if(v === null) return;
+            const r = Number(v);
+            if(!isFinite(r) || r <= 0 || r > 1) { alert('1 / 0.5 / 0.25 のように入れてね'); return; }
+            err = mSellInner(m, code, r, acct);
+        }
         if(err) { alert(err); return; }
         mSave(m); playSfx('correct'); mAwardBadges(); vbRecord('money', Math.round(mTotal(m))); renderMoney();
     }
@@ -2924,14 +3114,14 @@
         gOpenModal(`<div style="text-align:left;max-width:640px;margin:0 auto;">
             <h2 style="text-align:center;">🏛️ 政治と経済 の つかい方</h2>
             <div class="uh-box"><h3>🎯 目標</h3><p>ニュースが分かる人になるための場所。<b>政治</b>（決めるしくみ）と<b>経済</b>（お金の流れ）はつながっていて、どっちも知ると世の中が読めるようになるよ。1万円からスタートして、かせいで・ためて・投資しながら体で覚えよう！</p></div>
-            <div class="uh-box"><h3>📰 ニュース（1日3回）</h3><p>毎日 <b>朝7時・昼12時・夕方18時</b> に新しいニュースがとどく。お金・経済・政治・世界の4種類。<br>1本ずつに「<b>ここが学べる</b>」と「<b>そうばへの影響</b>」がついていて、読むと株の値段がなぜ動いたのか分かるよ。<br>※オンラインでつながっていれば最新版、つながらなくても自動で作られるので必ず読める。</p></div>
+            <div class="uh-box"><h3>📰 ニュース（1日3回・2種類）</h3><p>毎日 <b>朝7時・昼12時・夕方18時</b> に新しいニュースがとどく。<br>・<b>🏙️のびログ版</b>＝このゲームの世界のニュース。この内容で<b>株価が同じタイミングで動く</b>！<br>・<b>🌍現実版</b>＝本物の世界のしくみを学ぶニュース（株価は動かさない）<br>ニュースはオンラインで<b>2人とも同じ</b>。つながらなくても自動で作られるので必ず読める。</p></div>
             <div class="uh-box"><h3>🏢 会社が100社ある</h3><p>投資のタブには<b>100社</b>の会社が上場している。20の業種（食品・銀行・半導体・鉄道…）に分かれていて、業種ごとに景気の受け方がちがう。<br>会社の左の4けたの数字は<b>証券コード</b>。本物の株式市場と同じで、番号で業種がわかるようになっているよ。<br>※ここに出てくる会社は<b>ぜんぶ作り物</b>。本物の会社ではないよ。</p></div>
             <div class="uh-box"><h3>🏛️ 政治のタブ</h3><p>三権分立・選挙のしくみ・税金の使いみち・憲法の三原則を図で見られる。<br><b>「もし総理大臣になったら」</b>のシミュレーターでは、5回政策をえらんで景気・物価・借金・支持率がどう動くか体験できる。ぜんぶ良くするのは無理だと分かるはず。</p></div>
-            <div class="uh-box"><h3>💪 かせぐ（収入）</h3><p>・<b>勉強やテスト</b>をすると自動でお金がもらえる（1問10円／テストは15円）<br>・<b>おてつだい</b>は1日1回（300〜800円）<br>・<b>クイズ</b>に正解すると200円<br>・30日ごとに<b>おこづかい3000円</b></p></div>
+            <div class="uh-box"><h3>💼 お給料（毎月5日）</h3><p>給料は<b>勉強しだい</b>。<b>20問 正解すると1万円</b>（1問${M_PAY_PER_CORRECT}円）。勉強やテストで正解した分がたまっていって、<b>毎月5日</b>にまとめて入るよ。<br>ほかに、おてつだい（1日1回・300〜800円）とクイズ正解（200円）もある。</p></div>
             <div class="uh-box"><h3>🏦 ためる（貯金）</h3><p>銀行に預けると年0.1%の利息。安全だけどふえ方はゆっくり。<b>だから投資も大事</b>だと分かるよ。</p></div>
-            <div class="uh-box"><h3>📈 ふやす（投資）</h3><p>オルカン・S&P500などの投資信託、株、債券、金、外貨、不動産、暗号資産が買える。<br>・値段は<b>毎日</b>ニュースで動く（実際の日付が変わったとき）<br>・株の売り買いは<b>手数料0.5%</b>、投信は<b>0円</b>（ノーロード）<br>・投信は<b>信託報酬</b>という見えないコストが毎日かかる</p></div>
+            <div class="uh-box"><h3>📈 ふやす（投資）</h3><p>オルカン・S&P500などの投資信託、100社の株、債券、金、外貨、不動産、暗号資産が買える。<br>・<b>株は「株数」で買う</b>（1株千円なら100株で10万円）。<b>投信・そのほかは「金額」で買う</b><br>・値段は<b>ニュースと同じタイミング</b>で動く（1日3回）<br>・株の売り買いは<b>手数料0.5%</b>、投信は<b>0円</b>（ノーロード）<br>・投信は<b>信託報酬</b>という見えないコストが毎日かかる</p></div>
             <div class="uh-box"><h3>🎁 NISA（いちばん大事！）</h3><p>国が作った「税金が0円になる」制度。<br>・ふつうの口座 → もうけと配当に<b>20.315%</b>の税金<br>・NISA → <b>0円</b>！<br>・つみたて投資枠は<b>年120万円</b>まで、一生で<b>1800万円</b>まで<br>・買えるのは決められた<b>投資信託</b>だけ<br>投資画面の「🎁NISAで買う」を使うと、どれだけ税金を節約できたか見られるよ。</p></div>
-            <div class="uh-box"><h3>💴 配当と税金のしくみ</h3><p>・<b>30日ごと</b>に配当・分配金がもらえる（権利確定日）<br>・課税口座は受け取る前に<b>20.315%</b>が引かれる（源泉徴収）<br>・NISAなら<b>まるごと</b>もらえる<br>・会社の決算で<b>増配・減配</b>があり、配当は変わることもある<br>・銀行の利息にも税金がかかる</p></div>
+            <div class="uh-box"><h3>💴 配当と税金のしくみ</h3><p>・<b>毎月5日</b>に配当・分配金がもらえる（株や投信を持っていると）<br>・課税口座は受け取る前に<b>20.315%</b>が引かれる（源泉徴収）<br>・NISAなら<b>まるごと</b>もらえる<br>・銀行の利息にも税金がかかる</p></div>
             <div class="uh-box"><h3>⚠️ 大事な考え方</h3><p>・<b>分散</b>：ひとつに全部かけない<br>・<b>長期</b>：あわてて売らない<br>・<b>つみたて</b>：毎日おなじ額を買うと安全（ドルコスト平均法）<br>・<b>複利</b>：時間が最強の味方。シミュレーターで試してみて<br>・「かならず儲かる」は<b>詐欺</b>。うまい話には裏がある</p></div>
             <div class="uh-box"><h3>📖 勉強もできる</h3><p>「じてん」には<b>お金・経済・政治</b>あわせて${M_TERM_ALL().length}語、「クイズ」には${M_QUIZ.length}問。ぜんぶ覚えたら大人より詳しくなれるよ！<br>資産は⚔️対戦ボードにも出るので、2人で競争できる。</p></div>
             <div style="text-align:center;"><button class="btn" style="background:#34495e;color:#fff;" onclick="gCloseModal()">とじる</button></div></div>`);
@@ -5508,6 +5698,37 @@
         return text;
     }
     // どの環境でも動くコピー（clipboard APIが無い/失敗する環境では旧方式にフォールバック）
+    // ===== 📦 きろくの引っこし（アドレス／端末が変わっても記録を持っていく） =====
+    function openMigrate() { document.getElementById('migrate-overlay').style.display = 'block'; window.scrollTo(0, 0); }
+    function closeMigrate() { document.getElementById('migrate-overlay').style.display = 'none'; }
+    // localStorage をぜんぶ1つのコードにまとめる（日本語もこわれないようにUTF-8→base64）
+    function migExport() {
+        const data = {};
+        for(let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); data[k] = localStorage.getItem(k); }
+        let code;
+        try { code = 'NOBILOG1|' + btoa(unescape(encodeURIComponent(JSON.stringify(data)))); }
+        catch(e) { alert('コードが作れませんでした'); return; }
+        const out = document.getElementById('mig-out');
+        if(out) { out.value = code; out.focus(); out.select(); }
+        copyTextRobust(code, '📤 引っこしコードをコピーしたよ！\n新しいアプリで貼りつけてね。');
+    }
+    // 引っこしコードを読みこんで、記録をぜんぶ書きもどす
+    function migImport() {
+        const el = document.getElementById('mig-in');
+        const code = (el ? el.value : '').trim();
+        if(!code) { alert('引っこしコードを貼りつけてね'); return; }
+        if(code.indexOf('NOBILOG1|') !== 0) { alert('引っこしコードが正しくないみたい。前のアプリでコピーしたものを、まるごと貼りつけてね。'); return; }
+        let data;
+        try { data = JSON.parse(decodeURIComponent(escape(atob(code.slice(9))))); }
+        catch(e) { alert('コードが読めませんでした。とちゅうで切れていないか確かめてね。'); return; }
+        if(!data || typeof data !== 'object') { alert('引っこしコードが正しくないみたい'); return; }
+        if(!confirm('このデバイスの記録を、引っこしコードの内容で置きかえます。よろしいですか？')) return;
+        let n = 0;
+        Object.entries(data).forEach(([k, v]) => { try { localStorage.setItem(k, String(v)); n++; } catch(e) {} });
+        try { sessionStorage.removeItem('nobilogAbRestored'); } catch(e) {}   // 自動バックアップの復元ループ防止フラグを外す
+        alert('📥 引っこし完了！（' + n + '件）\nページを読み直すね。');
+        location.reload();
+    }
     function copyTextRobust(text, doneMsg) {
         const fallback = () => {
             try {
