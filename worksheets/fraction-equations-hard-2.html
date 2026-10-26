@@ -76,6 +76,9 @@
   .sols .memo { font-size: 11.5px; padding-left: 8px; }
   .sols .eq { font-size: 14.5px; }
   .sol { padding: 6px 10px; }
+  .point { font-size: 12px; margin: 4px 0 0; background: var(--tip); border-radius: 6px; padding: 3px 8px; }
+  .check { font-size: 11.5px; color: var(--muted); margin: 5px 0 0; line-height: 2.1; }
+  .check .fr { font-size: .95em; }
   .keys { list-style: none; padding: 0; margin: 0 0 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 10px; }
   .keys li { display: flex; align-items: center; gap: 6px; border-bottom: 1px dashed var(--line); padding: 3px 0; }
   .keys .eq { color: var(--ans); font-weight: bold; }
@@ -167,6 +170,7 @@
 
   <div class="guide">
     <h2>🔰 まずはここを読もう：解き方の4ステップ</h2>
+    <p style="margin:0;font-size:13px">解説は「🔑ポイント → 1行ずつの式（下に理由） → 答え → ✅たしかめ」の順に書いてあるよ。たしかめは、出た答えを元の式に入れて左と右が同じになるか見る方法。テストでも使えるよ！</p>
     <ol>
       <li><b>分数を消す</b>：分母の数（2 と 3 なら 6）を<b>全部の項</b>にかける</li>
       <li><b>かっこを外す</b>：かけ算でかっこの中に配る</li>
@@ -189,32 +193,39 @@
 <div class="sols">
 <section class="sol e">
   <div class="sh"><span class="badge e" title="かんたん">簡</span><span class="no">(1)</span><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">+</span>3<span class="op">=</span>5</span></div>
+  <p class="point">🔑 <b>ポイント</b>　分数が1つだけのときは、先に数を移項すると楽ちん。</p>
   <div class="steps">
 <div class="st"><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">=</span>5<span class="op">−</span>3</span><span class="memo">＋3 を右に移す（移項）と <b>−3</b> になる</span></div>
 <div class="st"><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">=</span>2</span><span class="memo">右を計算</span></div>
 <div class="st"><span class="eq"><i>x</i><span class="op">=</span>4</span><span class="memo">両辺に <b>2</b> をかける</span></div>
   </div>
   <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>4</span></div>
+  <p class="check">✅ <b>たしかめ</b>　<i>x</i> = 4 を元の式に入れると　左辺 ＝ 5，右辺 ＝ 5 で<b>同じ</b> ✓</p>
 </section>
 <section class="sol e">
   <div class="sh"><span class="badge e" title="かんたん">簡</span><span class="no">(2)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>+1</span><span class="d">3</span></span><span class="op">=</span>2</span></div>
+  <p class="point">🔑 <b>ポイント</b>　分数が1つなら、その分母（3）をかけるだけで分数が消える。</p>
   <div class="steps">
 <div class="st"><span class="eq"><i>x</i><span class="op">+</span>1<span class="op">=</span>6</span><span class="memo">両辺に <b>3</b> をかけて分母を消す</span></div>
 <div class="st"><span class="eq"><i>x</i><span class="op">=</span>6<span class="op">−</span>1</span><span class="memo">＋1 を右に移項して −1</span></div>
 <div class="st"><span class="eq"><i>x</i><span class="op">=</span>5</span><span class="memo"></span></div>
   </div>
   <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>5</span></div>
+  <p class="check">✅ <b>たしかめ</b>　<i>x</i> = 5 を元の式に入れると　左辺 ＝ 2，右辺 ＝ 2 で<b>同じ</b> ✓</p>
 </section>
 <section class="sol e">
   <div class="sh"><span class="badge e" title="かんたん">簡</span><span class="no">(3)</span><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">−</span><span class="fr"><span class="n"><i>x</i></span><span class="d">3</span></span><span class="op">=</span>1</span></div>
+  <p class="point">🔑 <b>ポイント</b>　分母がちがう分数は、最小公倍数をかけて一気に消す。</p>
   <div class="steps">
 <div class="st"><span class="eq">3<i>x</i><span class="op">−</span>2<i>x</i><span class="op">=</span>6</span><span class="memo">分母 2 と 3 → <b>6</b> をかける（右の 1 も 6 倍）</span></div>
 <div class="st"><span class="eq"><i>x</i><span class="op">=</span>6</span><span class="memo">3<i>x</i>−2<i>x</i> = <i>x</i></span></div>
   </div>
   <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>6</span></div>
+  <p class="check">✅ <b>たしかめ</b>　<i>x</i> = 6 を元の式に入れると　左辺 ＝ 1，右辺 ＝ 1 で<b>同じ</b> ✓</p>
 </section>
 <section class="sol e">
   <div class="sh"><span class="badge e" title="かんたん">簡</span><span class="no">(4)</span><span class="eq"><span class="fr"><span class="n">2<i>x</i>−1</span><span class="d">3</span></span><span class="op">=</span><i>x</i><span class="op">−</span>2</span></div>
+  <p class="point">🔑 <b>ポイント</b>　分数じゃない側にもかける。項が2つ以上あるときは<b>かっこ</b>をつけてからかける。</p>
   <div class="steps">
 <div class="st"><span class="eq">2<i>x</i><span class="op">−</span>1<span class="op">=</span>3(<i>x</i><span class="op">−</span>2)</span><span class="memo">両辺に <b>3</b>。右は<b>かっこ</b>をつけて 3 倍</span></div>
 <div class="st"><span class="eq">2<i>x</i><span class="op">−</span>1<span class="op">=</span>3<i>x</i><span class="op">−</span>6</span><span class="memo">かっこを外す</span></div>
@@ -223,9 +234,11 @@
 <div class="st"><span class="eq"><i>x</i><span class="op">=</span>5</span><span class="memo">両辺に −1 をかける</span></div>
   </div>
   <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>5</span></div>
+  <p class="check">✅ <b>たしかめ</b>　<i>x</i> = 5 を元の式に入れると　左辺 ＝ 3，右辺 ＝ 3 で<b>同じ</b> ✓</p>
 </section>
 <section class="sol e">
   <div class="sh"><span class="badge e" title="かんたん">簡</span><span class="no">(5)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>−1</span><span class="d">2</span></span><span class="op">=</span><span class="fr"><span class="n"><i>x</i>+2</span><span class="d">5</span></span></span></div>
+  <p class="point">🔑 <b>ポイント</b>　「分数 ＝ 分数」は、両方の分母の最小公倍数をかける。</p>
   <div class="steps">
 <div class="st"><span class="eq">5(<i>x</i><span class="op">−</span>1)<span class="op">=</span>2(<i>x</i><span class="op">+</span>2)</span><span class="memo">分母 2 と 5 → <b>10</b> をかける</span></div>
 <div class="st"><span class="eq">5<i>x</i><span class="op">−</span>5<span class="op">=</span>2<i>x</i><span class="op">+</span>4</span><span class="memo">かっこを外す</span></div>
@@ -234,9 +247,11 @@
 <div class="st"><span class="eq"><i>x</i><span class="op">=</span>3</span><span class="memo">両辺を 3 でわる</span></div>
   </div>
   <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>3</span></div>
+  <p class="check">✅ <b>たしかめ</b>　<i>x</i> = 3 を元の式に入れると　左辺 ＝ 1，右辺 ＝ 1 で<b>同じ</b> ✓</p>
 </section>
 <section class="sol n">
   <div class="sh"><span class="badge n" title="ふつう">普</span><span class="no">(6)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>+3</span><span class="d">4</span></span><span class="op">−</span><span class="fr"><span class="n"><i>x</i>−1</span><span class="d">2</span></span><span class="op">=</span>1</span></div>
+  <p class="point">🔑 <b>ポイント</b>　引き算のうしろの分数は、<b>かっこをつけてから</b>かけると符号ミスがなくなる。</p>
   <div class="steps">
 <div class="st"><span class="eq">(<i>x</i><span class="op">+</span>3)<span class="op">−</span>2(<i>x</i><span class="op">−</span>1)<span class="op">=</span>4</span><span class="memo">分母 4 と 2 → <b>4</b> をかける</span></div>
 <div class="st"><span class="eq"><i>x</i><span class="op">+</span>3<span class="op">−</span>2<i>x</i><span class="op">+</span>2<span class="op">=</span>4</span><span class="memo">−2×(−1) は <b>＋2</b>（符号に注意！）</span></div>
@@ -245,18 +260,22 @@
 <div class="st"><span class="eq"><i>x</i><span class="op">=</span>1</span><span class="memo"></span></div>
   </div>
   <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>1</span></div>
+  <p class="check">✅ <b>たしかめ</b>　<i>x</i> = 1 を元の式に入れると　左辺 ＝ 1，右辺 ＝ 1 で<b>同じ</b> ✓</p>
 </section>
 <section class="sol n">
   <div class="sh"><span class="badge n" title="ふつう">普</span><span class="no">(7)</span><span class="eq"><span class="fr"><span class="n">2</span><span class="d">3</span></span><i>x</i><span class="op">−</span>1<span class="op">=</span><span class="fr"><span class="n">1</span><span class="d">2</span></span><i>x</i><span class="op">+</span><span class="fr"><span class="n">1</span><span class="d">3</span></span></span></div>
+  <p class="point">🔑 <b>ポイント</b>　<i>x</i> の前の分数（係数）も、ふつうの分数と同じように消せる。</p>
   <div class="steps">
 <div class="st"><span class="eq">4<i>x</i><span class="op">−</span>6<span class="op">=</span>3<i>x</i><span class="op">+</span>2</span><span class="memo">分母 3・2・3 → <b>6</b> をかける（−1 も 6 倍で −6）</span></div>
 <div class="st"><span class="eq">4<i>x</i><span class="op">−</span>3<i>x</i><span class="op">=</span>2<span class="op">+</span>6</span><span class="memo">移項</span></div>
 <div class="st"><span class="eq"><i>x</i><span class="op">=</span>8</span><span class="memo"></span></div>
   </div>
   <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>8</span></div>
+  <p class="check">✅ <b>たしかめ</b>　<i>x</i> = 8 を元の式に入れると　左辺 ＝ <span class="fr"><span class="n">13</span><span class="d">3</span></span>，右辺 ＝ <span class="fr"><span class="n">13</span><span class="d">3</span></span> で<b>同じ</b> ✓</p>
 </section>
 <section class="sol n">
   <div class="sh"><span class="badge n" title="ふつう">普</span><span class="no">(8)</span><span class="eq">0.2<i>x</i><span class="op">+</span>1.5<span class="op">=</span>0.5<i>x</i><span class="op">−</span>0.3</span></div>
+  <p class="point">🔑 <b>ポイント</b>　小数は 10 倍で整数になる。<b>全部の項</b>を 10 倍するのがコツ。</p>
   <div class="steps">
 <div class="st"><span class="eq">2<i>x</i><span class="op">+</span>15<span class="op">=</span>5<i>x</i><span class="op">−</span>3</span><span class="memo">全部を <b>10 倍</b>して小数を消す</span></div>
 <div class="st"><span class="eq">2<i>x</i><span class="op">−</span>5<i>x</i><span class="op">=</span>−3<span class="op">−</span>15</span><span class="memo">移項</span></div>
@@ -264,9 +283,11 @@
 <div class="st"><span class="eq"><i>x</i><span class="op">=</span>6</span><span class="memo">両辺を −3 でわる</span></div>
   </div>
   <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>6</span></div>
+  <p class="check">✅ <b>たしかめ</b>　<i>x</i> = 6 を元の式に入れると　左辺 ＝ <span class="fr"><span class="n">27</span><span class="d">10</span></span>，右辺 ＝ <span class="fr"><span class="n">27</span><span class="d">10</span></span> で<b>同じ</b> ✓</p>
 </section>
 <section class="sol n">
   <div class="sh"><span class="badge n" title="ふつう">普</span><span class="no">(9)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>+2</span><span class="d">3</span></span><span class="op">−</span><span class="fr"><span class="n">2<i>x</i>−1</span><span class="d">4</span></span><span class="op">=</span><span class="fr"><span class="n">1</span><span class="d">2</span></span></span></div>
+  <p class="point">🔑 <b>ポイント</b>　分数が3つあっても、分母 3・4・2 の最小公倍数 12 をかけるだけ。</p>
   <div class="steps">
 <div class="st"><span class="eq">4(<i>x</i><span class="op">+</span>2)<span class="op">−</span>3(2<i>x</i><span class="op">−</span>1)<span class="op">=</span>6</span><span class="memo">分母 3・4・2 → <b>12</b> をかける</span></div>
 <div class="st"><span class="eq">4<i>x</i><span class="op">+</span>8<span class="op">−</span>6<i>x</i><span class="op">+</span>3<span class="op">=</span>6</span><span class="memo">−3×(−1) は <b>＋3</b></span></div>
@@ -275,9 +296,11 @@
 <div class="st"><span class="eq"><i>x</i><span class="op">=</span><span class="fr"><span class="n">5</span><span class="d">2</span></span></span><span class="memo">両辺を −2 でわる</span></div>
   </div>
   <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span><span class="fr"><span class="n">5</span><span class="d">2</span></span></span></div>
+  <p class="check">✅ <b>たしかめ</b>　<i>x</i> = <span class="fr"><span class="n">5</span><span class="d">2</span></span> を元の式に入れると　左辺 ＝ <span class="fr"><span class="n">1</span><span class="d">2</span></span>，右辺 ＝ <span class="fr"><span class="n">1</span><span class="d">2</span></span> で<b>同じ</b> ✓</p>
 </section>
 <section class="sol n">
   <div class="sh"><span class="badge n" title="ふつう">普</span><span class="no">(10)</span><span class="eq">(<i>x</i>+1)<span class="op">:</span>(<i>x</i>−2)<span class="op">=</span>4<span class="op">:</span>1</span></div>
+  <p class="point">🔑 <b>ポイント</b>　比例式 <i>a</i>:<i>b</i> ＝ <i>c</i>:<i>d</i> は <i>ad</i> ＝ <i>bc</i> に変えると、ふつうの方程式になる。</p>
   <div class="steps">
 <div class="st"><span class="eq">(<i>x</i><span class="op">+</span>1)<span class="op">×</span>1<span class="op">=</span>(<i>x</i><span class="op">−</span>2)<span class="op">×</span>4</span><span class="memo">比例式は <b>外側×外側 ＝ 内側×内側</b></span></div>
 <div class="st"><span class="eq"><i>x</i><span class="op">+</span>1<span class="op">=</span>4<i>x</i><span class="op">−</span>8</span><span class="memo">かっこを外す</span></div>
@@ -286,9 +309,11 @@
 <div class="st"><span class="eq"><i>x</i><span class="op">=</span>3</span><span class="memo"></span></div>
   </div>
   <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>3</span></div>
+  <p class="check">✅ <b>たしかめ</b>　4 : 1 と 4 : 1 → 外側の積 4，内側の積 4 で<b>同じ</b> ✓</p>
 </section>
 <section class="sol h">
   <div class="sh"><span class="badge h" title="むずかしい">難</span><span class="no">(11)</span><span class="eq"><span class="fr"><span class="n">2</span><span class="d">3</span></span>(<span class="fr"><span class="n"><i>x</i></span><span class="d">4</span></span><span class="op">+</span>1)<span class="op">−</span><span class="fr"><span class="n">1</span><span class="d">2</span></span>(<span class="fr"><span class="n"><i>x</i></span><span class="d">3</span></span><span class="op">−</span>2)<span class="op">=</span><span class="fr"><span class="n"><i>x</i>+4</span><span class="d">9</span></span></span></div>
+  <p class="point">🔑 <b>ポイント</b>　いきなり分母をはらうより、<b>先にかっこを外す</b>ほうがずっと楽。</p>
   <div class="steps">
 <div class="st"><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">6</span></span><span class="op">+</span><span class="fr"><span class="n">2</span><span class="d">3</span></span><span class="op">−</span><span class="fr"><span class="n"><i>x</i></span><span class="d">6</span></span><span class="op">+</span>1<span class="op">=</span><span class="fr"><span class="n"><i>x</i>+4</span><span class="d">9</span></span></span><span class="memo">先に<b>かっこを外す</b>（−<span class="fr"><span class="n">1</span><span class="d">2</span></span>×(−2) = ＋1）</span></div>
 <div class="st"><span class="eq"><span class="fr"><span class="n">5</span><span class="d">3</span></span><span class="op">=</span><span class="fr"><span class="n"><i>x</i>+4</span><span class="d">9</span></span></span><span class="memo"><span class="fr"><span class="n"><i>x</i></span><span class="d">6</span></span> は消える。<span class="fr"><span class="n">2</span><span class="d">3</span></span>＋1＝<span class="fr"><span class="n">5</span><span class="d">3</span></span></span></div>
@@ -296,9 +321,11 @@
 <div class="st"><span class="eq"><i>x</i><span class="op">=</span>11</span><span class="memo"></span></div>
   </div>
   <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>11</span></div>
+  <p class="check">✅ <b>たしかめ</b>　<i>x</i> = 11 を元の式に入れると　左辺 ＝ <span class="fr"><span class="n">5</span><span class="d">3</span></span>，右辺 ＝ <span class="fr"><span class="n">5</span><span class="d">3</span></span> で<b>同じ</b> ✓</p>
 </section>
 <section class="sol h">
   <div class="sh"><span class="badge h" title="むずかしい">難</span><span class="no">(12)</span><span class="eq">0.3(2<i>x</i>−1)<span class="op">−</span><span class="fr"><span class="n"><i>x</i>−2</span><span class="d">5</span></span><span class="op">=</span>0.25<i>x</i><span class="op">+</span>1</span></div>
+  <p class="point">🔑 <b>ポイント</b>　0.25（小数第2位）があるので 100 倍。分数の <span class="fr"><span class="n">1</span><span class="d">5</span></span> も 100 倍で 20 になる。</p>
   <div class="steps">
 <div class="st"><span class="eq">30(2<i>x</i><span class="op">−</span>1)<span class="op">−</span>20(<i>x</i><span class="op">−</span>2)<span class="op">=</span>25<i>x</i><span class="op">+</span>100</span><span class="memo">0.25 があるので <b>100</b> をかける</span></div>
 <div class="st"><span class="eq">60<i>x</i><span class="op">−</span>30<span class="op">−</span>20<i>x</i><span class="op">+</span>40<span class="op">=</span>25<i>x</i><span class="op">+</span>100</span><span class="memo">かっこを外す（−20×(−2) = ＋40）</span></div>
@@ -307,9 +334,11 @@
 <div class="st"><span class="eq"><i>x</i><span class="op">=</span>6</span><span class="memo"></span></div>
   </div>
   <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>6</span></div>
+  <p class="check">✅ <b>たしかめ</b>　<i>x</i> = 6 を元の式に入れると　左辺 ＝ <span class="fr"><span class="n">5</span><span class="d">2</span></span>，右辺 ＝ <span class="fr"><span class="n">5</span><span class="d">2</span></span> で<b>同じ</b> ✓</p>
 </section>
 <section class="sol h">
   <div class="sh"><span class="badge h" title="むずかしい">難</span><span class="no">(13)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>+<span class="fr"><span class="n"><i>x</i>−3</span><span class="d">2</span></span></span><span class="d">5</span></span><span class="op">−</span><i>x</i><span class="op">=</span><span class="fr"><span class="n">1</span><span class="d">4</span></span></span></div>
+  <p class="point">🔑 <b>ポイント</b>　分数の中に分数があるときは、<b>内側から順番に</b>片づける。</p>
   <div class="steps">
 <div class="st"><span class="eq"><i>x</i><span class="op">+</span><span class="fr"><span class="n"><i>x</i>−3</span><span class="d">2</span></span><span class="op">=</span><span class="fr"><span class="n">2<i>x</i><span class="op">+</span><i>x</i><span class="op">−</span>3</span><span class="d">2</span></span><span class="op">=</span><span class="fr"><span class="n">3<i>x</i>−3</span><span class="d">2</span></span></span><span class="memo"><b>内側から</b>1つの分数にまとめる</span></div>
 <div class="st"><span class="eq"><span class="fr"><span class="n">3<i>x</i>−3</span><span class="d">10</span></span><span class="op">−</span><i>x</i><span class="op">=</span><span class="fr"><span class="n">1</span><span class="d">4</span></span></span><span class="memo">それを 5 でわる（分母が 2×5＝10）</span></div>
@@ -319,9 +348,11 @@
 <div class="st"><span class="eq"><i>x</i><span class="op">=</span>−<span class="fr"><span class="n">11</span><span class="d">14</span></span></span><span class="memo"></span></div>
   </div>
   <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>−<span class="fr"><span class="n">11</span><span class="d">14</span></span></span></div>
+  <p class="check">✅ <b>たしかめ</b>　<i>x</i> = −<span class="fr"><span class="n">11</span><span class="d">14</span></span> を元の式に入れると　左辺 ＝ <span class="fr"><span class="n">1</span><span class="d">4</span></span>，右辺 ＝ <span class="fr"><span class="n">1</span><span class="d">4</span></span> で<b>同じ</b> ✓</p>
 </section>
 <section class="sol h">
   <div class="sh"><span class="badge h" title="むずかしい">難</span><span class="no">(14)</span><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">:</span>3<span class="op">=</span>(<i>x</i>+<span class="fr"><span class="n">1</span><span class="d">3</span></span>)<span class="op">:</span><span class="fr"><span class="n">4</span><span class="d">3</span></span></span></div>
+  <p class="point">🔑 <b>ポイント</b>　比例式をかけ算にしたあと分数が残ったら、もう一度分母をはらう。</p>
   <div class="steps">
 <div class="st"><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">×</span><span class="fr"><span class="n">4</span><span class="d">3</span></span><span class="op">=</span>3(<i>x</i><span class="op">+</span><span class="fr"><span class="n">1</span><span class="d">3</span></span>)</span><span class="memo"><b>外側×外側 ＝ 内側×内側</b></span></div>
 <div class="st"><span class="eq"><span class="fr"><span class="n">2</span><span class="d">3</span></span><i>x</i><span class="op">=</span>3<i>x</i><span class="op">+</span>1</span><span class="memo">計算する</span></div>
@@ -330,9 +361,11 @@
 <div class="st"><span class="eq"><i>x</i><span class="op">=</span>−<span class="fr"><span class="n">3</span><span class="d">7</span></span></span><span class="memo"></span></div>
   </div>
   <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>−<span class="fr"><span class="n">3</span><span class="d">7</span></span></span></div>
+  <p class="check">✅ <b>たしかめ</b>　−<span class="fr"><span class="n">3</span><span class="d">14</span></span> : 3 と −<span class="fr"><span class="n">2</span><span class="d">21</span></span> : <span class="fr"><span class="n">4</span><span class="d">3</span></span> → 外側の積 −<span class="fr"><span class="n">2</span><span class="d">7</span></span>，内側の積 −<span class="fr"><span class="n">2</span><span class="d">7</span></span> で<b>同じ</b> ✓</p>
 </section>
 <section class="sol h">
   <div class="sh"><span class="badge h" title="むずかしい">難</span><span class="no">(15)</span><span class="txt"><i>x</i> の方程式</span><span class="eq"><span class="fr"><span class="n"><i>x</i>+2<i>a</i></span><span class="d">5</span></span><span class="op">−</span><span class="fr"><span class="n">ax−3</span><span class="d">2</span></span><span class="op">=</span>1</span><span class="txt">の解が <i>x</i> = 2 のとき，<i>a</i> の値を求めよう。</span></div>
+  <p class="point">🔑 <b>ポイント</b>　<i>x</i> の値がわかっているので、代入すると <i>a</i> だけの方程式になる。</p>
   <div class="steps">
 <div class="st"><span class="eq"><span class="fr"><span class="n">2+2<i>a</i></span><span class="d">5</span></span><span class="op">−</span><span class="fr"><span class="n">2<i>a</i>−3</span><span class="d">2</span></span><span class="op">=</span>1</span><span class="memo"><i>x</i> に <b>2 を代入</b>。これで <i>a</i> の方程式になる</span></div>
 <div class="st"><span class="eq">2(2<span class="op">+</span>2<i>a</i>)<span class="op">−</span>5(2<i>a</i><span class="op">−</span>3)<span class="op">=</span>10</span><span class="memo"><b>10</b> をかける</span></div>
@@ -342,6 +375,7 @@
 <div class="st"><span class="eq"><i>a</i><span class="op">=</span><span class="fr"><span class="n">3</span><span class="d">2</span></span></span><span class="memo">両辺を −6 でわって約分</span></div>
   </div>
   <div class="ans">答え　<span class="eq"><i>a</i><span class="op">=</span><span class="fr"><span class="n">3</span><span class="d">2</span></span></span></div>
+  <p class="check">✅ <b>たしかめ</b>　<i>x</i> = 2，<i>a</i> = <span class="fr"><span class="n">3</span><span class="d">2</span></span> を元の式に入れると　左辺 ＝ 1，右辺 ＝ 1 で<b>同じ</b> ✓</p>
 </section>
 </div>
 </div>
