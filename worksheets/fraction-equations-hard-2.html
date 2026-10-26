@@ -3,143 +3,346 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>分数の方程式 練習プリント2</title>
+<title>分数の方程式 練習プリント②</title>
 <style>
-  :root { --bg: #f5f7fa; --paper: #fff; --text: #222; --muted: #666; --line: #bbb; --accent: #c0392b; }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) { --bg: #121212; --paper: #1e1e1e; --text: #e0e0e0; --muted: #aaa; --line: #555; --accent: #ff7b6b; }
+  :root {
+    --bg: #fdf8f1; --paper: #fff; --text: #333; --muted: #6b6b6b; --line: #e3ddd3;
+    --e: #2e9e5b; --e-soft: #e8f6ee; --n: #2d7fc1; --n-soft: #e7f1fa; --h: #d9534f; --h-soft: #fcebea;
+    --tip: #fff6dc; --tip-line: #f0c75e; --ans: #d9534f;
   }
-  :root[data-theme="dark"] { --bg: #121212; --paper: #1e1e1e; --text: #e0e0e0; --muted: #aaa; --line: #555; --accent: #ff7b6b; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #141414; --paper: #1f1f1f; --text: #e6e6e6; --muted: #a8a8a8; --line: #3a3a3a; --e: #5fd08d; --e-soft: #1b2e23; --n: #6fb3ee; --n-soft: #1a2735; --h: #ff8a85; --h-soft: #351f1e; --tip: #2e2817; --tip-line: #8a7230; --ans: #ff8a85; }
+  }
+  :root[data-theme="dark"] { --bg: #141414; --paper: #1f1f1f; --text: #e6e6e6; --muted: #a8a8a8; --line: #3a3a3a; --e: #5fd08d; --e-soft: #1b2e23; --n: #6fb3ee; --n-soft: #1a2735; --h: #ff8a85; --h-soft: #351f1e; --tip: #2e2817; --tip-line: #8a7230; --ans: #ff8a85; }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif; }
-  .bar { max-width: 210mm; margin: 16px auto 0; padding: 0 16px; display: flex; gap: 8px; }
-  .bar button { padding: 8px 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--text); cursor: pointer; font-size: 14px; }
-  .page { max-width: 210mm; margin: 16px auto; background: var(--paper); padding: 14mm 14mm 12mm; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-  header { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 8px; border-bottom: 2px solid var(--text); padding-bottom: 6px; margin-bottom: 10px; }
-  h1 { font-size: 20px; margin: 0; }
-  h1 small { font-size: 13px; color: var(--accent); margin-left: 8px; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif; line-height: 1.6; }
+  .bar { max-width: 210mm; margin: 16px auto 0; padding: 0 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .bar button { padding: 8px 14px; border: 1px solid var(--line); border-radius: 20px; background: var(--paper); color: var(--text); cursor: pointer; font-size: 14px; }
+  .page { max-width: 210mm; margin: 16px auto; background: var(--paper); padding: 12mm 13mm; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+  header { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 8px; border-bottom: 3px solid var(--text); padding-bottom: 6px; margin-bottom: 10px; }
+  h1 { font-size: 21px; margin: 0; }
+  h1 small { font-size: 13px; color: var(--muted); margin-left: 6px; font-weight: normal; }
   .name { font-size: 14px; }
-  .name span { display: inline-block; width: 140px; border-bottom: 1px solid var(--text); margin-left: 4px; }
-  .note { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
-  ol { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; column-gap: 8mm; }
-  .problems li { min-height: 31mm; padding: 6px 0; border-bottom: 1px dashed var(--line); display: flex; gap: 6px; align-items: flex-start; }
-  .answers li { padding: 8px 0; border-bottom: 1px dashed var(--line); display: flex; gap: 6px; align-items: center; }
-  .no { font-weight: bold; min-width: 2.4em; padding-top: 6px; }
-  .answers .no { padding-top: 0; }
-  .eq { font-size: 16px; line-height: 2; display: flex; flex-wrap: wrap; align-items: center; column-gap: 2px; }
-  .answers .eq { color: var(--accent); font-weight: bold; }
-  .txt { font-size: 13.5px; line-height: 1.7; }
-  i { font-family: "Times New Roman", serif; font-size: 1.12em; padding: 0 1px; }
-  .op { margin: 0 5px; }
-  .nw { display: inline-flex; align-items: center; white-space: nowrap; }
-  .howto { border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; margin-bottom: 8px; font-size: 11.5px; line-height: 1.55; }
-  .howto b.h { color: var(--accent); }
-  .howto ol { margin: 2px 0; padding-left: 1.3em; display: grid; grid-template-columns: 1fr 1fr; column-gap: 12px; }
-  .howto ul { margin: 2px 0 0; padding-left: 1.2em; }
-  .exline { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; margin: 3px 0; }
-  .exline .eq { font-size: 12.5px; line-height: 1.4; }
-  .arrow { color: var(--muted); }
-  h2.lv { font-size: 14px; margin: 8px 0 0; padding: 2px 8px; background: var(--soft, rgba(127,127,127,.12)); border-left: 4px solid var(--accent); }
-  .fr { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 2px; line-height: 1.25; }
-  .fr .n { border-bottom: 1px solid currentColor; padding: 0 3px; }
+  .name span { display: inline-block; width: 130px; border-bottom: 1px solid var(--text); margin: 0 4px; }
+
+  /* 難易度バッジ */
+  .badge { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; color: #fff; font-weight: bold; font-size: 14px; flex: none; }
+  .badge.e { background: var(--e); } .badge.n { background: var(--n); } .badge.h { background: var(--h); }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; align-items: center; margin-bottom: 8px; }
+  .legend span.l { display: inline-flex; align-items: center; gap: 4px; }
+
+  /* 解き方ミニ */
+  .howto { background: var(--tip); border: 2px solid var(--tip-line); border-radius: 12px; padding: 8px 12px; margin-bottom: 10px; font-size: 13px; }
+  .howto .ttl { font-weight: bold; font-size: 14px; }
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin: 4px 0 2px; }
+  .chip { background: var(--paper); border: 1px solid var(--tip-line); border-radius: 20px; padding: 2px 10px; }
+  .chip b { color: var(--h); margin-right: 3px; }
+  .howto .small { color: var(--muted); font-size: 12px; margin: 2px 0 0; }
+
+  /* 問題 */
+  .problems { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 7px 10px; }
+  .pb { position: relative; border: 2px solid var(--line); border-radius: 12px; padding: 8px 40px 8px 10px; min-height: 30mm; display: flex; flex-wrap: wrap; align-items: flex-start; align-content: flex-start; gap: 4px 8px; }
+  .pb .badge { position: absolute; top: 6px; right: 6px; }
+  .pb.e { border-color: var(--e-soft); border-top: 5px solid var(--e); }
+  .pb.n { border-color: var(--n-soft); border-top: 5px solid var(--n); }
+  .pb.h { border-color: var(--h-soft); border-top: 5px solid var(--h); }
+  .no { font-weight: bold; min-width: 2.2em; }
+  .eq { font-size: 16px; display: inline-flex; flex-wrap: wrap; align-items: center; column-gap: 1px; line-height: 1.5; }
+  .txt { font-size: 13px; }
+  i { font-family: "Times New Roman", serif; font-size: 1.15em; padding: 0 1px; }
+  .op { margin: 0 4px; }
+  .fr { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 2px; line-height: 1.2; }
+  .fr .n { border-bottom: 1.5px solid currentColor; padding: 0 3px; }
   .fr .d { padding: 0 3px; }
-  .fr .fr { font-size: .9em; }
+  .fr .fr { font-size: .88em; }
+
+  /* 解説 */
+  h2 { font-size: 17px; margin: 0 0 8px; }
+  .guide { border: 2px solid var(--tip-line); background: var(--tip); border-radius: 12px; padding: 10px 14px; margin-bottom: 12px; }
+  .guide ol { margin: 4px 0 6px; padding-left: 1.4em; font-size: 14px; }
+  .mist { font-size: 13px; margin: 6px 0 0; padding-left: 1.2em; }
+  .steps { border-left: 4px solid var(--line); margin: 6px 0 0 6px; padding-left: 10px; }
+  .st { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 10px; align-items: center; padding: 3px 0; border-bottom: 1px dashed var(--line); }
+  .st:last-child { border-bottom: none; }
+  .memo { font-size: 12.5px; color: var(--muted); }
+  .memo b { color: var(--text); }
+  .sol { border: 2px solid var(--line); border-radius: 12px; padding: 8px 12px; margin-bottom: 9px; break-inside: avoid; }
+  .sol.e { border-left: 6px solid var(--e); } .sol.n { border-left: 6px solid var(--n); } .sol.h { border-left: 6px solid var(--h); }
+  .sh { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+  .ans { margin-top: 6px; display: inline-flex; align-items: center; gap: 6px; font-weight: bold; color: var(--ans); border: 2px solid var(--ans); border-radius: 8px; padding: 1px 10px; font-size: 14px; }
+  .sols { columns: 2; column-gap: 10px; }
+  .sols .st { grid-template-columns: 1fr; gap: 0; }
+  .sols .memo { font-size: 11.5px; padding-left: 8px; }
+  .sols .eq { font-size: 14.5px; }
+  .sol { padding: 6px 10px; }
+  .keys { list-style: none; padding: 0; margin: 0 0 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 10px; }
+  .keys li { display: flex; align-items: center; gap: 6px; border-bottom: 1px dashed var(--line); padding: 3px 0; }
+  .keys .eq { color: var(--ans); font-weight: bold; }
+
   @media (max-width: 640px) {
-    ol { grid-template-columns: 1fr; }
     .page { padding: 16px; margin: 12px 0; border-radius: 0; }
-    .problems li { min-height: 0; padding: 10px 0; }
+    .problems { grid-template-columns: 1fr; }
+    .pb { min-height: 0; }
+    .st { grid-template-columns: 1fr; gap: 0; }
+    .keys { grid-template-columns: 1fr 1fr; }
+    .sols { columns: 1; }
   }
   @media print {
-    @page { size: A4; margin: 0; }
-    body { background: #fff; color: #000; }
+    @page { size: A4; margin: 10mm 12mm; }
+    body { background: #fff; }
     .bar { display: none; }
-    .page { box-shadow: none; border-radius: 0; margin: 0; max-width: none; page-break-after: always; }
-    .answers .eq { color: #000; }
-    .problems li { min-height: 19mm; }
-    h2.lv { background: #eee; }
+    .page { box-shadow: none; border-radius: 0; margin: 0; max-width: none; padding: 0; break-after: page; }
+    .page:last-child { break-after: auto; }
+    .pb { min-height: 25mm; padding-top: 6px; padding-bottom: 6px; }
+    .problems { gap: 6px 10px; }
   }
 </style>
 </head>
 <body>
 <div class="bar">
   <button onclick="window.print()">🖨 印刷する</button>
-  <button onclick="document.getElementById('ans').scrollIntoView({behavior:'smooth'})">答えを見る</button>
+  <button onclick="document.getElementById('kaisetsu').scrollIntoView({behavior:'smooth'})">答えと解説を見る</button>
 </div>
 
-<section class="page">
+<div class="page">
   <header>
-    <h1>分数をふくむ方程式 練習プリント②<small>3段階・全15問</small></h1>
-    <div class="name">名前<span></span>　　/ 15</div>
+    <h1>分数の方程式 練習プリント②<small>全15問</small></h1>
+    <div class="name">名前<span></span>　／15</div>
   </header>
+  <div class="legend">
+    <span>むずかしさ：</span>
+    <span class="l"><span class="badge e">簡</span>かんたん</span>
+    <span class="l"><span class="badge n">普</span>ふつう</span>
+    <span class="l"><span class="badge h">難</span>むずかしい</span>
+  </div>
   <div class="howto">
-    <b class="h">📝 解き方</b>
+    <div class="ttl">📝 解き方はこの4つだけ！</div>
+    <div class="flow">
+      <span class="chip"><b>①</b>分母の数をかけて分数を消す</span>→
+      <span class="chip"><b>②</b>かっこを外す</span>→
+      <span class="chip"><b>③</b><i>x</i> を左、数を右へ（移項）</span>→
+      <span class="chip"><b>④</b><i>x</i> の前の数でわる</span>
+    </div>
+    <p class="small">小数は 10倍・100倍して整数にしよう。わからなかったら、後ろのページの解説を見てね。</p>
+  </div>
+  <ol class="problems">
+<li class="pb e"><span class="badge e" title="かんたん">簡</span><span class="no">(1)</span><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">+</span>3<span class="op">=</span>5</span></li>
+<li class="pb e"><span class="badge e" title="かんたん">簡</span><span class="no">(2)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>+1</span><span class="d">3</span></span><span class="op">=</span>2</span></li>
+<li class="pb e"><span class="badge e" title="かんたん">簡</span><span class="no">(3)</span><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">−</span><span class="fr"><span class="n"><i>x</i></span><span class="d">3</span></span><span class="op">=</span>1</span></li>
+<li class="pb e"><span class="badge e" title="かんたん">簡</span><span class="no">(4)</span><span class="eq"><span class="fr"><span class="n">2<i>x</i>−1</span><span class="d">3</span></span><span class="op">=</span><i>x</i><span class="op">−</span>2</span></li>
+<li class="pb e"><span class="badge e" title="かんたん">簡</span><span class="no">(5)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>−1</span><span class="d">2</span></span><span class="op">=</span><span class="fr"><span class="n"><i>x</i>+2</span><span class="d">5</span></span></span></li>
+<li class="pb n"><span class="badge n" title="ふつう">普</span><span class="no">(6)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>+3</span><span class="d">4</span></span><span class="op">−</span><span class="fr"><span class="n"><i>x</i>−1</span><span class="d">2</span></span><span class="op">=</span>1</span></li>
+<li class="pb n"><span class="badge n" title="ふつう">普</span><span class="no">(7)</span><span class="eq"><span class="fr"><span class="n">2</span><span class="d">3</span></span><i>x</i><span class="op">−</span>1<span class="op">=</span><span class="fr"><span class="n">1</span><span class="d">2</span></span><i>x</i><span class="op">+</span><span class="fr"><span class="n">1</span><span class="d">3</span></span></span></li>
+<li class="pb n"><span class="badge n" title="ふつう">普</span><span class="no">(8)</span><span class="eq">0.2<i>x</i><span class="op">+</span>1.5<span class="op">=</span>0.5<i>x</i><span class="op">−</span>0.3</span></li>
+<li class="pb n"><span class="badge n" title="ふつう">普</span><span class="no">(9)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>+2</span><span class="d">3</span></span><span class="op">−</span><span class="fr"><span class="n">2<i>x</i>−1</span><span class="d">4</span></span><span class="op">=</span><span class="fr"><span class="n">1</span><span class="d">2</span></span></span></li>
+<li class="pb n"><span class="badge n" title="ふつう">普</span><span class="no">(10)</span><span class="eq">(<i>x</i>+1)<span class="op">:</span>(<i>x</i>−2)<span class="op">=</span>4<span class="op">:</span>1</span></li>
+<li class="pb h"><span class="badge h" title="むずかしい">難</span><span class="no">(11)</span><span class="eq"><span class="fr"><span class="n">2</span><span class="d">3</span></span>(<span class="fr"><span class="n"><i>x</i></span><span class="d">4</span></span><span class="op">+</span>1)<span class="op">−</span><span class="fr"><span class="n">1</span><span class="d">2</span></span>(<span class="fr"><span class="n"><i>x</i></span><span class="d">3</span></span><span class="op">−</span>2)<span class="op">=</span><span class="fr"><span class="n"><i>x</i>+4</span><span class="d">9</span></span></span></li>
+<li class="pb h"><span class="badge h" title="むずかしい">難</span><span class="no">(12)</span><span class="eq">0.3(2<i>x</i>−1)<span class="op">−</span><span class="fr"><span class="n"><i>x</i>−2</span><span class="d">5</span></span><span class="op">=</span>0.25<i>x</i><span class="op">+</span>1</span></li>
+<li class="pb h"><span class="badge h" title="むずかしい">難</span><span class="no">(13)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>+<span class="fr"><span class="n"><i>x</i>−3</span><span class="d">2</span></span></span><span class="d">5</span></span><span class="op">−</span><i>x</i><span class="op">=</span><span class="fr"><span class="n">1</span><span class="d">4</span></span></span></li>
+<li class="pb h"><span class="badge h" title="むずかしい">難</span><span class="no">(14)</span><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">:</span>3<span class="op">=</span>(<i>x</i>+<span class="fr"><span class="n">1</span><span class="d">3</span></span>)<span class="op">:</span><span class="fr"><span class="n">4</span><span class="d">3</span></span></span></li>
+<li class="pb h"><span class="badge h" title="むずかしい">難</span><span class="no">(15)</span><span class="txt"><i>x</i> の方程式</span><span class="eq"><span class="fr"><span class="n"><i>x</i>+2<i>a</i></span><span class="d">5</span></span><span class="op">−</span><span class="fr"><span class="n">ax−3</span><span class="d">2</span></span><span class="op">=</span>1</span><span class="txt">の解が <i>x</i> = 2 のとき，<i>a</i> の値を求めよう。</span></li>
+  </ol>
+</div>
+
+<div class="page" id="kaisetsu">
+  <header><h1>答えと解説<small>練習プリント②</small></h1></header>
+  <ul class="keys">
+<li><span class="badge e" title="かんたん">簡</span><span class="no">(1)</span><span class="eq"><i>x</i><span class="op">=</span>4</span></li>
+<li><span class="badge e" title="かんたん">簡</span><span class="no">(2)</span><span class="eq"><i>x</i><span class="op">=</span>5</span></li>
+<li><span class="badge e" title="かんたん">簡</span><span class="no">(3)</span><span class="eq"><i>x</i><span class="op">=</span>6</span></li>
+<li><span class="badge e" title="かんたん">簡</span><span class="no">(4)</span><span class="eq"><i>x</i><span class="op">=</span>5</span></li>
+<li><span class="badge e" title="かんたん">簡</span><span class="no">(5)</span><span class="eq"><i>x</i><span class="op">=</span>3</span></li>
+<li><span class="badge n" title="ふつう">普</span><span class="no">(6)</span><span class="eq"><i>x</i><span class="op">=</span>1</span></li>
+<li><span class="badge n" title="ふつう">普</span><span class="no">(7)</span><span class="eq"><i>x</i><span class="op">=</span>8</span></li>
+<li><span class="badge n" title="ふつう">普</span><span class="no">(8)</span><span class="eq"><i>x</i><span class="op">=</span>6</span></li>
+<li><span class="badge n" title="ふつう">普</span><span class="no">(9)</span><span class="eq"><i>x</i><span class="op">=</span><span class="fr"><span class="n">5</span><span class="d">2</span></span></span></li>
+<li><span class="badge n" title="ふつう">普</span><span class="no">(10)</span><span class="eq"><i>x</i><span class="op">=</span>3</span></li>
+<li><span class="badge h" title="むずかしい">難</span><span class="no">(11)</span><span class="eq"><i>x</i><span class="op">=</span>11</span></li>
+<li><span class="badge h" title="むずかしい">難</span><span class="no">(12)</span><span class="eq"><i>x</i><span class="op">=</span>6</span></li>
+<li><span class="badge h" title="むずかしい">難</span><span class="no">(13)</span><span class="eq"><i>x</i><span class="op">=</span>−<span class="fr"><span class="n">11</span><span class="d">14</span></span></span></li>
+<li><span class="badge h" title="むずかしい">難</span><span class="no">(14)</span><span class="eq"><i>x</i><span class="op">=</span>−<span class="fr"><span class="n">3</span><span class="d">7</span></span></span></li>
+<li><span class="badge h" title="むずかしい">難</span><span class="no">(15)</span><span class="eq"><i>a</i><span class="op">=</span><span class="fr"><span class="n">3</span><span class="d">2</span></span></span></li>
+  </ul>
+
+  <div class="guide">
+    <h2>🔰 まずはここを読もう：解き方の4ステップ</h2>
     <ol>
-      <li><b>分母をはらう</b>：分母の最小公倍数を<b>全部の項</b>にかける（小数は10倍・100倍）</li>
-      <li><b>かっこを外す</b>：分子には必ずかっこ。−3(2<i>x</i>−5) は −6<i>x</i><b>＋15</b></li>
-      <li><b>移項する</b>：<i>x</i> は左、数は右へ。<b>符号を変える</b></li>
-      <li><b><i>x</i> の係数でわる</b>：答えが分数なら約分</li>
+      <li><b>分数を消す</b>：分母の数（2 と 3 なら 6）を<b>全部の項</b>にかける</li>
+      <li><b>かっこを外す</b>：かけ算でかっこの中に配る</li>
+      <li><b>移項する</b>：<i>x</i> を左、数を右へ。<b>反対側に移すと＋と−が入れかわる</b></li>
+      <li><b>わる</b>：<i>x</i> の前の数で両辺をわる</li>
     </ol>
-    <b>例</b><div class="exline"><span class="fr"><span class="n"><i>x</i>−2</span><span class="d">3</span></span><span class="op">−</span><span class="fr"><span class="n">2<i>x</i>−5</span><span class="d">4</span></span><span class="op">=</span>1<span class="arrow">→ ×12 →</span>4(<i>x</i>−2)<span class="op">−</span>3(2<i>x</i>−5)<span class="op">=</span>12<span class="arrow">→</span>4<i>x</i><span class="op">−</span>8<span class="op">−</span>6<i>x</i><span class="op">+</span>15<span class="op">=</span>12<span class="arrow">→</span>−2<i>x</i><span class="op">=</span>5<span class="arrow">→</span><b><i>x</i><span class="op">=</span>−<span class="fr"><span class="n">5</span><span class="d">2</span></span></b></div>
-    <ul>
-      <li>小数 (8)(12)：10倍・100倍して整数に　／　かっこの前に分数 (11)：先にかっこを外す　／　分数の中に分数 (13)：内側から1つの分数にまとめる</li>
-      <li>比例式 (10)(14)：<i>a</i>:<i>b</i> = <i>c</i>:<i>d</i> なら <i>ad</i> = <i>bc</i>　／　<i>a</i> を求める (15)：<i>x</i> に数を代入して <i>a</i> の方程式にする</li>
+    <div class="sh"><b>例</b><span class="eq"><span class="fr"><span class="n"><i>x</i>+1</span><span class="d">2</span></span><span class="op">−</span><span class="fr"><span class="n"><i>x</i>−1</span><span class="d">3</span></span><span class="op">=</span>2</span></div>
+    <div class="steps">
+<div class="st"><span class="eq">3(<i>x</i><span class="op">+</span>1)<span class="op">−</span>2(<i>x</i><span class="op">−</span>1)<span class="op">=</span>12</span><span class="memo">① 分母 2 と 3 → <b>6</b> を全部にかける</span></div>
+<div class="st"><span class="eq">3<i>x</i><span class="op">+</span>3<span class="op">−</span>2<i>x</i><span class="op">+</span>2<span class="op">=</span>12</span><span class="memo">② かっこを外す（−2×(−1) = ＋2）</span></div>
+<div class="st"><span class="eq"><i>x</i><span class="op">=</span>12<span class="op">−</span>3<span class="op">−</span>2</span><span class="memo">③ 数を右へ移項</span></div>
+<div class="st"><span class="eq"><i>x</i><span class="op">=</span>7</span><span class="memo">④ 計算して答え</span></div>
+    </div>
+    <ul class="mist">
+      <li>⚠️ 分子には<b>かっこ</b>をつけてからかける：−<span class="fr"><span class="n"><i>x</i>−1</span><span class="d">3</span></span>×6 ＝ −2(<i>x</i>−1) ＝ −2<i>x</i><b>＋2</b></li>
+      <li>⚠️ 分数じゃない数（右の 2 など）にも<b>かけ忘れない</b></li>
     </ul>
   </div>
-  <h2 class="lv">★ かんたん</h2>
-  <ol class="problems">
-    <li><span class="no">(1)</span><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">+</span>3<span class="op">=</span>5</span></li>
-    <li><span class="no">(2)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>+1</span><span class="d">3</span></span><span class="op">=</span>2</span></li>
-    <li><span class="no">(3)</span><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">−</span><span class="fr"><span class="n"><i>x</i></span><span class="d">3</span></span><span class="op">=</span>1</span></li>
-    <li><span class="no">(4)</span><span class="eq"><span class="fr"><span class="n">2<i>x</i>−1</span><span class="d">3</span></span><span class="op">=</span><i>x</i><span class="op">−</span>2</span></li>
-    <li><span class="no">(5)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>−1</span><span class="d">2</span></span><span class="op">=</span><span class="fr"><span class="n"><i>x</i>+2</span><span class="d">5</span></span></span></li>
-  </ol>
-  <h2 class="lv">★★ ふつう</h2>
-  <ol class="problems">
-    <li><span class="no">(6)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>+3</span><span class="d">4</span></span><span class="op">−</span><span class="fr"><span class="n"><i>x</i>−1</span><span class="d">2</span></span><span class="op">=</span>1</span></li>
-    <li><span class="no">(7)</span><span class="eq"><span class="fr"><span class="n">2</span><span class="d">3</span></span><i>x</i><span class="op">−</span>1<span class="op">=</span><span class="fr"><span class="n">1</span><span class="d">2</span></span><i>x</i><span class="op">+</span><span class="fr"><span class="n">1</span><span class="d">3</span></span></span></li>
-    <li><span class="no">(8)</span><span class="eq">0.2<i>x</i><span class="op">+</span>1.5<span class="op">=</span>0.5<i>x</i><span class="op">−</span>0.3</span></li>
-    <li><span class="no">(9)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>+2</span><span class="d">3</span></span><span class="op">−</span><span class="fr"><span class="n">2<i>x</i>−1</span><span class="d">4</span></span><span class="op">=</span><span class="fr"><span class="n">1</span><span class="d">2</span></span></span></li>
-    <li><span class="no">(10)</span><span class="eq">(<i>x</i>+1)<span class="op">:</span>(<i>x</i>−2)<span class="op">=</span>4<span class="op">:</span>1</span></li>
-  </ol>
-  <h2 class="lv">★★★ むずかしい</h2>
-  <ol class="problems">
-    <li><span class="no">(11)</span><span class="eq"><span class="fr"><span class="n">2</span><span class="d">3</span></span>(<span class="fr"><span class="n"><i>x</i></span><span class="d">4</span></span><span class="op">+</span>1)<span class="op">−</span><span class="fr"><span class="n">1</span><span class="d">2</span></span>(<span class="fr"><span class="n"><i>x</i></span><span class="d">3</span></span><span class="op">−</span>2)<span class="op">=</span><span class="fr"><span class="n"><i>x</i>+4</span><span class="d">9</span></span></span></li>
-    <li><span class="no">(12)</span><span class="eq">0.3(2<i>x</i>−1)<span class="op">−</span><span class="fr"><span class="n"><i>x</i>−2</span><span class="d">5</span></span><span class="op">=</span>0.25<i>x</i><span class="op">+</span>1</span></li>
-    <li><span class="no">(13)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>+<span class="fr"><span class="n"><i>x</i>−3</span><span class="d">2</span></span></span><span class="d">5</span></span><span class="op">−</span><i>x</i><span class="op">=</span><span class="fr"><span class="n">1</span><span class="d">4</span></span></span></li>
-    <li><span class="no">(14)</span><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">:</span>3<span class="op">=</span>(<i>x</i>+<span class="fr"><span class="n">1</span><span class="d">3</span></span>)<span class="op">:</span><span class="fr"><span class="n">4</span><span class="d">3</span></span></span></li>
-    <li><span class="no">(15)</span><span class="eq"><span class="txt"><i>x</i> についての方程式</span> <span class="nw"><span class="fr"><span class="n"><i>x</i>+2<i>a</i></span><span class="d">5</span></span><span class="op">−</span><span class="fr"><span class="n"><i>a</i><i>x</i>−3</span><span class="d">2</span></span><span class="op">=</span>1</span> <span class="txt">の解が <i>x</i> = 2 のとき，<i>a</i> の値を求めなさい。</span></span></li>
-  </ol>
-</section>
 
-<section class="page" id="ans">
-  <header>
-    <h1>解答<small>練習プリント②（3段階）</small></h1>
-  </header>
-  <p class="note">答えが分数になるものは既約分数で答えます。比例式は「外項の積 = 内項の積」，（15）は <i>x</i> の値を代入して <i>a</i> の方程式にします。</p>
-  <h2 class="lv">★ かんたん</h2>
-  <ol class="answers">
-    <li><span class="no">(1)</span><span class="eq"><i>x</i><span class="op">=</span>4</span></li>
-    <li><span class="no">(2)</span><span class="eq"><i>x</i><span class="op">=</span>5</span></li>
-    <li><span class="no">(3)</span><span class="eq"><i>x</i><span class="op">=</span>6</span></li>
-    <li><span class="no">(4)</span><span class="eq"><i>x</i><span class="op">=</span>5</span></li>
-    <li><span class="no">(5)</span><span class="eq"><i>x</i><span class="op">=</span>3</span></li>
-  </ol>
-  <h2 class="lv">★★ ふつう</h2>
-  <ol class="answers">
-    <li><span class="no">(6)</span><span class="eq"><i>x</i><span class="op">=</span>1</span></li>
-    <li><span class="no">(7)</span><span class="eq"><i>x</i><span class="op">=</span>8</span></li>
-    <li><span class="no">(8)</span><span class="eq"><i>x</i><span class="op">=</span>6</span></li>
-    <li><span class="no">(9)</span><span class="eq"><i>x</i><span class="op">=</span><span class="fr"><span class="n">5</span><span class="d">2</span></span></span></li>
-    <li><span class="no">(10)</span><span class="eq"><i>x</i><span class="op">=</span>3</span></li>
-  </ol>
-  <h2 class="lv">★★★ むずかしい</h2>
-  <ol class="answers">
-    <li><span class="no">(11)</span><span class="eq"><i>x</i><span class="op">=</span>11</span></li>
-    <li><span class="no">(12)</span><span class="eq"><i>x</i><span class="op">=</span>6</span></li>
-    <li><span class="no">(13)</span><span class="eq"><i>x</i><span class="op">=</span>−<span class="fr"><span class="n">11</span><span class="d">14</span></span></span></li>
-    <li><span class="no">(14)</span><span class="eq"><i>x</i><span class="op">=</span>−<span class="fr"><span class="n">3</span><span class="d">7</span></span></span></li>
-    <li><span class="no">(15)</span><span class="eq"><i>a</i><span class="op">=</span><span class="fr"><span class="n">3</span><span class="d">2</span></span></span></li>
-  </ol>
+<div class="sols">
+<section class="sol e">
+  <div class="sh"><span class="badge e" title="かんたん">簡</span><span class="no">(1)</span><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">+</span>3<span class="op">=</span>5</span></div>
+  <div class="steps">
+<div class="st"><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">=</span>5<span class="op">−</span>3</span><span class="memo">＋3 を右に移す（移項）と <b>−3</b> になる</span></div>
+<div class="st"><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">=</span>2</span><span class="memo">右を計算</span></div>
+<div class="st"><span class="eq"><i>x</i><span class="op">=</span>4</span><span class="memo">両辺に <b>2</b> をかける</span></div>
+  </div>
+  <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>4</span></div>
 </section>
+<section class="sol e">
+  <div class="sh"><span class="badge e" title="かんたん">簡</span><span class="no">(2)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>+1</span><span class="d">3</span></span><span class="op">=</span>2</span></div>
+  <div class="steps">
+<div class="st"><span class="eq"><i>x</i><span class="op">+</span>1<span class="op">=</span>6</span><span class="memo">両辺に <b>3</b> をかけて分母を消す</span></div>
+<div class="st"><span class="eq"><i>x</i><span class="op">=</span>6<span class="op">−</span>1</span><span class="memo">＋1 を右に移項して −1</span></div>
+<div class="st"><span class="eq"><i>x</i><span class="op">=</span>5</span><span class="memo"></span></div>
+  </div>
+  <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>5</span></div>
+</section>
+<section class="sol e">
+  <div class="sh"><span class="badge e" title="かんたん">簡</span><span class="no">(3)</span><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">−</span><span class="fr"><span class="n"><i>x</i></span><span class="d">3</span></span><span class="op">=</span>1</span></div>
+  <div class="steps">
+<div class="st"><span class="eq">3<i>x</i><span class="op">−</span>2<i>x</i><span class="op">=</span>6</span><span class="memo">分母 2 と 3 → <b>6</b> をかける（右の 1 も 6 倍）</span></div>
+<div class="st"><span class="eq"><i>x</i><span class="op">=</span>6</span><span class="memo">3<i>x</i>−2<i>x</i> = <i>x</i></span></div>
+  </div>
+  <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>6</span></div>
+</section>
+<section class="sol e">
+  <div class="sh"><span class="badge e" title="かんたん">簡</span><span class="no">(4)</span><span class="eq"><span class="fr"><span class="n">2<i>x</i>−1</span><span class="d">3</span></span><span class="op">=</span><i>x</i><span class="op">−</span>2</span></div>
+  <div class="steps">
+<div class="st"><span class="eq">2<i>x</i><span class="op">−</span>1<span class="op">=</span>3(<i>x</i><span class="op">−</span>2)</span><span class="memo">両辺に <b>3</b>。右は<b>かっこ</b>をつけて 3 倍</span></div>
+<div class="st"><span class="eq">2<i>x</i><span class="op">−</span>1<span class="op">=</span>3<i>x</i><span class="op">−</span>6</span><span class="memo">かっこを外す</span></div>
+<div class="st"><span class="eq">2<i>x</i><span class="op">−</span>3<i>x</i><span class="op">=</span>−6<span class="op">+</span>1</span><span class="memo"><i>x</i> は左、数は右へ（符号が変わる）</span></div>
+<div class="st"><span class="eq">−<i>x</i><span class="op">=</span>−5</span><span class="memo">計算する</span></div>
+<div class="st"><span class="eq"><i>x</i><span class="op">=</span>5</span><span class="memo">両辺に −1 をかける</span></div>
+  </div>
+  <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>5</span></div>
+</section>
+<section class="sol e">
+  <div class="sh"><span class="badge e" title="かんたん">簡</span><span class="no">(5)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>−1</span><span class="d">2</span></span><span class="op">=</span><span class="fr"><span class="n"><i>x</i>+2</span><span class="d">5</span></span></span></div>
+  <div class="steps">
+<div class="st"><span class="eq">5(<i>x</i><span class="op">−</span>1)<span class="op">=</span>2(<i>x</i><span class="op">+</span>2)</span><span class="memo">分母 2 と 5 → <b>10</b> をかける</span></div>
+<div class="st"><span class="eq">5<i>x</i><span class="op">−</span>5<span class="op">=</span>2<i>x</i><span class="op">+</span>4</span><span class="memo">かっこを外す</span></div>
+<div class="st"><span class="eq">5<i>x</i><span class="op">−</span>2<i>x</i><span class="op">=</span>4<span class="op">+</span>5</span><span class="memo">移項</span></div>
+<div class="st"><span class="eq">3<i>x</i><span class="op">=</span>9</span><span class="memo"></span></div>
+<div class="st"><span class="eq"><i>x</i><span class="op">=</span>3</span><span class="memo">両辺を 3 でわる</span></div>
+  </div>
+  <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>3</span></div>
+</section>
+<section class="sol n">
+  <div class="sh"><span class="badge n" title="ふつう">普</span><span class="no">(6)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>+3</span><span class="d">4</span></span><span class="op">−</span><span class="fr"><span class="n"><i>x</i>−1</span><span class="d">2</span></span><span class="op">=</span>1</span></div>
+  <div class="steps">
+<div class="st"><span class="eq">(<i>x</i><span class="op">+</span>3)<span class="op">−</span>2(<i>x</i><span class="op">−</span>1)<span class="op">=</span>4</span><span class="memo">分母 4 と 2 → <b>4</b> をかける</span></div>
+<div class="st"><span class="eq"><i>x</i><span class="op">+</span>3<span class="op">−</span>2<i>x</i><span class="op">+</span>2<span class="op">=</span>4</span><span class="memo">−2×(−1) は <b>＋2</b>（符号に注意！）</span></div>
+<div class="st"><span class="eq">−<i>x</i><span class="op">+</span>5<span class="op">=</span>4</span><span class="memo"><i>x</i> どうし、数どうしをまとめる</span></div>
+<div class="st"><span class="eq">−<i>x</i><span class="op">=</span>−1</span><span class="memo">5 を右へ移項</span></div>
+<div class="st"><span class="eq"><i>x</i><span class="op">=</span>1</span><span class="memo"></span></div>
+  </div>
+  <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>1</span></div>
+</section>
+<section class="sol n">
+  <div class="sh"><span class="badge n" title="ふつう">普</span><span class="no">(7)</span><span class="eq"><span class="fr"><span class="n">2</span><span class="d">3</span></span><i>x</i><span class="op">−</span>1<span class="op">=</span><span class="fr"><span class="n">1</span><span class="d">2</span></span><i>x</i><span class="op">+</span><span class="fr"><span class="n">1</span><span class="d">3</span></span></span></div>
+  <div class="steps">
+<div class="st"><span class="eq">4<i>x</i><span class="op">−</span>6<span class="op">=</span>3<i>x</i><span class="op">+</span>2</span><span class="memo">分母 3・2・3 → <b>6</b> をかける（−1 も 6 倍で −6）</span></div>
+<div class="st"><span class="eq">4<i>x</i><span class="op">−</span>3<i>x</i><span class="op">=</span>2<span class="op">+</span>6</span><span class="memo">移項</span></div>
+<div class="st"><span class="eq"><i>x</i><span class="op">=</span>8</span><span class="memo"></span></div>
+  </div>
+  <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>8</span></div>
+</section>
+<section class="sol n">
+  <div class="sh"><span class="badge n" title="ふつう">普</span><span class="no">(8)</span><span class="eq">0.2<i>x</i><span class="op">+</span>1.5<span class="op">=</span>0.5<i>x</i><span class="op">−</span>0.3</span></div>
+  <div class="steps">
+<div class="st"><span class="eq">2<i>x</i><span class="op">+</span>15<span class="op">=</span>5<i>x</i><span class="op">−</span>3</span><span class="memo">全部を <b>10 倍</b>して小数を消す</span></div>
+<div class="st"><span class="eq">2<i>x</i><span class="op">−</span>5<i>x</i><span class="op">=</span>−3<span class="op">−</span>15</span><span class="memo">移項</span></div>
+<div class="st"><span class="eq">−3<i>x</i><span class="op">=</span>−18</span><span class="memo"></span></div>
+<div class="st"><span class="eq"><i>x</i><span class="op">=</span>6</span><span class="memo">両辺を −3 でわる</span></div>
+  </div>
+  <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>6</span></div>
+</section>
+<section class="sol n">
+  <div class="sh"><span class="badge n" title="ふつう">普</span><span class="no">(9)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>+2</span><span class="d">3</span></span><span class="op">−</span><span class="fr"><span class="n">2<i>x</i>−1</span><span class="d">4</span></span><span class="op">=</span><span class="fr"><span class="n">1</span><span class="d">2</span></span></span></div>
+  <div class="steps">
+<div class="st"><span class="eq">4(<i>x</i><span class="op">+</span>2)<span class="op">−</span>3(2<i>x</i><span class="op">−</span>1)<span class="op">=</span>6</span><span class="memo">分母 3・4・2 → <b>12</b> をかける</span></div>
+<div class="st"><span class="eq">4<i>x</i><span class="op">+</span>8<span class="op">−</span>6<i>x</i><span class="op">+</span>3<span class="op">=</span>6</span><span class="memo">−3×(−1) は <b>＋3</b></span></div>
+<div class="st"><span class="eq">−2<i>x</i><span class="op">+</span>11<span class="op">=</span>6</span><span class="memo">まとめる</span></div>
+<div class="st"><span class="eq">−2<i>x</i><span class="op">=</span>−5</span><span class="memo">移項</span></div>
+<div class="st"><span class="eq"><i>x</i><span class="op">=</span><span class="fr"><span class="n">5</span><span class="d">2</span></span></span><span class="memo">両辺を −2 でわる</span></div>
+  </div>
+  <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span><span class="fr"><span class="n">5</span><span class="d">2</span></span></span></div>
+</section>
+<section class="sol n">
+  <div class="sh"><span class="badge n" title="ふつう">普</span><span class="no">(10)</span><span class="eq">(<i>x</i>+1)<span class="op">:</span>(<i>x</i>−2)<span class="op">=</span>4<span class="op">:</span>1</span></div>
+  <div class="steps">
+<div class="st"><span class="eq">(<i>x</i><span class="op">+</span>1)<span class="op">×</span>1<span class="op">=</span>(<i>x</i><span class="op">−</span>2)<span class="op">×</span>4</span><span class="memo">比例式は <b>外側×外側 ＝ 内側×内側</b></span></div>
+<div class="st"><span class="eq"><i>x</i><span class="op">+</span>1<span class="op">=</span>4<i>x</i><span class="op">−</span>8</span><span class="memo">かっこを外す</span></div>
+<div class="st"><span class="eq"><i>x</i><span class="op">−</span>4<i>x</i><span class="op">=</span>−8<span class="op">−</span>1</span><span class="memo">移項</span></div>
+<div class="st"><span class="eq">−3<i>x</i><span class="op">=</span>−9</span><span class="memo"></span></div>
+<div class="st"><span class="eq"><i>x</i><span class="op">=</span>3</span><span class="memo"></span></div>
+  </div>
+  <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>3</span></div>
+</section>
+<section class="sol h">
+  <div class="sh"><span class="badge h" title="むずかしい">難</span><span class="no">(11)</span><span class="eq"><span class="fr"><span class="n">2</span><span class="d">3</span></span>(<span class="fr"><span class="n"><i>x</i></span><span class="d">4</span></span><span class="op">+</span>1)<span class="op">−</span><span class="fr"><span class="n">1</span><span class="d">2</span></span>(<span class="fr"><span class="n"><i>x</i></span><span class="d">3</span></span><span class="op">−</span>2)<span class="op">=</span><span class="fr"><span class="n"><i>x</i>+4</span><span class="d">9</span></span></span></div>
+  <div class="steps">
+<div class="st"><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">6</span></span><span class="op">+</span><span class="fr"><span class="n">2</span><span class="d">3</span></span><span class="op">−</span><span class="fr"><span class="n"><i>x</i></span><span class="d">6</span></span><span class="op">+</span>1<span class="op">=</span><span class="fr"><span class="n"><i>x</i>+4</span><span class="d">9</span></span></span><span class="memo">先に<b>かっこを外す</b>（−<span class="fr"><span class="n">1</span><span class="d">2</span></span>×(−2) = ＋1）</span></div>
+<div class="st"><span class="eq"><span class="fr"><span class="n">5</span><span class="d">3</span></span><span class="op">=</span><span class="fr"><span class="n"><i>x</i>+4</span><span class="d">9</span></span></span><span class="memo"><span class="fr"><span class="n"><i>x</i></span><span class="d">6</span></span> は消える。<span class="fr"><span class="n">2</span><span class="d">3</span></span>＋1＝<span class="fr"><span class="n">5</span><span class="d">3</span></span></span></div>
+<div class="st"><span class="eq">15<span class="op">=</span><i>x</i><span class="op">+</span>4</span><span class="memo">両辺に <b>9</b> をかける</span></div>
+<div class="st"><span class="eq"><i>x</i><span class="op">=</span>11</span><span class="memo"></span></div>
+  </div>
+  <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>11</span></div>
+</section>
+<section class="sol h">
+  <div class="sh"><span class="badge h" title="むずかしい">難</span><span class="no">(12)</span><span class="eq">0.3(2<i>x</i>−1)<span class="op">−</span><span class="fr"><span class="n"><i>x</i>−2</span><span class="d">5</span></span><span class="op">=</span>0.25<i>x</i><span class="op">+</span>1</span></div>
+  <div class="steps">
+<div class="st"><span class="eq">30(2<i>x</i><span class="op">−</span>1)<span class="op">−</span>20(<i>x</i><span class="op">−</span>2)<span class="op">=</span>25<i>x</i><span class="op">+</span>100</span><span class="memo">0.25 があるので <b>100</b> をかける</span></div>
+<div class="st"><span class="eq">60<i>x</i><span class="op">−</span>30<span class="op">−</span>20<i>x</i><span class="op">+</span>40<span class="op">=</span>25<i>x</i><span class="op">+</span>100</span><span class="memo">かっこを外す（−20×(−2) = ＋40）</span></div>
+<div class="st"><span class="eq">40<i>x</i><span class="op">+</span>10<span class="op">=</span>25<i>x</i><span class="op">+</span>100</span><span class="memo">まとめる</span></div>
+<div class="st"><span class="eq">15<i>x</i><span class="op">=</span>90</span><span class="memo">移項</span></div>
+<div class="st"><span class="eq"><i>x</i><span class="op">=</span>6</span><span class="memo"></span></div>
+  </div>
+  <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>6</span></div>
+</section>
+<section class="sol h">
+  <div class="sh"><span class="badge h" title="むずかしい">難</span><span class="no">(13)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>+<span class="fr"><span class="n"><i>x</i>−3</span><span class="d">2</span></span></span><span class="d">5</span></span><span class="op">−</span><i>x</i><span class="op">=</span><span class="fr"><span class="n">1</span><span class="d">4</span></span></span></div>
+  <div class="steps">
+<div class="st"><span class="eq"><i>x</i><span class="op">+</span><span class="fr"><span class="n"><i>x</i>−3</span><span class="d">2</span></span><span class="op">=</span><span class="fr"><span class="n">2<i>x</i><span class="op">+</span><i>x</i><span class="op">−</span>3</span><span class="d">2</span></span><span class="op">=</span><span class="fr"><span class="n">3<i>x</i>−3</span><span class="d">2</span></span></span><span class="memo"><b>内側から</b>1つの分数にまとめる</span></div>
+<div class="st"><span class="eq"><span class="fr"><span class="n">3<i>x</i>−3</span><span class="d">10</span></span><span class="op">−</span><i>x</i><span class="op">=</span><span class="fr"><span class="n">1</span><span class="d">4</span></span></span><span class="memo">それを 5 でわる（分母が 2×5＝10）</span></div>
+<div class="st"><span class="eq">2(3<i>x</i><span class="op">−</span>3)<span class="op">−</span>20<i>x</i><span class="op">=</span>5</span><span class="memo">分母 10 と 4 → <b>20</b> をかける</span></div>
+<div class="st"><span class="eq">6<i>x</i><span class="op">−</span>6<span class="op">−</span>20<i>x</i><span class="op">=</span>5</span><span class="memo">かっこを外す</span></div>
+<div class="st"><span class="eq">−14<i>x</i><span class="op">=</span>11</span><span class="memo">まとめて移項</span></div>
+<div class="st"><span class="eq"><i>x</i><span class="op">=</span>−<span class="fr"><span class="n">11</span><span class="d">14</span></span></span><span class="memo"></span></div>
+  </div>
+  <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>−<span class="fr"><span class="n">11</span><span class="d">14</span></span></span></div>
+</section>
+<section class="sol h">
+  <div class="sh"><span class="badge h" title="むずかしい">難</span><span class="no">(14)</span><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">:</span>3<span class="op">=</span>(<i>x</i>+<span class="fr"><span class="n">1</span><span class="d">3</span></span>)<span class="op">:</span><span class="fr"><span class="n">4</span><span class="d">3</span></span></span></div>
+  <div class="steps">
+<div class="st"><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">×</span><span class="fr"><span class="n">4</span><span class="d">3</span></span><span class="op">=</span>3(<i>x</i><span class="op">+</span><span class="fr"><span class="n">1</span><span class="d">3</span></span>)</span><span class="memo"><b>外側×外側 ＝ 内側×内側</b></span></div>
+<div class="st"><span class="eq"><span class="fr"><span class="n">2</span><span class="d">3</span></span><i>x</i><span class="op">=</span>3<i>x</i><span class="op">+</span>1</span><span class="memo">計算する</span></div>
+<div class="st"><span class="eq">2<i>x</i><span class="op">=</span>9<i>x</i><span class="op">+</span>3</span><span class="memo">両辺に <b>3</b> をかける</span></div>
+<div class="st"><span class="eq">−7<i>x</i><span class="op">=</span>3</span><span class="memo">移項</span></div>
+<div class="st"><span class="eq"><i>x</i><span class="op">=</span>−<span class="fr"><span class="n">3</span><span class="d">7</span></span></span><span class="memo"></span></div>
+  </div>
+  <div class="ans">答え　<span class="eq"><i>x</i><span class="op">=</span>−<span class="fr"><span class="n">3</span><span class="d">7</span></span></span></div>
+</section>
+<section class="sol h">
+  <div class="sh"><span class="badge h" title="むずかしい">難</span><span class="no">(15)</span><span class="txt"><i>x</i> の方程式</span><span class="eq"><span class="fr"><span class="n"><i>x</i>+2<i>a</i></span><span class="d">5</span></span><span class="op">−</span><span class="fr"><span class="n">ax−3</span><span class="d">2</span></span><span class="op">=</span>1</span><span class="txt">の解が <i>x</i> = 2 のとき，<i>a</i> の値を求めよう。</span></div>
+  <div class="steps">
+<div class="st"><span class="eq"><span class="fr"><span class="n">2+2<i>a</i></span><span class="d">5</span></span><span class="op">−</span><span class="fr"><span class="n">2<i>a</i>−3</span><span class="d">2</span></span><span class="op">=</span>1</span><span class="memo"><i>x</i> に <b>2 を代入</b>。これで <i>a</i> の方程式になる</span></div>
+<div class="st"><span class="eq">2(2<span class="op">+</span>2<i>a</i>)<span class="op">−</span>5(2<i>a</i><span class="op">−</span>3)<span class="op">=</span>10</span><span class="memo"><b>10</b> をかける</span></div>
+<div class="st"><span class="eq">4<span class="op">+</span>4<i>a</i><span class="op">−</span>10<i>a</i><span class="op">+</span>15<span class="op">=</span>10</span><span class="memo">−5×(−3) は <b>＋15</b></span></div>
+<div class="st"><span class="eq">−6<i>a</i><span class="op">+</span>19<span class="op">=</span>10</span><span class="memo">まとめる</span></div>
+<div class="st"><span class="eq">−6<i>a</i><span class="op">=</span>−9</span><span class="memo">移項</span></div>
+<div class="st"><span class="eq"><i>a</i><span class="op">=</span><span class="fr"><span class="n">3</span><span class="d">2</span></span></span><span class="memo">両辺を −6 でわって約分</span></div>
+  </div>
+  <div class="ans">答え　<span class="eq"><i>a</i><span class="op">=</span><span class="fr"><span class="n">3</span><span class="d">2</span></span></span></div>
+</section>
+</div>
+</div>
 </body>
 </html>
