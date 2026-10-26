@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分数の方程式 解説</title>
+<style>
+  :root { --bg: #f5f7fa; --paper: #fff; --text: #222; --muted: #666; --line: #ccc; --accent: #c0392b; --main: #2471a3; --soft: #eef5fb; --warn: #fdf2e9; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #121212; --paper: #1e1e1e; --text: #e0e0e0; --muted: #aaa; --line: #444; --accent: #ff7b6b; --main: #6cb4ee; --soft: #1d2a36; --warn: #3a2a1c; }
+  }
+  :root[data-theme="dark"] { --bg: #121212; --paper: #1e1e1e; --text: #e0e0e0; --muted: #aaa; --line: #444; --accent: #ff7b6b; --main: #6cb4ee; --soft: #1d2a36; --warn: #3a2a1c; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif; line-height: 1.6; }
+  .page { max-width: 210mm; margin: 16px auto; background: var(--paper); padding: 12mm 14mm; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  h1 { font-size: 21px; margin: 0 0 4px; border-bottom: 2px solid var(--text); padding-bottom: 6px; }
+  h1 small { font-size: 13px; color: var(--accent); margin-left: 8px; }
+  h2 { font-size: 16px; margin: 0 0 8px; color: var(--main); border-left: 5px solid var(--main); padding-left: 8px; }
+  .lead { font-size: 14px; color: var(--muted); margin: 6px 0 12px; }
+  .basic { background: var(--soft); border-radius: 8px; padding: 10px 14px; margin-bottom: 10px; }
+  .basic ol { margin: 4px 0 0; padding-left: 1.4em; font-size: 14.5px; }
+  .basic li { margin: 2px 0; }
+  .warn { background: var(--warn); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 14px; }
+  .warn ul { margin: 4px 0 0; padding-left: 1.3em; }
+  .card { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; break-inside: avoid; }
+  .ex { margin: 0 0 6px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 16px; }
+  .tag { background: var(--main); color: #fff; font-size: 12px; font-weight: bold; padding: 2px 8px; border-radius: 10px; }
+  .steps { border-left: 3px solid var(--line); margin-left: 4px; padding-left: 10px; }
+  .row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: center; padding: 3px 0; border-bottom: 1px dotted var(--line); }
+  .row:last-child { border-bottom: none; }
+  .row:last-child .eq { color: var(--accent); font-weight: bold; }
+  .memo { font-size: 12.5px; color: var(--muted); }
+  .memo b { color: var(--text); }
+  .eq { font-size: 15.5px; display: inline-flex; flex-wrap: wrap; align-items: center; column-gap: 1px; }
+  .point { font-size: 13.5px; margin: 8px 0 0; }
+  .same { font-size: 13.5px; margin: 6px 0 0; }
+  i { font-family: "Times New Roman", serif; font-size: 1.12em; padding: 0 1px; }
+  .op { margin: 0 4px; }
+  .fr { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 2px; line-height: 1.2; }
+  .fr .n { border-bottom: 1px solid currentColor; padding: 0 3px; }
+  .fr .d { padding: 0 3px; }
+  .fr .fr { font-size: .9em; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  td { border: 1px solid var(--line); padding: 4px 8px; }
+  td:first-child { width: 4em; text-align: center; font-weight: bold; }
+  .tables { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 640px) {
+    .page { padding: 16px; margin: 12px 0; border-radius: 0; }
+    .row { grid-template-columns: 1fr; gap: 0; }
+    .tables { grid-template-columns: 1fr; }
+  }
+  @media print {
+    @page { size: A4; margin: 12mm 14mm; }
+    body { background: #fff; color: #000; }
+    .page { box-shadow: none; border-radius: 0; margin: 0; max-width: none; padding: 0; }
+    .break { break-before: page; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>分数の方程式 解き方ガイド<small>練習プリント（全20問）の解説</small></h1>
+  <p class="lead">例題の解き方をまねすれば、ほかの問題も同じ手順で解けます。まず下の「基本の4ステップ」をおぼえよう。</p>
+
+  <div class="basic">
+    <b>基本の4ステップ</b>
+    <ol>
+      <li><b>分母をはらう</b>：分母の最小公倍数を、両辺の<b>全部の項</b>にかける（小数があれば10倍・100倍）</li>
+      <li><b>かっこを外す</b>：分配法則で計算する</li>
+      <li><b>移項する</b>：<i>x</i> の項を左、数を右へ。移すときは<b>符号を変える</b></li>
+      <li><b><i>x</i> の係数でわる</b>：答えが分数なら約分して終わり</li>
+    </ol>
+  </div>
+
+  <div class="warn">
+    <b>⚠️ よくあるミス3つ</b>
+    <ul>
+      <li>分子に<b>かっこをつけ忘れる</b>：−<span class="fr"><span class="n">2<i>x</i>−5</span><span class="d">4</span></span>×12 は −3(2<i>x</i>−5)。−6<i>x</i>−5 ではなく <b>−6<i>x</i>＋15</b></li>
+      <li><b>分数でない項にかけ忘れる</b>：「= 1」も 12 倍して「= 12」</li>
+      <li>移項で<b>符号を変え忘れる</b></li>
+    </ul>
+  </div>
+
+<section class="card">
+  <h2>タイプ① 分数がいくつかある方程式（いちばん基本）</h2>
+  <p class="ex"><span class="tag">例題 (1)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>−2</span><span class="d">3</span></span><span class="op">−</span><span class="fr"><span class="n">2<i>x</i>−5</span><span class="d">4</span></span><span class="op">=</span>1</span></p>
+  <div class="steps">
+<div class="row"><span class="eq"><span class="fr"><span class="n"><i>x</i>−2</span><span class="d">3</span></span><span class="op">×</span>12<span class="op">−</span><span class="fr"><span class="n">2<i>x</i>−5</span><span class="d">4</span></span><span class="op">×</span>12<span class="op">=</span>1<span class="op">×</span>12</span><span class="memo">分母3と4の最小公倍数 <b>12</b> を、<b>全部の項</b>にかける（右の 1 にも！）</span></div>
+<div class="row"><span class="eq">4(<i>x</i>−2)<span class="op">−</span>3(2<i>x</i>−5)<span class="op">=</span>12</span><span class="memo">約分して分母を消す。<b>分子にはかっこ</b>をつける</span></div>
+<div class="row"><span class="eq">4<i>x</i><span class="op">−</span>8<span class="op">−</span>6<i>x</i><span class="op">+</span>15<span class="op">=</span>12</span><span class="memo">かっこを外す。−3×(−5) は <b>＋15</b>（符号に注意）</span></div>
+<div class="row"><span class="eq">−2<i>x</i><span class="op">+</span>7<span class="op">=</span>12</span><span class="memo">x どうし、数どうしをまとめる</span></div>
+<div class="row"><span class="eq">−2<i>x</i><span class="op">=</span>5</span><span class="memo">7 を右へ移項（＋7 → −7）</span></div>
+<div class="row"><span class="eq"><i>x</i><span class="op">=</span>−<span class="fr"><span class="n">5</span><span class="d">2</span></span></span><span class="memo">両辺を −2 でわる</span></div>
+  </div>
+  <p class="point">💡 （4）のように <i>x</i> の係数が分数の問題も同じ。12 をかけると 8<i>x</i> − 3 = 10<i>x</i> + 6 になります。</p>
+  <p class="same">✏️ 同じやり方で解ける問題：<b>(2) (3) (5) (6) (8) (11) (13) (14) (16)</b></p>
+</section>
+<section class="card">
+  <h2>タイプ② かっこの前に分数がある方程式</h2>
+  <p class="ex"><span class="tag">例題 (7)</span><span class="eq"><span class="fr"><span class="n">1</span><span class="d">2</span></span>(<span class="fr"><span class="n"><i>x</i></span><span class="d">3</span></span><span class="op">−</span>1)<span class="op">−</span><span class="fr"><span class="n">1</span><span class="d">3</span></span>(<span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">+</span>2)<span class="op">=</span><span class="fr"><span class="n"><i>x</i>−5</span><span class="d">12</span></span></span></p>
+  <div class="steps">
+<div class="row"><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">6</span></span><span class="op">−</span><span class="fr"><span class="n">1</span><span class="d">2</span></span><span class="op">−</span><span class="fr"><span class="n"><i>x</i></span><span class="d">6</span></span><span class="op">−</span><span class="fr"><span class="n">2</span><span class="d">3</span></span><span class="op">=</span><span class="fr"><span class="n"><i>x</i>−5</span><span class="d">12</span></span></span><span class="memo">先に<b>かっこを外す</b>（分配法則）。−<span class="fr"><span class="n">1</span><span class="d">3</span></span>×2 = −<span class="fr"><span class="n">2</span><span class="d">3</span></span></span></div>
+<div class="row"><span class="eq">−<span class="fr"><span class="n">1</span><span class="d">2</span></span><span class="op">−</span><span class="fr"><span class="n">2</span><span class="d">3</span></span><span class="op">=</span><span class="fr"><span class="n"><i>x</i>−5</span><span class="d">12</span></span></span><span class="memo"><span class="fr"><span class="n"><i>x</i></span><span class="d">6</span></span> と −<span class="fr"><span class="n"><i>x</i></span><span class="d">6</span></span> は消える</span></div>
+<div class="row"><span class="eq">−6<span class="op">−</span>8<span class="op">=</span><i>x</i><span class="op">−</span>5</span><span class="memo">全部に <b>12</b> をかける</span></div>
+<div class="row"><span class="eq">−<i>x</i><span class="op">=</span>9</span><span class="memo">移項して整理（<i>x</i> を左、数を右）</span></div>
+<div class="row"><span class="eq"><i>x</i><span class="op">=</span>−9</span><span class="memo">両辺に −1 をかける</span></div>
+  </div>
+  <p class="point">💡 かっこを外してからタイプ①と同じように分母をはらえばOK。</p>
+  <p class="same">✏️ 同じやり方で解ける問題：<b>（このタイプは (7) だけ）</b></p>
+</section>
+<section class="card">
+  <h2>タイプ③ 小数と分数がまざった方程式</h2>
+  <p class="ex"><span class="tag">例題 (9)</span><span class="eq">0.3(<i>x</i>−2)<span class="op">=</span>0.25<i>x</i><span class="op">+</span><span class="fr"><span class="n">1</span><span class="d">2</span></span></span></p>
+  <div class="steps">
+<div class="row"><span class="eq">30(<i>x</i>−2)<span class="op">=</span>25<i>x</i><span class="op">+</span>50</span><span class="memo">小数第2位まであるので <b>100</b> をかける（0.3→30, 0.25→25, <span class="fr"><span class="n">1</span><span class="d">2</span></span>→50）</span></div>
+<div class="row"><span class="eq">30<i>x</i><span class="op">−</span>60<span class="op">=</span>25<i>x</i><span class="op">+</span>50</span><span class="memo">かっこを外す</span></div>
+<div class="row"><span class="eq">5<i>x</i><span class="op">=</span>110</span><span class="memo">移項して整理</span></div>
+<div class="row"><span class="eq"><i>x</i><span class="op">=</span>22</span><span class="memo">両辺を 5 でわる</span></div>
+  </div>
+  <p class="point">💡 かける数は「小数を整数にする数」と「分母を消す数」の<b>両方</b>ができる数。(10) は 100、(15) は 10 でOK。</p>
+  <p class="same">✏️ 同じやり方で解ける問題：<b>(10) (15)</b></p>
+</section>
+<section class="card">
+  <h2>タイプ④ 分数の中に分数がある方程式</h2>
+  <p class="ex"><span class="tag">例題 (12)</span><span class="eq"><i>x</i><span class="op">−</span><span class="fr"><span class="n"><i>x</i><span class="op">−</span><span class="fr"><span class="n"><i>x</i>−1</span><span class="d">2</span></span></span><span class="d">3</span></span><span class="op">=</span><span class="fr"><span class="n">5</span><span class="d">6</span></span></span></p>
+  <div class="steps">
+<div class="row"><span class="eq"><i>x</i><span class="op">−</span><span class="fr"><span class="n"><i>x</i>−1</span><span class="d">2</span></span><span class="op">=</span><span class="fr"><span class="n">2<i>x</i>−(<i>x</i>−1)</span><span class="d">2</span></span><span class="op">=</span><span class="fr"><span class="n"><i>x</i>+1</span><span class="d">2</span></span></span><span class="memo">まず<b>いちばん内側</b>を計算して1つの分数にする</span></div>
+<div class="row"><span class="eq"><span class="fr"><span class="n"><i>x</i>+1</span><span class="d">2</span></span> ÷ 3<span class="op">=</span><span class="fr"><span class="n"><i>x</i>+1</span><span class="d">6</span></span></span><span class="memo">それを 3 でわる（分母に 3 をかける）</span></div>
+<div class="row"><span class="eq"><i>x</i><span class="op">−</span><span class="fr"><span class="n"><i>x</i>+1</span><span class="d">6</span></span><span class="op">=</span><span class="fr"><span class="n">5</span><span class="d">6</span></span></span><span class="memo">もとの式はこうなる</span></div>
+<div class="row"><span class="eq">6<i>x</i><span class="op">−</span>(<i>x</i>+1)<span class="op">=</span>5</span><span class="memo"><b>6</b> をかける。−(<i>x</i>+1) のかっこを忘れない</span></div>
+<div class="row"><span class="eq">5<i>x</i><span class="op">−</span>1<span class="op">=</span>5</span><span class="memo">かっこを外してまとめる</span></div>
+<div class="row"><span class="eq"><i>x</i><span class="op">=</span><span class="fr"><span class="n">6</span><span class="d">5</span></span></span><span class="memo">5<i>x</i> = 6 より</span></div>
+  </div>
+  <p class="point">💡 内側から少しずつ簡単にしていけば、タイプ①になります。</p>
+  <p class="same">✏️ 同じやり方で解ける問題：<b>（このタイプは (12) だけ）</b></p>
+</section>
+<section class="card">
+  <h2>タイプ⑤ 比例式</h2>
+  <p class="ex"><span class="tag">例題 (17)</span><span class="eq">(<i>x</i>+2):(3<i>x</i>−1)<span class="op">=</span>2:5</span></p>
+  <div class="steps">
+<div class="row"><span class="eq">5(<i>x</i>+2)<span class="op">=</span>2(3<i>x</i>−1)</span><span class="memo"><b>外側どうし</b>の積 ＝ <b>内側どうし</b>の積（a:b = c:d なら ad = bc）</span></div>
+<div class="row"><span class="eq">5<i>x</i><span class="op">+</span>10<span class="op">=</span>6<i>x</i><span class="op">−</span>2</span><span class="memo">かっこを外す</span></div>
+<div class="row"><span class="eq">−<i>x</i><span class="op">=</span>−12</span><span class="memo">移項して整理</span></div>
+<div class="row"><span class="eq"><i>x</i><span class="op">=</span>12</span><span class="memo"></span></div>
+  </div>
+  <p class="point">💡 (18) は比例式をかけ算にしたあと分数が残るので、そこでタイプ①のように 6 をかけます。</p>
+  <p class="same">✏️ 同じやり方で解ける問題：<b>(18)</b></p>
+</section>
+<section class="card">
+  <h2>タイプ⑥ 解から a の値を求める問題</h2>
+  <p class="ex"><span class="tag">例題 (19)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>+<i>a</i></span><span class="d">3</span></span><span class="op">−</span><span class="fr"><span class="n">ax−1</span><span class="d">2</span></span><span class="op">=</span>−2 （解が <i>x</i><span class="op">=</span>3）</span></p>
+  <div class="steps">
+<div class="row"><span class="eq"><span class="fr"><span class="n">3+<i>a</i></span><span class="d">3</span></span><span class="op">−</span><span class="fr"><span class="n">3<i>a</i>−1</span><span class="d">2</span></span><span class="op">=</span>−2</span><span class="memo"><b><i>x</i> に 3 を代入</b>する。これで <i>a</i> の方程式になる</span></div>
+<div class="row"><span class="eq">2(3+<i>a</i>)<span class="op">−</span>3(3<i>a</i>−1)<span class="op">=</span>−12</span><span class="memo"><b>6</b> をかけて分母をはらう</span></div>
+<div class="row"><span class="eq">6<span class="op">+</span>2<i>a</i><span class="op">−</span>9<i>a</i><span class="op">+</span>3<span class="op">=</span>−12</span><span class="memo">かっこを外す</span></div>
+<div class="row"><span class="eq">−7<i>a</i><span class="op">+</span>9<span class="op">=</span>−12</span><span class="memo">まとめる</span></div>
+<div class="row"><span class="eq">−7<i>a</i><span class="op">=</span>−21</span><span class="memo">移項</span></div>
+<div class="row"><span class="eq"><i>a</i><span class="op">=</span>3</span><span class="memo"></span></div>
+  </div>
+  <p class="point">💡 (20) は <i>x</i> = −2 を代入。−2 は<b>かっこをつけて</b>代入すると符号ミスがへります。</p>
+  <p class="same">✏️ 同じやり方で解ける問題：<b>(20)</b></p>
+</section>
+
+  <section class="card">
+    <h2>全20問の「かける数」ヒント表</h2>
+    <p class="lead" style="margin-top:0">わからなくなったら、まず何をかければいいかをここで確認しよう（答えはプリントの2ページ目）。</p>
+    <div class="tables"><table><tbody><tr><td>(1)</td><td>12</td></tr><tr><td>(2)</td><td>12</td></tr><tr><td>(3)</td><td>12</td></tr><tr><td>(4)</td><td>12</td></tr><tr><td>(5)</td><td>12</td></tr><tr><td>(6)</td><td>12</td></tr><tr><td>(7)</td><td>かっこを外す → 12</td></tr><tr><td>(8)</td><td>15</td></tr><tr><td>(9)</td><td>100</td></tr><tr><td>(10)</td><td>100</td></tr></tbody></table><table><tbody><tr><td>(11)</td><td>20</td></tr><tr><td>(12)</td><td>内側から計算 → 6</td></tr><tr><td>(13)</td><td>12</td></tr><tr><td>(14)</td><td>30</td></tr><tr><td>(15)</td><td>10</td></tr><tr><td>(16)</td><td>24</td></tr><tr><td>(17)</td><td>外側の積＝内側の積</td></tr><tr><td>(18)</td><td>外側の積＝内側の積 → 6</td></tr><tr><td>(19)</td><td><i>x</i>=3 を代入 → 6</td></tr><tr><td>(20)</td><td><i>x</i>=−2 を代入 → 12</td></tr></tbody></table></div>
+  </section>
+</div>
+</body>
+</html>
