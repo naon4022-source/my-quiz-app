@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分数の方程式 練習プリント</title>
+<style>
+  :root { --bg: #f5f7fa; --paper: #fff; --text: #222; --muted: #666; --line: #bbb; --accent: #c0392b; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #121212; --paper: #1e1e1e; --text: #e0e0e0; --muted: #aaa; --line: #555; --accent: #ff7b6b; }
+  }
+  :root[data-theme="dark"] { --bg: #121212; --paper: #1e1e1e; --text: #e0e0e0; --muted: #aaa; --line: #555; --accent: #ff7b6b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif; }
+  .bar { max-width: 210mm; margin: 16px auto 0; padding: 0 16px; display: flex; gap: 8px; }
+  .bar button { padding: 8px 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--text); cursor: pointer; font-size: 14px; }
+  .page { max-width: 210mm; margin: 16px auto; background: var(--paper); padding: 14mm 14mm 12mm; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  header { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 8px; border-bottom: 2px solid var(--text); padding-bottom: 6px; margin-bottom: 10px; }
+  h1 { font-size: 20px; margin: 0; }
+  h1 small { font-size: 13px; color: var(--accent); margin-left: 8px; }
+  .name { font-size: 14px; }
+  .name span { display: inline-block; width: 140px; border-bottom: 1px solid var(--text); margin-left: 4px; }
+  .note { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+  ol { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; column-gap: 8mm; }
+  .problems li { min-height: 31mm; padding: 6px 0; border-bottom: 1px dashed var(--line); display: flex; gap: 6px; align-items: flex-start; }
+  .answers li { padding: 8px 0; border-bottom: 1px dashed var(--line); display: flex; gap: 6px; align-items: center; }
+  .no { font-weight: bold; min-width: 2.4em; padding-top: 6px; }
+  .answers .no { padding-top: 0; }
+  .eq { font-size: 16px; line-height: 2; display: flex; flex-wrap: wrap; align-items: center; column-gap: 2px; }
+  .answers .eq { color: var(--accent); font-weight: bold; }
+  .txt { font-size: 13.5px; line-height: 1.7; }
+  i { font-family: "Times New Roman", serif; font-size: 1.12em; padding: 0 1px; }
+  .op { margin: 0 5px; }
+  .fr { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 2px; line-height: 1.25; }
+  .fr .n { border-bottom: 1px solid currentColor; padding: 0 3px; }
+  .fr .d { padding: 0 3px; }
+  .fr .fr { font-size: .9em; }
+  @media (max-width: 640px) {
+    ol { grid-template-columns: 1fr; }
+    .page { padding: 16px; margin: 12px 0; border-radius: 0; }
+    .problems li { min-height: 0; padding: 10px 0; }
+  }
+  @media print {
+    @page { size: A4; margin: 0; }
+    body { background: #fff; color: #000; }
+    .bar { display: none; }
+    .page { box-shadow: none; border-radius: 0; margin: 0; max-width: none; page-break-after: always; }
+    .answers .eq { color: #000; }
+  }
+</style>
+</head>
+<body>
+<div class="bar">
+  <button onclick="window.print()">🖨 印刷する</button>
+  <button onclick="document.getElementById('ans').scrollIntoView({behavior:'smooth'})">答えを見る</button>
+</div>
+
+<section class="page">
+  <header>
+    <h1>分数をふくむ方程式 練習プリント<small>むずかしめ・全20問</small></h1>
+    <div class="name">名前<span></span>　　/ 20</div>
+  </header>
+  <p class="note">次の方程式を解きなさい。分母の最小公倍数を両辺にかけて分母をはらうこと。小数は10倍・100倍して整数にしよう。（17）（18）は比例式，（19）（20）は <i>a</i> の値を求める問題です。</p>
+  <ol class="problems">
+    <li><span class="no">(1)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>−2</span><span class="d">3</span></span><span class="op">−</span><span class="fr"><span class="n">2<i>x</i>−5</span><span class="d">4</span></span><span class="op">=</span>1</span></li>
+    <li><span class="no">(2)</span><span class="eq"><span class="fr"><span class="n">3<i>x</i>+1</span><span class="d">4</span></span><span class="op">−</span><span class="fr"><span class="n"><i>x</i>−3</span><span class="d">6</span></span><span class="op">=</span><span class="fr"><span class="n"><i>x</i>+2</span><span class="d">3</span></span><span class="op">−</span>1</span></li>
+    <li><span class="no">(3)</span><span class="eq"><span class="fr"><span class="n">2<i>x</i>−1</span><span class="d">3</span></span><span class="op">−</span><span class="fr"><span class="n"><i>x</i>+2</span><span class="d">4</span></span><span class="op">=</span><i>x</i><span class="op">−</span><span class="fr"><span class="n">5<i>x</i>−3</span><span class="d">6</span></span></span></li>
+    <li><span class="no">(4)</span><span class="eq"><span class="fr"><span class="n">2</span><span class="d">3</span></span><i>x</i><span class="op">−</span><span class="fr"><span class="n">1</span><span class="d">4</span></span><span class="op">=</span><span class="fr"><span class="n">5</span><span class="d">6</span></span><i>x</i><span class="op">+</span><span class="fr"><span class="n">1</span><span class="d">2</span></span></span></li>
+    <li><span class="no">(5)</span><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">−</span><span class="fr"><span class="n"><i>x</i>−1</span><span class="d">3</span></span><span class="op">+</span><span class="fr"><span class="n"><i>x</i>+1</span><span class="d">4</span></span><span class="op">=</span>3</span></li>
+    <li><span class="no">(6)</span><span class="eq"><span class="fr"><span class="n">5<i>x</i>−1</span><span class="d">6</span></span><span class="op">−</span><span class="fr"><span class="n">3<i>x</i>+2</span><span class="d">4</span></span><span class="op">=</span><span class="fr"><span class="n"><i>x</i>−4</span><span class="d">3</span></span></span></li>
+    <li><span class="no">(7)</span><span class="eq"><span class="fr"><span class="n">1</span><span class="d">2</span></span>(<span class="fr"><span class="n"><i>x</i></span><span class="d">3</span></span><span class="op">−</span>1)<span class="op">−</span><span class="fr"><span class="n">1</span><span class="d">3</span></span>(<span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">+</span>2)<span class="op">=</span><span class="fr"><span class="n"><i>x</i>−5</span><span class="d">12</span></span></span></li>
+    <li><span class="no">(8)</span><span class="eq"><span class="fr"><span class="n">4−3<i>x</i></span><span class="d">5</span></span><span class="op">−</span><span class="fr"><span class="n">2<i>x</i>+1</span><span class="d">3</span></span><span class="op">=</span><span class="fr"><span class="n"><i>x</i>−7</span><span class="d">15</span></span><span class="op">−</span>2</span></li>
+    <li><span class="no">(9)</span><span class="eq">0.3(<i>x</i>−2)<span class="op">=</span>0.25<i>x</i><span class="op">+</span><span class="fr"><span class="n">1</span><span class="d">2</span></span></span></li>
+    <li><span class="no">(10)</span><span class="eq">0.2(3<i>x</i>−1)<span class="op">−</span><span class="fr"><span class="n"><i>x</i>+1</span><span class="d">4</span></span><span class="op">=</span>0.15<i>x</i><span class="op">+</span>1</span></li>
+    <li><span class="no">(11)</span><span class="eq"><span class="fr"><span class="n">3(<i>x</i>−1)</span><span class="d">4</span></span><span class="op">−</span><span class="fr"><span class="n">2(<i>x</i>+3)</span><span class="d">5</span></span><span class="op">=</span><span class="fr"><span class="n"><i>x</i></span><span class="d">2</span></span><span class="op">−</span>3</span></li>
+    <li><span class="no">(12)</span><span class="eq"><i>x</i><span class="op">−</span><span class="fr"><span class="n"><i>x</i><span class="op">−</span><span class="fr"><span class="n"><i>x</i>−1</span><span class="d">2</span></span></span><span class="d">3</span></span><span class="op">=</span><span class="fr"><span class="n">5</span><span class="d">6</span></span></span></li>
+    <li><span class="no">(13)</span><span class="eq"><span class="fr"><span class="n">2<i>x</i>+3</span><span class="d">4</span></span><span class="op">−</span><span class="fr"><span class="n">5<i>x</i>−1</span><span class="d">6</span></span><span class="op">−</span><span class="fr"><span class="n"><i>x</i>−2</span><span class="d">3</span></span><span class="op">=</span>0</span></li>
+    <li><span class="no">(14)</span><span class="eq"><span class="fr"><span class="n"><i>x</i>+1</span><span class="d">2</span></span><span class="op">−</span><span class="fr"><span class="n"><i>x</i>−1</span><span class="d">3</span></span><span class="op">−</span><span class="fr"><span class="n"><i>x</i>+2</span><span class="d">5</span></span><span class="op">=</span><span class="fr"><span class="n"><i>x</i></span><span class="d">6</span></span><span class="op">+</span>1</span></li>
+    <li><span class="no">(15)</span><span class="eq">1.2<i>x</i><span class="op">−</span><span class="fr"><span class="n">2<i>x</i>−1</span><span class="d">5</span></span><span class="op">=</span>0.4(<i>x</i>+3)<span class="op">+</span><span class="fr"><span class="n">3</span><span class="d">10</span></span></span></li>
+    <li><span class="no">(16)</span><span class="eq"><span class="fr"><span class="n">7<i>x</i>−2</span><span class="d">8</span></span><span class="op">−</span><span class="fr"><span class="n">3<i>x</i>+1</span><span class="d">6</span></span><span class="op">=</span><span class="fr"><span class="n">5<i>x</i>−4</span><span class="d">12</span></span><span class="op">+</span><span class="fr"><span class="n">1</span><span class="d">4</span></span></span></li>
+    <li><span class="no">(17)</span><span class="eq">(<i>x</i>+2)<span class="op">:</span>(3<i>x</i>−1)<span class="op">=</span>2<span class="op">:</span>5</span></li>
+    <li><span class="no">(18)</span><span class="eq"><span class="fr"><span class="n"><i>x</i></span><span class="d">3</span></span><span class="op">:</span>2<span class="op">=</span>(<i>x</i>−<span class="fr"><span class="n">1</span><span class="d">2</span></span>)<span class="op">:</span><span class="fr"><span class="n">5</span><span class="d">2</span></span></span></li>
+    <li><span class="no">(19)</span><span class="eq"><span class="txt"><i>x</i> についての方程式</span> <span class="fr"><span class="n"><i>x</i>+<i>a</i></span><span class="d">3</span></span><span class="op">−</span><span class="fr"><span class="n"><i>a</i><i>x</i>−1</span><span class="d">2</span></span><span class="op">=</span>−2 <span class="txt">の解が <i>x</i> = 3 のとき，<i>a</i> の値を求めなさい。</span></span></li>
+    <li><span class="no">(20)</span><span class="eq"><span class="txt"><i>x</i> についての方程式</span> <span class="fr"><span class="n"><i>a</i><i>x</i>+1</span><span class="d">4</span></span><span class="op">−</span><span class="fr"><span class="n"><i>x</i>−<i>a</i></span><span class="d">3</span></span><span class="op">=</span><span class="fr"><span class="n">2−<i>x</i></span><span class="d">6</span></span> <span class="txt">の解が <i>x</i> = −2 のとき，<i>a</i> の値を求めなさい。</span></span></li>
+  </ol>
+</section>
+
+<section class="page" id="ans">
+  <header>
+    <h1>解答<small>分数の方程式（むずかしめ）</small></h1>
+  </header>
+  <p class="note">答えが分数になるものは既約分数で答えます。比例式は「外項の積 = 内項の積」，（19）（20）は <i>x</i> の値を代入して <i>a</i> の方程式にします。</p>
+  <ol class="answers">
+    <li><span class="no">(1)</span><span class="eq"><i>x</i><span class="op">=</span>−<span class="fr"><span class="n">5</span><span class="d">2</span></span></span></li>
+    <li><span class="no">(2)</span><span class="eq"><i>x</i><span class="op">=</span>−<span class="fr"><span class="n">13</span><span class="d">3</span></span></span></li>
+    <li><span class="no">(3)</span><span class="eq"><i>x</i><span class="op">=</span><span class="fr"><span class="n">16</span><span class="d">3</span></span></span></li>
+    <li><span class="no">(4)</span><span class="eq"><i>x</i><span class="op">=</span>−<span class="fr"><span class="n">9</span><span class="d">2</span></span></span></li>
+    <li><span class="no">(5)</span><span class="eq"><i>x</i><span class="op">=</span><span class="fr"><span class="n">29</span><span class="d">5</span></span></span></li>
+    <li><span class="no">(6)</span><span class="eq"><i>x</i><span class="op">=</span><span class="fr"><span class="n">8</span><span class="d">3</span></span></span></li>
+    <li><span class="no">(7)</span><span class="eq"><i>x</i><span class="op">=</span>−9</span></li>
+    <li><span class="no">(8)</span><span class="eq"><i>x</i><span class="op">=</span><span class="fr"><span class="n">11</span><span class="d">5</span></span></span></li>
+    <li><span class="no">(9)</span><span class="eq"><i>x</i><span class="op">=</span>22</span></li>
+    <li><span class="no">(10)</span><span class="eq"><i>x</i><span class="op">=</span><span class="fr"><span class="n">29</span><span class="d">4</span></span></span></li>
+    <li><span class="no">(11)</span><span class="eq"><i>x</i><span class="op">=</span>7</span></li>
+    <li><span class="no">(12)</span><span class="eq"><i>x</i><span class="op">=</span><span class="fr"><span class="n">6</span><span class="d">5</span></span></span></li>
+    <li><span class="no">(13)</span><span class="eq"><i>x</i><span class="op">=</span><span class="fr"><span class="n">19</span><span class="d">8</span></span></span></li>
+    <li><span class="no">(14)</span><span class="eq"><i>x</i><span class="op">=</span>−<span class="fr"><span class="n">17</span><span class="d">6</span></span></span></li>
+    <li><span class="no">(15)</span><span class="eq"><i>x</i><span class="op">=</span><span class="fr"><span class="n">13</span><span class="d">4</span></span></span></li>
+    <li><span class="no">(16)</span><span class="eq"><i>x</i><span class="op">=</span>−8</span></li>
+    <li><span class="no">(17)</span><span class="eq"><i>x</i><span class="op">=</span>12</span></li>
+    <li><span class="no">(18)</span><span class="eq"><i>x</i><span class="op">=</span><span class="fr"><span class="n">6</span><span class="d">7</span></span></span></li>
+    <li><span class="no">(19)</span><span class="eq"><i>a</i><span class="op">=</span>3</span></li>
+    <li><span class="no">(20)</span><span class="eq"><i>a</i><span class="op">=</span><span class="fr"><span class="n">3</span><span class="d">2</span></span></span></li>
+  </ol>
+</section>
+</body>
+</html>
